@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def jackknife(a, func):
+def jackknife(a, func, method="ordinary"):
     """
     Calcualte jackknife estimates for a given sample and
     estimator.
@@ -12,6 +12,9 @@ def jackknife(a, func):
         Sample
     func : callable
         Estimator
+    method : string
+        * 'ordinary'
+        * 'infinitesimal'
 
     Returns
     -------
@@ -21,12 +24,27 @@ def jackknife(a, func):
     n = len(a)
     X = np.reshape(np.delete(np.tile(a, n),
                              [i * n + i for i in range(n)]),
-                   newshape=(n, n-1))
+                   newshape=(n, n - 1))
     y = np.apply_along_axis(func1d=func,
                             arr=X,
                             axis=1)
 
     return y
+
+
+def jackknife_bias(a, func, method="ordinary"):
+    """
+    Jackknife estimate of bias.
+    """
+    return (len(a) - 1) * np.mean(jackknife(a, func, method=method) - func(a))
+
+
+def jackknife_variance(a, func, method="ordinary"):
+    """
+    Jackknife estimate of variance.
+    """
+    x = jackknife(a, func, method=method)
+    return (len(a) - 1) * np.mean((x - np.mean(x))**2)
 
 
 def empirical_influence(a, func):
@@ -46,11 +64,10 @@ def empirical_influence(a, func):
     y : np.array
         Empirical influence values
     """
-    n = len(a)
     theta = func(a)
     theta_j = jackknife(a, func)
 
-    return (n - 1) * (theta - theta_j)
+    return (len(a) - 1) * (theta - theta_j)
 
 
 def bootstrap(a, func, b, method="ordinary"):
@@ -78,7 +95,7 @@ def bootstrap(a, func, b, method="ordinary"):
     n = len(a)
 
     if method == "ordinary":
-        X = np.reshape(np.random.choice(a, n*b), newshape=(b, n))
+        X = np.reshape(np.random.choice(a, n * b), newshape=(b, n))
     elif method == "balanced":
         X = np.reshape(np.random.permutation(np.repeat(a, b)),
                        newshape=(b, n))
@@ -86,7 +103,7 @@ def bootstrap(a, func, b, method="ordinary"):
         indx = np.argsort(empirical_influence(a, func))
         indx_arr = np.reshape(np.random.choice(indx, size=b // 2 * n),
                               newshape=(b // 2, n))
-        n_arr = np.full(shape=(b // 2, n), fill_value=n-1)
+        n_arr = np.full(shape=(b // 2, n), fill_value=n - 1)
         X = a[np.vstack((indx_arr, n_arr - indx_arr))]
     else:
         raise ValueError("method must be either 'ordinary'"

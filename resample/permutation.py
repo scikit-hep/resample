@@ -5,8 +5,8 @@ def ttest(a1, a2, b=1000, dropna=True):
     """
     Perform permutation two sample t-test.  The
     t-statistic is calculated for the two samples
-    which are then pooled.  b permutations of the
-    pooled data taken and the statistic is recalculated
+    which are then pooled.  b permutations of the pooled
+    data are taken and the statistic is recalculated
     for each permutation of the data.  The statistic as
     well as the proportion of the permutation distribution
     less than or equal to that statistic are returned.
@@ -19,15 +19,14 @@ def ttest(a1, a2, b=1000, dropna=True):
         Second sample
     b : int
         Number of permutations
+    dropna : boolean
+        Whether or not to drop np.nan
 
     Returns
     -------
-    stat : float
-        t statistic
-    prop : float
-        Proportion of permutation distribution less than
-        or equal to t
-
+    {'stat', 'prop'} : {float, float}
+        t statistic as well as proportion of permutation 
+        distribution less than or equal to that statistic
     """
     def g(x, y):
         return ((np.mean(x) - np.mean(y)) /
@@ -35,15 +34,17 @@ def ttest(a1, a2, b=1000, dropna=True):
 
     if dropna:
         a1 = a1[~np.isnan(a1)]
-        a2 = a1[~np.isnan(a2)]
+        a2 = a2[~np.isnan(a2)]
 
     t = g(a1, a2)
 
     n1 = len(a1)
     n2 = len(a2)
 
-    X = np.reshape(np.tile(np.append(a1, a2), b), newshape=(b, n1 + n2))
-    X = np.apply_along_axis(func1d=np.random.permutation, arr=X, axis=1)
+    X = np.apply_along_axis(func1d=np.random.permutation, 
+                            arr=np.reshape(np.tile(np.append(a1, a2), b), 
+                                           newshape=(b, n1 + n2)), 
+                            axis=1)
     permute_t = np.apply_along_axis(func1d=lambda s: g(s[:n1], s[n1:]),
                                     arr=X,
                                     axis=1)
