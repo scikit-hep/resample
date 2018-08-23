@@ -5,7 +5,7 @@ def jackknife(a, func):
     """
     Calcualte jackknife estimates for a given sample and
     estimator.
-    
+
     Parameters
     ----------
     a : array-like
@@ -20,12 +20,12 @@ def jackknife(a, func):
     """
     n = len(a)
     X = np.reshape(np.delete(np.tile(a, n),
-                               [i * n + i for i in range(n)]),
-                     newshape=(n, n-1))
+                             [i * n + i for i in range(n)]),
+                   newshape=(n, n-1))
     y = np.apply_along_axis(func1d=func,
                             arr=X,
                             axis=1)
-    
+
     return y
 
 
@@ -33,7 +33,7 @@ def empirical_influence(a, func):
     """
     Calculate the empirical influence function for a given
     sample and estimator using the jackknife method.
-    
+
     Parameters
     ----------
     a : array-like
@@ -80,11 +80,11 @@ def bootstrap(a, func, b, method="ordinary"):
     if method == "ordinary":
         X = np.reshape(np.random.choice(a, n*b), newshape=(b, n))
     elif method == "balanced":
-        X = np.reshape(np.random.permutation(np.repeat(a, b)), 
+        X = np.reshape(np.random.permutation(np.repeat(a, b)),
                        newshape=(b, n))
     elif method == "antithetic":
         indx = np.argsort(empirical_influence(a, func))
-        indx_arr = np.reshape(np.random.choice(indx, size=b // 2 * n), 
+        indx_arr = np.reshape(np.random.choice(indx, size=b // 2 * n),
                               newshape=(b // 2, n))
         n_arr = np.full(shape=(b // 2, n), fill_value=n-1)
         X = a[np.vstack((indx_arr, n_arr - indx_arr))]
