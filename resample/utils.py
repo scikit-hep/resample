@@ -25,9 +25,8 @@ def calc_ecdf(a):
 
 def mise(f, g, mesh):
     """
-    Calculate approximate mean integrated squared
-    error between functions f and g across a given mesh
-    or points
+    Calculate average squared error between
+    functions f and g across a mesh of points
 
     Parameters
     ----------
