@@ -1,16 +1,16 @@
 import numpy as np
 
 
-def jackknife(a, func, method="ordinary"):
+def jackknife(a, f, method="ordinary"):
     """
-    Calcualte jackknife estimates for a given sample and
-    estimator.
+    Calcualte jackknife estimates for a given sample
+    and estimator.
 
     Parameters
     ----------
     a : array-like
         Sample
-    func : callable
+    f : callable
         Estimator
     method : string
         * 'ordinary'
@@ -25,29 +25,59 @@ def jackknife(a, func, method="ordinary"):
     X = np.reshape(np.delete(np.tile(a, n),
                              [i * n + i for i in range(n)]),
                    newshape=(n, n - 1))
-    y = np.apply_along_axis(func1d=func,
-                            arr=X,
-                            axis=1)
 
-    return y
+    return np.apply_along_axis(func1d=f,
+                               arr=X,
+                               axis=1)
 
 
-def jackknife_bias(a, func, method="ordinary"):
+def jackknife_bias(a, f, method="ordinary"):
     """
-    Jackknife estimate of bias.
+    Calculate jackknife estimate of bias.
+
+    Parameters
+    ----------
+    a : array-like
+        Sample
+    f : callable
+        Estimator
+    method : string
+        * 'ordinary'
+        * 'infinitesimal'
+
+    Returns
+    -------
+    y : float
+        Jackknife estimate of bias
     """
-    return (len(a) - 1) * np.mean(jackknife(a, func, method=method) - func(a))
+    return (len(a) - 1) * np.mean(jackknife(a, f, method=method) - f(a))
 
 
-def jackknife_variance(a, func, method="ordinary"):
+def jackknife_variance(a, f, method="ordinary"):
     """
-    Jackknife estimate of variance.
+    Calculate jackknife estimate of variance.
+
+    Parameters
+    ----------
+    a : array-like
+        Sample
+    f : callable
+        Estimator
+    method : string
+        * 'ordinary'
+        * 'infinitesimal'
+
+    Returns
+    -------
+    y : float
+        Jackknife estimate of variance
     """
-    x = jackknife(a, func, method=method)
+    x = jackknife(a, f, method=method)
+
     return (len(a) - 1) * np.mean((x - np.mean(x))**2)
 
 
-def empirical_influence(a, func):
+def empirical_influence(a, f):
     """
     Calculate the empirical influence function for a given
     sample and estimator using the jackknife method.
@@ -56,7 +86,7 @@ def empirical_influence(a, func):
     ----------
     a : array-like
         Sample
-    func : callable
+    f : callable
         Estimator
 
     Returns
@@ -64,22 +94,21 @@ def empirical_influence(a, func):
     y : np.array
         Empirical influence values
     """
-    theta = func(a)
-    theta_j = jackknife(a, func)
-
-    return (len(a) - 1) * (theta - theta_j)
+    return (len(a) - 1) * (f(a) - jackknife(a, f))
 
 
-def bootstrap(a, func, b, method="ordinary"):
+def bootstrap(a, f=None, b=100, method="ordinary"):
     """
-    Calculate estimates from bootstrap samples.
+    Calculate estimates from bootstrap samples or
+    optionally return bootstrap samples themselves.
 
     Parameters
     ----------
     a : array-like
         Original sample
-    func : callable
-        Estimator to be bootstrapped
+    f : callable or None
+        Estimator to be bootstrapped, data set
+        is return if None
     b : int
         Number of bootstrap samples
     method : string
@@ -89,9 +118,11 @@ def bootstrap(a, func, b, method="ordinary"):
 
     Returns
     -------
-    y : np.array
-        Estimator applied to each bootstrap sample
+    y | X : np.array
+        Estimator applied to each bootstrap sample,
+        or bootstrap samples if f is None
     """
+    a = np.asarray(a)
     n = len(a)
 
     if method == "ordinary":
@@ -100,7 +131,10 @@ def bootstrap(a, func, b, method="ordinary"):
         X = np.reshape(np.random.permutation(np.repeat(a, b)),
                        newshape=(b, n))
     elif method == "antithetic":
-        indx = np.argsort(empirical_influence(a, func))
+        if f is None:
+            raise ValueError("f cannot be None when"
+                             " method is 'antithetic'")
+        indx = np.argsort(empirical_influence(a, f))
         indx_arr = np.reshape(np.random.choice(indx, size=b // 2 * n),
                               newshape=(b // 2, n))
         n_arr = np.full(shape=(b // 2, n), fill_value=n - 1)
@@ -111,4 +145,7 @@ def bootstrap(a, func, b, method="ordinary"):
                          " '{method}' was"
                          " supplied".format(method=method))
 
-    return np.apply_along_axis(func1d=func, arr=X, axis=1)
+    if f is None:
+        return X
+    else:
+        return np.apply_along_axis(func1d=f, arr=X, axis=1)

@@ -3,8 +3,8 @@ import numpy as np
 
 def calc_ecdf(a):
     """
-    Return the empirical distribution
-    function for a given sample.
+    Return the empirical distribution function
+    for a given sample.
 
     Parameters
     ----------
@@ -23,10 +23,10 @@ def calc_ecdf(a):
             np.searchsorted(a, x, side="right", sorter=None) / n)
 
 
-def mise(f, g, mesh):
+def mise(f, g, cmin, cmax, n):
     """
-    Calculate average squared error between
-    functions f and g across a mesh of points
+    Estimate mean integrated squared error
+    between two functions using Riemann sums.
 
     Parameters
     ----------
@@ -34,13 +34,19 @@ def mise(f, g, mesh):
         First function
     g : callable
         Second function
-    mesh : array-like
-        Points at which to evaluate squared error
+    cmin : int
+        Left endpoint
+    cmax : int
+        Right endpoint
+    n : int
+        Number of evaluation points
 
     Returns
     -------
     y : float
-        Mean integrated squared error estimate
+        Estimated MISE
     """
+    p = np.linspace(cmin, cmax, n, endpoint=False)
+    w = (cmax - cmin) / n
 
-    return np.mean([(f(i) - g(i))**2 for i in mesh])
+    return np.sum([w * (f(i) - g(i))**2 for i in p])

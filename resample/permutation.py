@@ -22,6 +22,9 @@ def ttest(a1, a2, b=1000, dropna=True):
         t statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
+    a1 = np.asarray(a1)
+    a2 = np.asarray(a2)
+
     def g(x, y):
         return ((np.mean(x) - np.mean(y)) /
                 np.sqrt(np.var(x) / len(x) + np.var(y) / len(y)))
@@ -75,11 +78,11 @@ def anova(*args, b=1000, dropna=True):
     n = np.sum(ns)
     pos = np.append(0, np.cumsum(ns))
     arr = np.concatenate(args)
-    gmean = np.mean(arr)
+    a_bar = np.mean(arr)
 
     def g(a):
         sse = np.sum([ns[i] * np.var(a[pos[i]:pos[i+1]]) for i in range(t)])
-        ssb = (np.sum([ns[i] * (np.mean(a[pos[i]:pos[i+1]]) - gmean)**2
+        ssb = (np.sum([ns[i] * (np.mean(a[pos[i]:pos[i+1]]) - a_bar)**2
                        for i in range(t)]))
         return (ssb / (t - 1)) / (sse / (n - t))
 
