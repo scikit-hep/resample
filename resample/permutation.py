@@ -48,7 +48,7 @@ def ttest(a1, a2, b=1000, dropna=True):
 
 def anova(*args, b=1000, dropna=True):
     """
-    Permutation one way analysis of variance.
+    Perform permutation one way analysis of variance.
 
     Parameters
     ----------
