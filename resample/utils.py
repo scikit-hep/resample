@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def calc_ecdf(a):
+def ecdf(a):
     """
     Return the empirical distribution function
     for a given sample.
@@ -52,7 +52,7 @@ def mise(f, g, cmin, cmax, n):
     return np.sum([w * (f(i) - g(i))**2 for i in p])
 
 
-def supnorm(f, g, cmin, cmax, n):
+def sup_norm(f, g, cmin, cmax, n):
     """
     Estimate supremum norm of the difference
     of two functions.
