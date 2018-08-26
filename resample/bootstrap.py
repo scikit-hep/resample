@@ -110,7 +110,7 @@ def bootstrap(a, f=None, b=100, method="ordinary"):
     a : array-like
         Original sample
     f : callable or None
-        Function to be bootstrapped or None
+        Function to be bootstrapped
     b : int
         Number of bootstrap samples
     method : string
@@ -120,7 +120,7 @@ def bootstrap(a, f=None, b=100, method="ordinary"):
     Returns
     -------
     y | X : np.array
-        Function applied to each bootstrap sample,
+        Function applied to each bootstrap sample
         or bootstrap samples if f is None
     """
     a = np.asarray(a)
