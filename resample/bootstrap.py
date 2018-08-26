@@ -149,3 +149,6 @@ def bootstrap(a, f=None, b=100, method="ordinary"):
         return X
     else:
         return np.apply_along_axis(func1d=f, arr=X, axis=1)
+
+def bootstrap_ci():
+    return None

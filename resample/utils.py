@@ -50,3 +50,31 @@ def mise(f, g, cmin, cmax, n):
     w = (cmax - cmin) / n
 
     return np.sum([w * (f(i) - g(i))**2 for i in p])
+
+
+def supnorm(f, g, cmin, cmax, n):
+    """
+    Estimate supremum norm of the difference
+    of two functions.
+
+    Parameters
+    ----------
+    f : callable
+        First function
+    g : callable
+        Second function
+    cmin : int
+        Left endpoint
+    cmax : int
+        Right endpoint
+    n : int
+        Number of points
+
+    Returns
+    -------
+    y : float
+        Estimated supremum norm
+    """
+    p = np.linspace(cmin, cmax, n, endpoint=False)
+
+    return np.max([abs(f(i) - g(i)) for i in p])
