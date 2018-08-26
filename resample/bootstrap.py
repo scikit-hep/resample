@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def jackknife(a, f, method="ordinary"):
+def jackknife(a, f=None, method="ordinary"):
     """
     Calcualte jackknife estimates for a given sample
     and estimator.
@@ -18,17 +18,20 @@ def jackknife(a, f, method="ordinary"):
 
     Returns
     -------
-    y : np.array
+    y | X : np.array
         Jackknife estimates
     """
     n = len(a)
     X = np.reshape(np.delete(np.tile(a, n),
                              [i * n + i for i in range(n)]),
                    newshape=(n, n - 1))
-
-    return np.apply_along_axis(func1d=f,
-                               arr=X,
-                               axis=1)
+    
+    if f is None:
+        return X
+    else:
+        return np.apply_along_axis(func1d=f,
+                                   arr=X,
+                                   axis=1)
 
 
 def jackknife_bias(a, f, method="ordinary"):
@@ -99,7 +102,7 @@ def empirical_influence(a, f):
 
 def bootstrap(a, f=None, b=100, method="ordinary"):
     """
-    Calculate estimates from bootstrap samples or
+    Calculate function values from bootstrap samples or
     optionally return bootstrap samples themselves.
 
     Parameters
@@ -107,45 +110,36 @@ def bootstrap(a, f=None, b=100, method="ordinary"):
     a : array-like
         Original sample
     f : callable or None
-        Estimator to be bootstrapped, data set
-        is return if None
+        Function to be bootstrapped or None
     b : int
         Number of bootstrap samples
     method : string
         * 'ordinary'
         * 'balanced'
-        * 'antithetic'
 
     Returns
     -------
     y | X : np.array
-        Estimator applied to each bootstrap sample,
+        Function applied to each bootstrap sample,
         or bootstrap samples if f is None
     """
     a = np.asarray(a)
-    n = len(a)
 
     if method == "ordinary":
-        X = np.reshape(np.random.choice(a, n * b), newshape=(b, n))
+        X = np.reshape(a[np.random.choice(range(a.shape[0]),
+                                          a.shape[0] * b)],
+                       newshape=(b,) + a.shape)
     elif method == "balanced":
-        X = np.reshape(np.random.permutation(np.repeat(a, b)),
-                       newshape=(b, n))
-    elif method == "antithetic":
-        if f is None:
-            raise ValueError("f cannot be None when"
-                             " method is 'antithetic'")
-        indx = np.argsort(empirical_influence(a, f))
-        indx_arr = np.reshape(np.random.choice(indx, size=b // 2 * n),
-                              newshape=(b // 2, n))
-        n_arr = np.full(shape=(b // 2, n), fill_value=n - 1)
-        X = a[np.vstack((indx_arr, n_arr - indx_arr))]
+        r = np.reshape([a] * b,
+                       newshape=(b * a.shape[0],) + a.shape[1:])
+        X = np.reshape(r[np.random.permutation(range(r.shape[0]))],
+                       newshape=(b,) + a.shape)
     else:
         raise ValueError("method must be either 'ordinary'"
-                         " , 'balanced', or 'antithetic',"
-                         " '{method}' was"
+                         " , or 'balanced', '{method}' was"
                          " supplied".format(method=method))
 
     if f is None:
         return X
     else:
-        return np.apply_along_axis(func1d=f, arr=X, axis=1)
+        return np.asarray([f(x) for x in X])

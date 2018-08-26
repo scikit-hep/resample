@@ -7,6 +7,10 @@ x = np.random.randn(100)
 f = ecdf(x)
 
 
+def test_ecdf_incr():
+    assert True
+
+
 def test_ecdf_neg_inf():
     assert f(-np.inf) == 0.0
 
