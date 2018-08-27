@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def ttest(a1, a2, b=1000, dropna=True):
+def ttest(a1, a2, b=100, dropna=True):
     """
     Perform permutation two sample t-test.
 
@@ -50,7 +50,7 @@ def ttest(a1, a2, b=1000, dropna=True):
     return {"t": t, "prop": np.mean(permute_t <= t)}
 
 
-def anova(*args, b=1000, dropna=True):
+def anova(*args, b=100, dropna=True):
     """
     Perform permutation one way analysis of variance.
 
@@ -99,7 +99,7 @@ def anova(*args, b=1000, dropna=True):
     return {"f": f, "prop": np.mean(permute_f <= f)}
 
 
-def wilcoxon(a1, a2, b=1000, dropna=True):
+def wilcoxon(a1, a2, b=100, dropna=True):
     """
     Perform permutation Wilcoxon rank sum test.
 
