@@ -45,7 +45,7 @@ def eqf(a):
     a = np.sort(a)
     n = len(a)
 
-    inv = (np.float(interp1d([(i + 1.0) / n 
+    inv = lambda x: (np.float(interp1d([(i + 1.0) / n 
                               for i in range(n)], a)(x)))
 
     def f(x):
@@ -55,7 +55,7 @@ def eqf(a):
         elif x < 1/n:
             return a[0]
         else:
-            return inv
+            return inv(x)
 
     return f
 
@@ -81,10 +81,11 @@ def mise(f, g, d, n=100):
     y : float
         Estimated MISE
     """
-    if d[0] > d[1]:
+    if d[1] <= d[0]:
         raise ValueError("Invalid domain,"
-                         " lower bound cannot"
-                         " exceed upper bound")
+                         " upper bound must be"
+                         " strictly greater"
+                         " than lower bound")
 
     p = np.linspace(d[0], d[1], n, endpoint=False)
     w = (d[1] - d[0]) / n
@@ -106,17 +107,18 @@ def sup_norm(f, g, d, n=100):
     d : (float, float)
         Domain
     n : int
-        Number of points
+        Number of evaluation points
 
     Returns
     -------
     y : float
         Estimated supremum norm
     """
-    if d[0] > d[1]:
+    if d[1] <= d[0]:
         raise ValueError("Invalid domain,"
-                         " lower bound cannot"
-                         " exceed upper bound")
+                         " upper bound must be"
+                         " strictly greater"
+                         " than lower bound")
 
     p = np.linspace(d[0], d[1], n, endpoint=False)
 

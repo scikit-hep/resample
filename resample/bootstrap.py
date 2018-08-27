@@ -146,8 +146,8 @@ def bootstrap(a, f=None, b=100, method="balanced"):
         return np.asarray([f(x) for x in X])
 
 
-def bootstrap_ci(a, f, p=0.95, b=100, boot_method="balanced",
-                 ci_method="basic"):
+def bootstrap_ci(a, f=None, p=0.95, b=100, boot_method="balanced",
+                 ci_method="basic", boot=True):
     """
     Calculate bootstrap confidence intervals
 
@@ -183,7 +183,11 @@ def bootstrap_ci(a, f, p=0.95, b=100, boot_method="balanced",
                          " supplied".
                          format(method=boot_method)))
 
-    boot_est = bootstrap(a=a, f=f, b=b, method=boot_method)
+    if boot:
+        boot_est = bootstrap(a=a, f=f, b=b, method=boot_method)
+    else:
+        boot_est = a
+
     q = eqf(boot_est)
     alpha = 1 - p
 
