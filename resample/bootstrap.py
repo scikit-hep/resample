@@ -179,9 +179,15 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, boot_method="balanced",
 
     if boot_method not in ["ordinary", "balanced"]:
         raise ValueError(("boot_method must be 'ordinary'"
-                         " or 'balanced', {method} was"
-                         " supplied".
+                          " or 'balanced', {method} was"
+                          " supplied".
                          format(method=boot_method)))
+
+    if ((f is not None) and (type(f(a)) not in ["int", "long", "float"])):
+        raise ValueError("f(a) must be scalar-valued")
+
+    if (f is None) and boot:
+        raise ValueError("f is required when boot is True")
 
     if boot:
         boot_est = bootstrap(a=a, f=f, b=b, method=boot_method)
@@ -195,5 +201,5 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, boot_method="balanced",
         return (q(alpha/2), q(1 - alpha/2))
     else:
         raise ValueError(("ci_method must be 'basic'"
-                         " {method} was supplied".
-                         format(method=ci_method)))
+                          " {method} was supplied".
+                          format(method=ci_method)))
