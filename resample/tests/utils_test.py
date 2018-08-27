@@ -8,7 +8,8 @@ f = ecdf(x)
 
 
 def test_ecdf_incr():
-    assert True
+    result = [f(s) for s in np.linspace(x.min(), x.max(), 100)]
+    assert np.all(np.diff(result) >= 0)
 
 
 def test_ecdf_neg_inf():

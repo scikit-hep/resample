@@ -18,20 +18,20 @@ def ttest(a1, a2, b=1000, dropna=True):
 
     Returns
     -------
-    {'stat', 'prop'} : {float, float}
+    {'t', 'prop'} : {float, float}
         t statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
 
-    def g(x, y):
-        return ((np.mean(x) - np.mean(y)) /
-                np.sqrt(np.var(x) / len(x) + np.var(y) / len(y)))
-
     if dropna:
         a1 = a1[~np.isnan(a1)]
         a2 = a2[~np.isnan(a2)]
+
+    def g(x, y):
+        return ((np.mean(x) - np.mean(y)) /
+                np.sqrt(np.var(x) / len(x) + np.var(y) / len(y)))
 
     t = g(a1, a2)
 
@@ -42,11 +42,12 @@ def ttest(a1, a2, b=1000, dropna=True):
                             arr=np.reshape(np.tile(np.append(a1, a2), b),
                                            newshape=(b, n1 + n2)),
                             axis=1)
+
     permute_t = np.apply_along_axis(func1d=lambda s: g(s[:n1], s[n1:]),
                                     arr=X,
                                     axis=1)
 
-    return {"stat": t, "prop": np.mean(permute_t <= t)}
+    return {"t": t, "prop": np.mean(permute_t <= t)}
 
 
 def anova(*args, b=1000, dropna=True):
@@ -64,7 +65,7 @@ def anova(*args, b=1000, dropna=True):
 
     Returns
     -------
-    {'stat', 'prop'} : {float, float}
+    {'f', 'prop'} : {float, float}
         F statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
@@ -89,9 +90,58 @@ def anova(*args, b=1000, dropna=True):
     X = np.reshape(np.tile(arr, b), newshape=(b, n))
 
     f = g(arr)
+
     permute_f = np.apply_along_axis(func1d=(lambda x:
                                             g(np.random.permutation(x))),
                                     arr=X,
                                     axis=1)
 
-    return {"stat": f, "prop": np.mean(permute_f <= f)}
+    return {"f": f, "prop": np.mean(permute_f <= f)}
+
+
+def wilcoxon(a1, a2, b=1000, dropna=True):
+    """
+    Perform permutation Wilcoxon rank sum test.
+
+    Parameters
+    ----------
+    a1 : array-like
+        First sample
+    a2 : array-like
+        Second sample
+    b : int
+        Number of permutations
+    dropna : boolean
+        Whether or not to drop np.nan
+
+    Returns
+    -------
+    {'w', 'prop'} : {int, float}
+        t statistic as well as proportion of permutation
+        distribution less than or equal to that statistic
+    """
+    a1 = np.asarray(a1)
+    a2 = np.asarray(a2)
+
+    if dropna:
+        a1 = a1[~np.isnan(a1)]
+        a2 = a2[~np.isnan(a2)]
+    
+    n1 = len(a1)
+    n2 = len(a2)
+
+    a = np.append(a1, a2)
+    a = np.argsort(np.argsort(a))
+
+    X = np.apply_along_axis(func1d=np.random.permutation,
+                            arr=np.reshape(np.tile(a, b),
+                                           newshape=(b, n1 + n2)),
+                            axis=1)
+
+    w = np.sum(a[:n1])
+
+    permute_w = np.apply_along_axis(func1d=lambda s: np.sum(s[:n1]),
+                                    arr=X,
+                                    axis=1)
+
+    return {"w": w, "prop": np.mean(permute_w <= w)}

@@ -7,3 +7,4 @@ install_log.txt
 *__pycache__
 .pytest_cache
 resample/.coverage
+*.sh
