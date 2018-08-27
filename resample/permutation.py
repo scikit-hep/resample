@@ -117,7 +117,7 @@ def wilcoxon(a1, a2, b=1000, dropna=True):
     Returns
     -------
     {'w', 'prop'} : {int, float}
-        t statistic as well as proportion of permutation
+        w statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
     a1 = np.asarray(a1)

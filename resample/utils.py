@@ -1,10 +1,11 @@
 import numpy as np
+from scipy.interpolate import interp1d
 
 
 def ecdf(a):
     """
     Return the empirical distribution function
-    for a given sample.
+    for the given sample
 
     Parameters
     ----------
@@ -19,14 +20,50 @@ def ecdf(a):
     a = np.sort(a)
     n = len(a)
 
-    return (lambda x:
-            np.searchsorted(a, x, side="right", sorter=None) / n)
+    def f(x):
+        return (np.searchsorted(a, x, side="right",
+                                sorter=None) / n)
+
+    return f
+
+
+def eqf(a):
+    """
+    Return an empirical quantile function
+    for the given sample
+
+    Parameters
+    ----------
+    a : array-like
+        Sample
+
+    Returns
+    -------
+    f : callable
+        Empirical quantile function
+    """
+    a = np.sort(a)
+    n = len(a)
+
+    inv = (np.float(interp1d([(i + 1.0) / n 
+                              for i in range(n)], a)(x)))
+
+    def f(x):
+        if not (0 <= x <= 1):
+            raise ValueError("Argument must be"
+                             " between zero and one")
+        elif x < 1/n:
+            return a[0]
+        else:
+            return inv
+
+    return f
 
 
 def mise(f, g, d, n=100):
     """
     Estimate mean integrated squared error
-    between two functions using Riemann sums.
+    between two functions using Riemann sums
 
     Parameters
     ----------
@@ -47,7 +84,7 @@ def mise(f, g, d, n=100):
     if d[0] > d[1]:
         raise ValueError("Invalid domain,"
                          " lower bound cannot"
-                         " exceed upper bound.")
+                         " exceed upper bound")
 
     p = np.linspace(d[0], d[1], n, endpoint=False)
     w = (d[1] - d[0]) / n
@@ -58,7 +95,7 @@ def mise(f, g, d, n=100):
 def sup_norm(f, g, d, n=100):
     """
     Estimate supremum norm of the difference
-    of two functions.
+    of two functions
 
     Parameters
     ----------
@@ -79,7 +116,7 @@ def sup_norm(f, g, d, n=100):
     if d[0] > d[1]:
         raise ValueError("Invalid domain,"
                          " lower bound cannot"
-                         " exceed upper bound.")
+                         " exceed upper bound")
 
     p = np.linspace(d[0], d[1], n, endpoint=False)
 

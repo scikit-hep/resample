@@ -1,10 +1,11 @@
 import numpy as np
+from resample.utils import eqf
 
 
 def jackknife(a, f=None, method="ordinary"):
     """
     Calcualte jackknife estimates for a given sample
-    and estimator.
+    and estimator
 
     Parameters
     ----------
@@ -36,7 +37,7 @@ def jackknife(a, f=None, method="ordinary"):
 
 def jackknife_bias(a, f, method="ordinary"):
     """
-    Calculate jackknife estimate of bias.
+    Calculate jackknife estimate of bias
 
     Parameters
     ----------
@@ -58,7 +59,7 @@ def jackknife_bias(a, f, method="ordinary"):
 
 def jackknife_variance(a, f, method="ordinary"):
     """
-    Calculate jackknife estimate of variance.
+    Calculate jackknife estimate of variance
 
     Parameters
     ----------
@@ -100,10 +101,10 @@ def empirical_influence(a, f):
     return (len(a) - 1) * (f(a) - jackknife(a, f))
 
 
-def bootstrap(a, f=None, b=100, method="ordinary"):
+def bootstrap(a, f=None, b=100, method="balanced"):
     """
     Calculate function values from bootstrap samples or
-    optionally return bootstrap samples themselves.
+    optionally return bootstrap samples themselves
 
     Parameters
     ----------
@@ -145,7 +146,8 @@ def bootstrap(a, f=None, b=100, method="ordinary"):
         return np.asarray([f(x) for x in X])
 
 
-def bootstrap_ci():
+def bootstrap_ci(a, f, p=0.95, b=100, boot_method="balanced",
+                 ci_method="basic"):
     """
     Calculate bootstrap confidence intervals
 
@@ -155,9 +157,14 @@ def bootstrap_ci():
         Original sample
     f : callable
         Function to be bootstrapped
+    p : float
+        Confidence level
     b : int
         Number of bootstrap samples
-    method : string
+    boot_method : string
+        * 'ordinary'
+        * 'balanced'
+    ci_method : string
         * 'basic'
         * 'percentile'
         * 'studentized'
@@ -167,4 +174,22 @@ def bootstrap_ci():
     Returns
     -------
     """
-    return None
+    if not (0 < p < 1):
+        raise ValueError("p must be between zero and one")
+
+    if boot_method not in ["ordinary", "balanced"]:
+        raise ValueError(("boot_method must be 'ordinary'"
+                         " or 'balanced', {method} was"
+                         " supplied".
+                         format(method=boot_method)))
+
+    boot_est = bootstrap(a=a, f=f, b=b, method=boot_method)
+    q = eqf(boot_est)
+    alpha = 1 - p
+
+    if ci_method == "basic":
+        return (q(alpha/2), q(1 - alpha/2))
+    else:
+        raise ValueError(("ci_method must be 'basic'"
+                         " {method} was supplied".
+                         format(method=ci_method)))

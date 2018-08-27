@@ -21,9 +21,17 @@ def test_ecdf_pos_inf():
     assert f(np.inf) == 1.0
 
 
+def test_ecdf_simple_cases():
+    g = ecdf([0, 1, 2, 3])
+    assert g(0) == 0.25
+    assert g(1) == 0.5
+    assert g(2) == 0.75
+    assert g(3) == 1.0
+
+
 def test_mise_inv_domain():
     with pytest.raises(ValueError):
-        sup_norm(abs, abs, (1, 0))
+        mise(abs, abs, (1, 0))
 
 
 def test_mise_eq_func():
