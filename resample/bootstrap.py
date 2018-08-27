@@ -183,9 +183,6 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, boot_method="balanced",
                           " supplied".
                          format(method=boot_method)))
 
-    if ((f is not None) and (type(f(a)) not in ["int", "long", "float"])):
-        raise ValueError("f(a) must be scalar-valued")
-
     if (f is None) and boot:
         raise ValueError("f is required when boot is True")
 
