@@ -14,7 +14,7 @@ f = ecdf(x)
 def test_balanced_bootstrap_eq_orig():
     xbal = np.ravel(bootstrap(x, method="balanced"))
     g = ecdf(xbal)
-    assert sup_norm(f, g, (-10, 10), 100) == 0.0
+    assert sup_norm(f, g, (-10, 10)) == 0.0
 
 
 def test_jackknife_known_bias():
