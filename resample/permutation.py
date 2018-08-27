@@ -126,7 +126,7 @@ def wilcoxon(a1, a2, b=1000, dropna=True):
     if dropna:
         a1 = a1[~np.isnan(a1)]
         a2 = a2[~np.isnan(a2)]
-    
+
     n1 = len(a1)
     n2 = len(a2)
 

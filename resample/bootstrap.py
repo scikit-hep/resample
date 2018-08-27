@@ -25,7 +25,7 @@ def jackknife(a, f=None, method="ordinary"):
     X = np.reshape(np.delete(np.tile(a, n),
                              [i * n + i for i in range(n)]),
                    newshape=(n, n - 1))
-    
+
     if f is None:
         return X
     else:

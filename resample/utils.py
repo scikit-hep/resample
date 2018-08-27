@@ -80,6 +80,7 @@ def sup_norm(f, g, d, n=100):
         raise ValueError("Invalid domain,"
                          " lower bound cannot"
                          " exceed upper bound.")
+
     p = np.linspace(d[0], d[1], n, endpoint=False)
 
     return np.max([abs(f(i) - g(i)) for i in p])
