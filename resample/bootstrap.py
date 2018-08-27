@@ -143,3 +143,28 @@ def bootstrap(a, f=None, b=100, method="ordinary"):
         return X
     else:
         return np.asarray([f(x) for x in X])
+
+
+def bootstrap_ci():
+    """
+    Calculate bootstrap confidence intervals
+
+    Parameters
+    ----------
+    a : array-like
+        Original sample
+    f : callable
+        Function to be bootstrapped
+    b : int
+        Number of bootstrap samples
+    method : string
+        * 'basic'
+        * 'percentile'
+        * 'studentized'
+        * 'bias-corrected'
+        * 'accelerated'
+
+    Returns
+    -------
+    """
+    return None
