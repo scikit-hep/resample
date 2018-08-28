@@ -45,8 +45,9 @@ def eqf(a):
     a = np.sort(a)
     n = len(a)
 
-    inv = lambda x: (np.float(interp1d([(i + 1.0) / n 
-                              for i in range(n)], a)(x)))
+    def inv(x):
+        return np.float(interp1d([(i + 1.0) / n
+                        for i in range(n)], a)(x))
 
     def f(x):
         if not (0 <= x <= 1):
