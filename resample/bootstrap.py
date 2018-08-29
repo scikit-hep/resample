@@ -163,9 +163,6 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
     boot : boolean
         Whether or not to perform bootstrapping
         or use a as the bootstrap replicates
-    theta : float
-        Original estimate of theta (required if
-        ci_method is bca and boot is False)
 
     Returns
     -------
