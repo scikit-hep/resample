@@ -8,5 +8,5 @@ setup(name="resample",
       author_email="daniel.saxton@gmail.com",
       license="BSD-3-Clause",
       packages=["resample"],
-      install_requires=["numpy >= 1.9.0"],
+      install_requires=["numpy >= 1.14.0", "scipy >= 1.1.0"],
       zip_safe=False)
