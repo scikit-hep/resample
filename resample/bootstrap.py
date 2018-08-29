@@ -48,7 +48,7 @@ def jackknife_bias(a, f):
     y : float
         Jackknife estimate of bias
     """
-    return (len(a) - 1) * np.mean(jackknife(a, f, method=method) - f(a))
+    return (len(a) - 1) * np.mean(jackknife(a, f) - f(a))
 
 
 def jackknife_variance(a, f):
@@ -138,7 +138,7 @@ def bootstrap(a, f=None, b=100, method="balanced"):
 
 
 def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile", 
-                 boot_method="balanced", boot=True, theta=None):
+                 boot_method="balanced", boot=True):
     """
     Calculate bootstrap confidence intervals
 
