@@ -2,7 +2,7 @@ import numpy as np
 from resample.utils import eqf
 
 
-def jackknife(a, f=None, method="ordinary"):
+def jackknife(a, f=None):
     """
     Calcualte jackknife estimates for a given sample
     and estimator
@@ -13,9 +13,6 @@ def jackknife(a, f=None, method="ordinary"):
         Sample
     f : callable
         Estimator
-    method : string
-        * 'ordinary'
-        * 'infinitesimal'
 
     Returns
     -------
@@ -35,7 +32,7 @@ def jackknife(a, f=None, method="ordinary"):
                                    axis=1)
 
 
-def jackknife_bias(a, f, method="ordinary"):
+def jackknife_bias(a, f):
     """
     Calculate jackknife estimate of bias
 
@@ -45,9 +42,6 @@ def jackknife_bias(a, f, method="ordinary"):
         Sample
     f : callable
         Estimator
-    method : string
-        * 'ordinary'
-        * 'infinitesimal'
 
     Returns
     -------
@@ -57,7 +51,7 @@ def jackknife_bias(a, f, method="ordinary"):
     return (len(a) - 1) * np.mean(jackknife(a, f, method=method) - f(a))
 
 
-def jackknife_variance(a, f, method="ordinary"):
+def jackknife_variance(a, f):
     """
     Calculate jackknife estimate of variance
 
@@ -67,16 +61,13 @@ def jackknife_variance(a, f, method="ordinary"):
         Sample
     f : callable
         Estimator
-    method : string
-        * 'ordinary'
-        * 'infinitesimal'
 
     Returns
     -------
     y : float
         Jackknife estimate of variance
     """
-    x = jackknife(a, f, method=method)
+    x = jackknife(a, f)
 
     return (len(a) - 1) * np.mean((x - np.mean(x))**2)
 
@@ -84,7 +75,7 @@ def jackknife_variance(a, f, method="ordinary"):
 def empirical_influence(a, f):
     """
     Calculate the empirical influence function for a given
-    sample and estimator using the jackknife method.
+    sample and estimator using the jackknife method
 
     Parameters
     ----------
@@ -189,6 +180,7 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
                          format(method=boot_method)))
 
     if (f is None) and boot:
+        # f is needed to compute bootstrap replicates
         raise ValueError("f is required when boot is True")
 
     if boot:
@@ -202,27 +194,28 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
     if ci_method == "percentile":
         return (q(alpha/2), q(1 - alpha/2))
     elif ci_method == "bca":
-        # get theta
-        if theta is None:
-            # only replicates were provided but not theta
-            if boot is False:
-                return ValueError("theta must be specified"
-                                  " when ci_method is 'bca'"
-                                  " and boot is False")
-            else:
-                # calculate theta from original sample
-                theta = f(a)
+        if boot is False:
+            # boot must be True since we need original sample
+            raise ValueError("boot must be True when"
+                             " ci_method is 'bca'")
 
-        # bias correction term
-        z = norm.ppf(np.mean(boot_est <= theta))
-        # estimate acceleration
-        # skewness of fisher's score function
-        # log [g_theta(theta_hat)]
-        # evaluated at theta
-        # take one sixth
-        a = None
-        return None
+        theta = f(a)
+        # bias correction
+        z_naught = norm.ppf(np.mean(boot_est <= theta))
+        z_low = norm.ppf(alpha)
+        z_high = norm.ppf(1 - alpha)
+        # acceleration
+        jack_est = jackknife(a, f)
+        jack_mean = np.mean(jack_est)
+        acc = (np.sum((jack_mean - jack_est)**3) /
+               (6 * np.sum((jack_mean - jack_est)**2)**(3/2)))
+        p1 = (norm.cdf(z_naught + (z_naught + z_low) /
+                       (1 - acc * (z_naught + z_low))))
+        p2 = (norm.cdf(z_naught + (z_naught + z_high) /
+                       (1 - acc * (z_naught + z_high))))
+
+        return (q(p1), q(p2))
     else:
-        raise ValueError(("ci_method must be 'basic'"
-                          " {method} was supplied".
+        raise ValueError(("ci_method must be 'percentile'"
+                          " or 'bca', {method} was supplied".
                           format(method=ci_method)))
