@@ -146,8 +146,8 @@ def bootstrap(a, f=None, b=100, method="balanced"):
         return np.asarray([f(x) for x in X])
 
 
-def bootstrap_ci(a, f=None, p=0.95, b=100, boot_method="balanced",
-                 ci_method="basic", boot=True):
+def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile", 
+                 boot_method="balanced", boot=True, theta=None):
     """
     Calculate bootstrap confidence intervals
 
@@ -161,15 +161,20 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, boot_method="balanced",
         Confidence level
     b : int
         Number of bootstrap samples
+    ci_method : string
+        * 'percentile'
+        * 't'
+        * 'bca'
+        * 'abc'
     boot_method : string
         * 'ordinary'
         * 'balanced'
-    ci_method : string
-        * 'basic'
-        * 'percentile'
-        * 'studentized'
-        * 'bias-corrected'
-        * 'accelerated'
+    boot : boolean
+        Whether or not to perform bootstrapping
+        or use a as the bootstrap replicates
+    theta : float
+        Original estimate of theta (required if
+        ci_method is bca and boot is False)
 
     Returns
     -------
@@ -194,8 +199,29 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, boot_method="balanced",
     q = eqf(boot_est)
     alpha = 1 - p
 
-    if ci_method == "basic":
+    if ci_method == "percentile":
         return (q(alpha/2), q(1 - alpha/2))
+    elif ci_method == "bca":
+        # get theta
+        if theta is None:
+            # only replicates were provided but not theta
+            if boot is False:
+                return ValueError("theta must be specified"
+                                  " when ci_method is 'bca'"
+                                  " and boot is False")
+            else:
+                # calculate theta from original sample
+                theta = f(a)
+
+        # bias correction term
+        z = norm.ppf(np.mean(boot_est <= theta))
+        # estimate acceleration
+        # skewness of fisher's score function
+        # log [g_theta(theta_hat)]
+        # evaluated at theta
+        # take one sixth
+        a = None
+        return None
     else:
         raise ValueError(("ci_method must be 'basic'"
                           " {method} was supplied".

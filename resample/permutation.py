@@ -3,7 +3,7 @@ import numpy as np
 
 def ttest(a1, a2, b=100, dropna=True):
     """
-    Perform permutation two sample t-test.
+    Perform permutation two sample t-test
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ def ttest(a1, a2, b=100, dropna=True):
 
     def g(x, y):
         return ((np.mean(x) - np.mean(y)) /
-                np.sqrt(np.var(x) / len(x) + np.var(y) / len(y)))
+                np.sqrt(np.var(x, ddof=1) / len(x) + np.var(y, ddof=1) / len(y)))
 
     t = g(a1, a2)
 
@@ -52,7 +52,7 @@ def ttest(a1, a2, b=100, dropna=True):
 
 def anova(*args, b=100, dropna=True):
     """
-    Perform permutation one way analysis of variance.
+    Perform permutation one way analysis of variance
 
     Parameters
     ----------
@@ -101,7 +101,7 @@ def anova(*args, b=100, dropna=True):
 
 def wilcoxon(a1, a2, b=100, dropna=True):
     """
-    Perform permutation Wilcoxon rank sum test.
+    Perform permutation Wilcoxon rank sum test
 
     Parameters
     ----------
