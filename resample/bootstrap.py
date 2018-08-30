@@ -1,5 +1,6 @@
 import numpy as np
 from resample.utils import eqf
+from scipy.stats import norm
 
 
 def jackknife(a, f=None):
