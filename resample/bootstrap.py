@@ -219,7 +219,7 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
                              " ci_method is 't'")
 
         theta = f(a)
-        theta_std = np.mean(boot_est)
+        theta_std = np.std(boot_est)
 
         # quantile function of studentized bootstrap estimates
         tq = eqf((boot_est - theta) / theta_std)
