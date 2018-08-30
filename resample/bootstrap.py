@@ -154,8 +154,8 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
         Number of bootstrap samples
     ci_method : string
         * 'percentile'
-        * 't'
         * 'bca'
+        * 't'
         * 'abc'
     boot_method : string
         * 'ordinary'
@@ -212,7 +212,25 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
                        (1 - acc * (z_naught + z_high))))
 
         return (q(p1), q(p2))
+    elif ci_method == "t":
+        if boot is False:
+            # boot must be True since we need original sample
+            raise ValueError("boot must be True when"
+                             " ci_method is 't'")
+
+        theta = f(a)
+        theta_std = np.mean(boot_est)
+
+        # quantile function of studentized bootstrap estimates
+        tq = eqf((boot_est - theta) / theta_std)
+        t1 = tq(1 - alpha)
+        t2 = tq(alpha)
+
+        return (theta - theta_std * t1, theta + theta_std * t2)
+    elif ci_method == "abc":
+        return None
     else:
         raise ValueError(("ci_method must be 'percentile'"
-                          " or 'bca', {method} was supplied".
+                          " 'bca', 't', or 'abc', {method}"
+                          " was supplied".
                           format(method=ci_method)))
