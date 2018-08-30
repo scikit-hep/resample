@@ -26,9 +26,7 @@ def jackknife(a, f=None):
     if f is None:
         return X
     else:
-        return np.apply_along_axis(func1d=f,
-                                   arr=X,
-                                   axis=1)
+        return np.asarray([f(x) for x in X])
 
 
 def jackknife_bias(a, f):
@@ -136,8 +134,8 @@ def bootstrap(a, f=None, b=100, method="balanced"):
         return np.asarray([f(x) for x in X])
 
 
-def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile", 
-                 boot_method="balanced", boot=True):
+def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile", 
+                 boot_method="balanced"):
     """
     Calculate bootstrap confidence intervals
 
@@ -159,9 +157,6 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
     boot_method : string
         * 'ordinary'
         * 'balanced'
-    boot : boolean
-        Whether or not to perform bootstrapping
-        or use a as the bootstrap replicates
 
     Returns
     -------
@@ -175,26 +170,13 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
                           " supplied".
                          format(method=boot_method)))
 
-    if (f is None) and boot:
-        # f is needed to compute bootstrap replicates
-        raise ValueError("f is required when boot is True")
-
-    if boot:
-        boot_est = bootstrap(a=a, f=f, b=b, method=boot_method)
-    else:
-        boot_est = a
-
+    boot_est = bootstrap(a=a, f=f, b=b, method=boot_method)
     q = eqf(boot_est)
     alpha = 1 - p
 
     if ci_method == "percentile":
         return (q(alpha/2), q(1 - alpha/2))
     elif ci_method == "bca":
-        if boot is False:
-            # boot must be True since we need original sample
-            raise ValueError("boot must be True when"
-                             " ci_method is 'bca'")
-
         theta = f(a)
         # bias correction
         z_naught = norm.ppf(np.mean(boot_est <= theta))
@@ -212,14 +194,8 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
 
         return (q(p1), q(p2))
     elif ci_method == "t":
-        if boot is False:
-            # boot must be True since we need original sample
-            raise ValueError("boot must be True when"
-                             " ci_method is 't'")
-
         theta = f(a)
         theta_std = np.std(boot_est)
-
         # quantile function of studentized bootstrap estimates
         tq = eqf((boot_est - theta) / theta_std)
         t1 = tq(1 - alpha)
