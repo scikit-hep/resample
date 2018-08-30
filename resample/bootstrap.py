@@ -227,7 +227,7 @@ def bootstrap_ci(a, f=None, p=0.95, b=100, ci_method="percentile",
         t1 = tq(1 - alpha)
         t2 = tq(alpha)
 
-        return (theta - theta_std * t1, theta + theta_std * t2)
+        return (theta - theta_std * t1, theta - theta_std * t2)
     elif ci_method == "abc":
         return None
     else:
