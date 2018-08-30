@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def ttest(a1, a2, b=100, dropna=True):
+def ttest(a1, a2, b=100, dropna=True, random_state=None):
     """
     Perform permutation two sample t-test
 
@@ -22,6 +22,8 @@ def ttest(a1, a2, b=100, dropna=True):
         t statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
+    np.random.seed(random_state)
+
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
 
@@ -50,7 +52,7 @@ def ttest(a1, a2, b=100, dropna=True):
     return {"t": t, "prop": np.mean(permute_t <= t)}
 
 
-def anova(*args, b=100, dropna=True):
+def anova(*args, b=100, dropna=True, random_state=None):
     """
     Perform permutation one way analysis of variance
 
@@ -69,6 +71,8 @@ def anova(*args, b=100, dropna=True):
         F statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
+    np.random.seed(random_state)
+
     args = [np.asarray(a) for a in args]
 
     if dropna:
@@ -99,7 +103,7 @@ def anova(*args, b=100, dropna=True):
     return {"f": f, "prop": np.mean(permute_f <= f)}
 
 
-def wilcoxon(a1, a2, b=100, dropna=True):
+def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
     """
     Perform permutation Wilcoxon rank sum test
 
@@ -120,6 +124,8 @@ def wilcoxon(a1, a2, b=100, dropna=True):
         w statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
+    np.random.seed(random_state)
+
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
 

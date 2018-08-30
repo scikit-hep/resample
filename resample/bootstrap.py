@@ -90,7 +90,8 @@ def empirical_influence(a, f):
     return (len(a) - 1) * (f(a) - jackknife(a, f))
 
 
-def bootstrap(a, f=None, b=100, method="balanced"):
+def bootstrap(a, f=None, b=100, method="balanced",
+              random_state=None):
     """
     Calculate function values from bootstrap samples or
     optionally return bootstrap samples themselves
@@ -113,6 +114,7 @@ def bootstrap(a, f=None, b=100, method="balanced"):
         Function applied to each bootstrap sample
         or bootstrap samples if f is None
     """
+    np.random.seed(random_state)
     a = np.asarray(a)
 
     if method == "ordinary":
@@ -136,7 +138,7 @@ def bootstrap(a, f=None, b=100, method="balanced"):
 
 
 def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile", 
-                 boot_method="balanced"):
+                 boot_method="balanced", random_state=None):
     """
     Calculate bootstrap confidence intervals
 
@@ -170,6 +172,8 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
                           " or 'balanced', {method} was"
                           " supplied".
                          format(method=boot_method)))
+
+    np.random.seed(random_state)
 
     boot_est = bootstrap(a=a, f=f, b=b, method=boot_method)
     q = eqf(boot_est)
