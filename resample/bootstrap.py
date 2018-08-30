@@ -5,8 +5,9 @@ from scipy.stats import norm
 
 def jackknife(a, f=None):
     """
-    Calcualte jackknife estimates for a given sample
-    and estimator
+    Calculate jackknife estimates for a given sample
+    and estimator, return leave-one-out samples
+    if estimator is not specified
 
     Parameters
     ----------
