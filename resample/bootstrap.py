@@ -20,10 +20,8 @@ def jackknife(a, f=None):
     y | X : np.array
         Jackknife estimates
     """
-    n = len(a)
-    X = np.reshape(np.delete(np.tile(a, n),
-                             [i * n + i for i in range(n)]),
-                   newshape=(n, n - 1))
+    arr = np.asarray([a] * len(a))
+    X = np.asarray([np.delete(x, i, 0) for i, x in enumerate(arr)])
 
     if f is None:
         return X
