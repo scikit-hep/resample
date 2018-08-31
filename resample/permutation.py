@@ -17,6 +17,8 @@ def ttest(a1, a2, b=100, dropna=True, random_state=None):
         Number of permutations
     dropna : boolean
         Whether or not to drop np.nan
+    random_state : int or None
+        random number seed
 
     Returns
     -------
@@ -67,6 +69,8 @@ def anova(*args, b=100, dropna=True, random_state=None):
         Number of permutations
     dropna : boolean
         Whether or not to drop np.nan
+    random_state : int or None
+        random number seed
 
     Returns
     -------
@@ -120,6 +124,8 @@ def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
         Number of permutations
     dropna : boolean
         Whether or not to drop np.nan
+    random_state : int or None
+        random number seed
 
     Returns
     -------
@@ -168,6 +174,8 @@ def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
         Number of permutations
     dropna : boolean
         Whether or not to drop np.nan
+    random_state : int or None
+        random number seed
 
     Returns
     -------
@@ -206,3 +214,60 @@ def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
                                     axis=1)
 
     return {"h": h, "prop": np.mean(permute_h <= h)}
+
+
+def corr_test(a, method="pearson", b=100, dropna=True, random_state=None):
+    """
+    Perform permutation correlation test
+
+    Parameters
+    ----------
+    a : array-like
+        First sample
+    method : string
+        * 'pearson'
+        * 'spearman'
+    b : int
+        Number of permutations
+    dropna : boolean
+        Whether or not to drop np.nan
+    random_state : int or None
+        random number seed
+
+    Returns
+    -------
+    {'corr', 'prop'} : {float, float}
+        t statistic as well as proportion of permutation
+        distribution less than or equal to that statistic
+    """
+    np.random.seed(random_state)
+    
+    a = np.asarray(a)
+
+    if len(a.shape) != 2:
+        raise ValueError("a must be two-dimensional")
+
+    if dropna:
+        a = a[np.amax(~np.isnan(a), axis=1)]
+
+    if method == "pearson":
+        X = np.asarray([a] * b)
+    elif method == "spearman":
+        a = np.apply_along_axis(func1d=rankdata,
+                                arr=a,
+                                axis=0)
+        X = np.asarray([a] * b)
+    else:
+        raise ValueError("method must be either 'pearson'"
+                         " , or 'spearman', '{method}' was"
+                         " supplied".format(method=method))
+
+    def corr(x, y):
+        return np.corrcoef(x, y)[0,1]
+
+    c = corr(a[:,0], a[:,1])
+
+    permute_c = (np.asarray([corr(np.random.permutation(x[:,0]), x[:,1])
+                             for x in X]))
+
+    return {"c": c, "prop": np.mean(permute_c <= c)}
