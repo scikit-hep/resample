@@ -4,7 +4,8 @@ from scipy.stats import rankdata
 
 def ttest(a1, a2, b=100, dropna=True, random_state=None):
     """
-    Perform permutation two sample t-test
+    Perform permutation two sample t-test (the mean of a2
+    is subtracted from a1)
 
     Parameters
     ----------
@@ -34,7 +35,8 @@ def ttest(a1, a2, b=100, dropna=True, random_state=None):
 
     def g(x, y):
         return ((np.mean(x) - np.mean(y)) /
-                np.sqrt(np.var(x, ddof=1) / len(x) + np.var(y, ddof=1) / len(y)))
+                np.sqrt(np.var(x, ddof=1) /
+                len(x) + np.var(y, ddof=1) / len(y)))
 
     t = g(a1, a2)
 
@@ -152,3 +154,55 @@ def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
                                     axis=1)
 
     return {"w": w, "prop": np.mean(permute_w <= w)}
+
+
+def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
+    """
+    Perform permutation Kruskal-Wallis test
+
+    Parameters
+    ----------
+    args : sequence of array-like
+        Samples
+    b : int
+        Number of permutations
+    dropna : boolean
+        Whether or not to drop np.nan
+
+    Returns
+    -------
+    {'h', 'prop'} : {float, float}
+        H statistic as well as proportion of permutation
+        distribution less than or equal to that statistic
+    """
+    np.random.seed(random_state)
+
+    args = [np.asarray(a) for a in args]
+
+    if dropna:
+        args = [a[~np.isnan(a)] for a in args]
+
+    t = len(args)
+    ns = [len(a) for a in args]
+    n = np.sum(ns)
+    pos = np.append(0, np.cumsum(ns))
+    r_arr = rankdata(np.concatenate(args))
+    ri_means = [np.mean(r_arr[pos[i]:pos[i+1]]) for i in range(t)]
+    r_mean = np.mean(r_arr)
+
+    def g(a):
+        num = np.sum([ns[i] * (ri_means[i] - r_mean)**2 for i in range(t)])
+        den = (np.sum([np.sum((r_arr[pos[i]:pos[i+1]] -
+               r_mean)**2) for i in range(t)]))
+        return (n - 1) * num / den
+
+    X = np.reshape(np.tile(r_arr, b), newshape=(b, n))
+
+    h = g(r_arr)
+
+    permute_h = np.apply_along_axis(func1d=(lambda x:
+                                            g(np.random.permutation(x))),
+                                    arr=X,
+                                    axis=1)
+
+    return {"h": h, "prop": np.mean(permute_h <= h)}
