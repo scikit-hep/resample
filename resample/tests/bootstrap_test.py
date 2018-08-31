@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 from resample.utils import ecdf, sup_norm
 from resample.bootstrap import (bootstrap,
@@ -9,7 +8,6 @@ np.random.seed(2357)
 
 x = np.random.randn(100)
 f = ecdf(x)
-
 
 
 def test_balanced_bootstrap_eq_orig():

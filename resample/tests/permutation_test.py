@@ -1,8 +1,6 @@
-import pytest
 import numpy as np
 from resample.permutation import (ttest,
-                                  anova,
-                                  wilcoxon)
+                                  anova)
 
 np.random.seed(2357)
 

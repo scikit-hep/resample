@@ -183,7 +183,7 @@ def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
     Returns
     -------
     {'h', 'prop'} : {float, float}
-        H statistic as well as proportion of permutation
+        h statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
     np.random.seed(random_state)
@@ -240,11 +240,11 @@ def corr_test(a, method="pearson", b=100, dropna=True, random_state=None):
     Returns
     -------
     {'corr', 'prop'} : {float, float}
-        t statistic as well as proportion of permutation
+        correlation as well as proportion of permutation
         distribution less than or equal to that statistic
     """
     np.random.seed(random_state)
-    
+
     a = np.asarray(a)
 
     if len(a.shape) != 2:
@@ -268,13 +268,13 @@ def corr_test(a, method="pearson", b=100, dropna=True, random_state=None):
 
     def corr(x, y):
         if method in ["pearson", "spearman"]:
-            return np.corrcoef(x, y)[0,1]
+            return np.corrcoef(x, y)[0, 1]
         else:
             return distcorr(x, y)
 
-    c = corr(a[:,0], a[:,1])
+    c = corr(a[:, 0], a[:, 1])
 
-    permute_c = (np.asarray([corr(np.random.permutation(x[:,0]), x[:,1])
+    permute_c = (np.asarray([corr(np.random.permutation(x[:, 0]), x[:, 1])
                              for x in X]))
 
     return {"c": c, "prop": np.mean(permute_c <= c)}
