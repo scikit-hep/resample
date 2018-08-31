@@ -2,6 +2,7 @@ from __future__ import division
 
 import numpy as np
 from scipy.stats import rankdata
+from resample.utils import distcorr
 
 
 def ttest(a1, a2, b=100, dropna=True, random_state=None):
@@ -252,7 +253,7 @@ def corr_test(a, method="pearson", b=100, dropna=True, random_state=None):
     if dropna:
         a = a[np.amax(~np.isnan(a), axis=1)]
 
-    if method == "pearson":
+    if method in ["pearson", "distance"]:
         X = np.asarray([a] * b)
     elif method == "spearman":
         a = np.apply_along_axis(func1d=rankdata,
@@ -261,11 +262,15 @@ def corr_test(a, method="pearson", b=100, dropna=True, random_state=None):
         X = np.asarray([a] * b)
     else:
         raise ValueError("method must be either 'pearson'"
-                         " , or 'spearman', '{method}' was"
-                         " supplied".format(method=method))
+                         " , 'spearman', or 'distance',"
+                         " '{method}' was supplied".
+                         format(method=method))
 
     def corr(x, y):
-        return np.corrcoef(x, y)[0,1]
+        if method in ["pearson", "spearman"]:
+            return np.corrcoef(x, y)[0,1]
+        else:
+            return distcorr(x, y)
 
     c = corr(a[:,0], a[:,1])
 

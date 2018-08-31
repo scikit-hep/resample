@@ -126,3 +126,29 @@ def sup_norm(f, g, d, n=100):
     p = np.linspace(d[0], d[1], n, endpoint=False)
 
     return np.max([abs(f(i) - g(i)) for i in p])
+
+
+def distcorr(a1, a2):
+    n = len(a1)
+    a = np.zeros(shape=(n, n))
+    b = np.zeros(shape=(n, n))
+
+    for i in range(n):
+        for j in range(i+1, n):
+            a[i, j] = abs(a1[i] - a1[j])
+            b[i, j] = abs(a2[i] - a2[j])
+
+    a = a + a.T
+    b = b + b.T
+
+    a_bar = np.vstack([np.nanmean(a, axis=0)] * n)
+    b_bar = np.vstack([np.nanmean(b, axis=0)] * n)
+
+    A = a - a_bar - a_bar.T + np.full(shape=(n, n), fill_value=a_bar.mean())
+    B = b - b_bar - b_bar.T + np.full(shape=(n, n), fill_value=b_bar.mean())
+
+    cov_ab = np.sqrt(np.nansum(A * B)) / n
+    std_a = np.sqrt(np.sqrt(np.nansum(A**2)) / n)
+    std_b = np.sqrt(np.sqrt(np.nansum(B**2)) / n)
+
+    return cov_ab / std_a / std_b
