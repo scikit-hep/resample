@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import rankdata
 
 
 def ttest(a1, a2, b=100, dropna=True, random_state=None):
@@ -137,7 +138,7 @@ def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
     n2 = len(a2)
 
     a = np.append(a1, a2)
-    a = np.argsort(np.argsort(a))
+    a = rankdata(a)
 
     X = np.apply_along_axis(func1d=np.random.permutation,
                             arr=np.reshape(np.tile(a, b),
