@@ -259,8 +259,7 @@ def corr_test(a1, a2, method="pearson", b=100, dropna=True,
         raise ValueError("a1 and a2 must have have"
                          " the same length")
 
-    a = np.reshape(np.append(a1, a2),
-                   newshape=(n1, 2))
+    a = np.column_stack((a1, a2))
 
     if dropna:
         a = a[np.amax(~np.isnan(a), axis=1)]
