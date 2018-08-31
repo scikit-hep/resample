@@ -219,17 +219,21 @@ def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
     return {"h": h, "prop": np.mean(permute_h <= h)}
 
 
-def corr_test(a, method="pearson", b=100, dropna=True, random_state=None):
+def corr_test(a1, a2, method="pearson", b=100, dropna=True,
+              random_state=None):
     """
     Perform permutation correlation test
 
     Parameters
     ----------
-    a : array-like
+    a1 : array-like
         First sample
+    a2 : array-like
+        Second sample
     method : string
         * 'pearson'
         * 'spearman'
+        * 'distance'
     b : int
         Number of permutations
     dropna : boolean
@@ -245,10 +249,18 @@ def corr_test(a, method="pearson", b=100, dropna=True, random_state=None):
     """
     np.random.seed(random_state)
 
-    a = np.asarray(a)
+    a1 = np.asarray(a1)
+    a2 = np.asarray(a2)
 
-    if len(a.shape) != 2:
-        raise ValueError("a must be two-dimensional")
+    n1 = len(a1)
+    n2 = len(a2)
+
+    if n1 != n2:
+        raise ValueError("a1 and a2 must have have"
+                         " the same length")
+
+    a = np.reshape(np.append(a1, a2),
+                   newshape=(n1, 2))
 
     if dropna:
         a = a[np.amax(~np.isnan(a), axis=1)]
