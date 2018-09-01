@@ -1,5 +1,5 @@
 *.swp
-*.ipynb
+*checkpoints*
 build
 dist
 resample.egg-info
