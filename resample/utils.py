@@ -129,7 +129,32 @@ def sup_norm(f, g, d, n=100):
 
 
 def distcorr(a1, a2):
+    """
+    Calculate distance correlation between
+    two samples
+
+    Parameters
+    ----------
+    a1 : array-like
+        First sample
+    a2 : array-like
+        Second sample
+
+    Returns
+    -------
+    y : float
+        Distance correlation
+    """
     n = len(a1)
+    n2 = len(a1)
+    
+    if n != n2:
+        raise ValueError("Samples must have equal"
+                         " length")
+
+    a1 = np.asarray(a1)
+    a2 = np.asarray(a2)
+
     a = np.zeros(shape=(n, n))
     b = np.zeros(shape=(n, n))
 
