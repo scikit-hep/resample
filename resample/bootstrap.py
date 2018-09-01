@@ -158,7 +158,6 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
         * 'percentile'
         * 'bca'
         * 't'
-        * 'abc'
     boot_method : string
         * 'ordinary'
         * 'balanced'
@@ -209,10 +208,8 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
         t2 = tq(alpha)
 
         return (theta - theta_std * t1, theta - theta_std * t2)
-    elif ci_method == "abc":
-        return None
     else:
         raise ValueError(("ci_method must be 'percentile'"
-                          " 'bca', 't', or 'abc', {method}"
+                          " 'bca', or 't', {method}"
                           " was supplied".
                           format(method=ci_method)))
