@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(name="resample",
-      version="0.1",
-      description="Tools for randomization-based inference in Python.",
+      version="0.1.1",
+      description="Tools for randomization-based inference in Python",
       url="http://github.com/dsaxton/resample",
       author="Daniel Saxton",
       author_email="daniel.saxton@gmail.com",
