@@ -174,9 +174,8 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
                           " supplied".
                          format(method=boot_method)))
 
-    np.random.seed(random_state)
-
-    boot_est = bootstrap(a=a, f=f, b=b, method=boot_method)
+    boot_est = bootstrap(a=a, f=f, b=b, method=boot_method,
+                         random_state=random_state)
     q = eqf(boot_est)
     alpha = 1 - p
 
