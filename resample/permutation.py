@@ -2,7 +2,7 @@ from __future__ import division
 
 import numpy as np
 from scipy.stats import rankdata
-from resample.utils import distcorr
+from resample.utils import ecdf, distcorr
 
 
 def ttest(a1, a2, b=100, dropna=True, random_state=None):
@@ -289,3 +289,64 @@ def corr_test(a1, a2, method="pearson", b=100, dropna=True,
                              for x in X]))
 
     return {"c": c, "prop": np.mean(permute_c <= c)}
+
+
+def ks_test(a1, a2, b=100, dropna=True, random_state=None):
+    """
+    Perform permutation two sample K-S test
+
+    Parameters
+    ----------
+    a1 : array-like
+        First sample
+    a2 : array-like
+        Second sample
+    b : int
+        Number of permutations
+    dropna : boolean
+        Whether or not to drop np.nan
+    random_state : int or None
+        random number seed
+
+    Returns
+    -------
+    {'d', 'prop'} : {float, float}
+        D statistic as well as proportion of permutation
+        distribution less than or equal to that statistic
+    """
+    np.random.seed(random_state)
+
+    a1 = np.asarray(a1)
+    a2 = np.asarray(a2)
+
+    if dropna:
+        a1 = a1[~np.isnan(a1)]
+        a2 = a2[~np.isnan(a2)]
+
+    n1 = len(a1)
+    n2 = len(a2)
+    n = n1 + n2
+
+    f1 = ecdf(a1)
+    f2 = ecdf(a2)
+    a = np.sort(np.append(a1, a2))
+    d = np.max([abs(f1(v) - f2(v)) for v in a])
+
+    def h(arr, i, m):
+        return (np.searchsorted(arr, i, side="right",
+                                sorter=None) / m)
+
+    def g(s):
+        mask = np.ones(n, dtype=np.bool)
+        mask[np.random.choice(range(n), size=n2, replace=False)] = False
+
+        return (np.max([abs(h(s[mask], i, n1) - h(s[~mask], i, n2))
+                        for i in s]))
+
+    X = np.reshape(np.tile(a, b), newshape=(b, n))
+
+    permute_d = np.apply_along_axis(func1d=g,
+                                    arr=X,
+                                    axis=1)
+
+    return {"d": d, "prop": np.mean(permute_d <= d)}
