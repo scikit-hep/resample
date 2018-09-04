@@ -28,6 +28,12 @@ def test_bootstrap_eq_along_axis():
     assert np.all([np.array_equal(arr, a) for a in boot])
 
 
+def test_bootstrap_full_strata():
+    arr = np.random.randn(100)
+    boot = bootstrap(arr, b=10, strata=list(range(100)))
+    assert np.all([np.array_equal(arr, a) for a in boot])
+
+
 def test_jackknife_known_bias():
     est = jackknife_bias(x, np.mean)
     assert np.isclose(est, 0)
