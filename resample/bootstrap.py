@@ -93,7 +93,7 @@ def empirical_influence(a, f):
 
 
 def bootstrap(a, f=None, b=100, method="balanced",
-              random_state=None):
+              strata=None, random_state=None):
     """
     Calculate function values from bootstrap samples or
     optionally return bootstrap samples themselves
@@ -119,19 +119,32 @@ def bootstrap(a, f=None, b=100, method="balanced",
     np.random.seed(random_state)
     a = np.asarray(a)
 
-    if method == "ordinary":
-        X = np.reshape(a[np.random.choice(range(a.shape[0]),
-                                          a.shape[0] * b)],
-                       newshape=(b,) + a.shape)
-    elif method == "balanced":
-        r = np.reshape([a] * b,
-                       newshape=(b * a.shape[0],) + a.shape[1:])
-        X = np.reshape(r[np.random.permutation(range(r.shape[0]))],
-                       newshape=(b,) + a.shape)
+    if strata is not None:
+        if len(strata) != len(a):
+            raise ValueError("a and strata must have"
+                             " the same length")
+        masks = [strata == x for x in np.unique(strata)]
+        boot_strata = [bootstrap(a=a[m],
+                                 f=None,
+                                 b=b,
+                                 method=method,
+                                 strata=None,
+                                 random_state=random_state) for m in masks]
+        X = np.concatenate(boot_strata, axis=1)
     else:
-        raise ValueError("method must be either 'ordinary'"
-                         " , or 'balanced', '{method}' was"
-                         " supplied".format(method=method))
+        if method == "ordinary":
+            X = np.reshape(a[np.random.choice(range(a.shape[0]),
+                                              a.shape[0] * b)],
+                           newshape=(b,) + a.shape)
+        elif method == "balanced":
+            r = np.reshape([a] * b,
+                           newshape=(b * a.shape[0],) + a.shape[1:])
+            X = np.reshape(r[np.random.permutation(range(r.shape[0]))],
+                           newshape=(b,) + a.shape)
+        else:
+            raise ValueError("method must be either 'ordinary'"
+                             " , or 'balanced', '{method}' was"
+                             " supplied".format(method=method))
 
     if f is None:
         return X
@@ -140,7 +153,8 @@ def bootstrap(a, f=None, b=100, method="balanced",
 
 
 def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
-                 boot_method="balanced", random_state=None):
+                 boot_method="balanced", strata=None,
+                 random_state=None):
     """
     Calculate bootstrap confidence intervals
 
@@ -175,7 +189,7 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
                          format(method=boot_method)))
 
     boot_est = bootstrap(a=a, f=f, b=b, method=boot_method,
-                         random_state=random_state)
+                         strata=strata, random_state=random_state)
     q = eqf(boot_est)
     alpha = 1 - p
 
