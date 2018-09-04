@@ -124,6 +124,7 @@ def bootstrap(a, f=None, b=100, method="balanced",
     a = np.asarray(a)
 
     if strata is not None:
+        strata = np.asarray(strata)
         if len(strata) != len(a):
             raise ValueError("a and strata must have"
                              " the same length")

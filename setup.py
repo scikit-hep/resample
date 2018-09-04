@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name="resample",
-      version="0.1.1",
+      version="0.1.2",
       description="Tools for randomization-based inference in Python",
       url="http://github.com/dsaxton/resample",
       author="Daniel Saxton",
