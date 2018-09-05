@@ -147,7 +147,7 @@ def distcorr(a1, a2):
     """
     n = len(a1)
     n2 = len(a1)
-    
+
     if n != n2:
         raise ValueError("Samples must have equal"
                          " length")
