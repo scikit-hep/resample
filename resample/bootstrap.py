@@ -2,7 +2,12 @@ from __future__ import division
 
 import numpy as np
 from resample.utils import eqf
-from scipy.stats import norm
+from scipy.stats import (norm, laplace,
+                         gamma, uniform,
+                         f as F, t, beta,
+                         lognorm, pareto,
+                         logistic, invgauss,
+                         poisson)
 
 
 def jackknife(a, f=None):
@@ -157,9 +162,143 @@ def bootstrap(a, f=None, b=100, method="balanced",
         return np.asarray([f(x) for x in X])
 
 
+def param_bootstrap(a, f=None, b=100, family="gaussian",
+                    random_state=None):
+    """
+    Calculate function values from parametric bootstrap
+    samples or optionally return bootstrap samples themselves
+
+    Parameters
+    ----------
+    a : array-like
+        Original sample
+    f : callable or None
+        Function to be bootstrapped
+    b : int
+        Number of bootstrap samples
+    family : string
+        * 'gaussian'
+        * 't'
+        * 'laplace'
+        * 'logistic'
+        * 'F'
+        * 'gamma'
+        * 'log-normal'
+        * 'inverse-gaussian'
+        * 'pareto'
+        * 'beta'
+        * 'uniform'
+        * 'poisson'
+    random_state : int or None
+        Random number seed
+
+    Returns
+    -------
+    y | X : np.array
+        Function applied to each bootstrap sample
+        or bootstrap samples if f is None
+    """
+    a = np.asarray(a)
+
+    if len(a.shape) > 1:
+        raise ValueError("a must be one-dimensional")
+
+    n = len(a)
+
+    if family == "gaussian":
+        theta = norm.fit(a)
+        arr = norm.rvs(size=n*b,
+                       loc=theta[0],
+                       scale=theta[1],
+                       random_state=random_state)
+    elif family == "t":
+        theta = t.fit(a)
+        arr = t.rvs(size=n*b,
+                    df=theta[0],
+                    loc=theta[1],
+                    scale=theta[2],
+                    random_state=random_state)
+    elif family == "laplace":
+        theta = laplace.fit(a)
+        arr = laplace.rvs(size=n*b,
+                          loc=theta[0],
+                          scale=theta[1],
+                          random_state=random_state)
+    elif family == "logistic":
+        theta = logistic.fit(a)
+        arr = logistic.rvs(size=n*b,
+                           loc=theta[0],
+                           scale=theta[1],
+                           random_state=random_state)
+    elif family == "F":
+        theta = F.fit(a)
+        arr = F.rvs(size=n*b,
+                    dfn=theta[0],
+                    dfd=theta[1],
+                    loc=theta[2],
+                    scale=theta[3],
+                    random_state=random_state)
+    elif family == "gamma":
+        theta = gamma.fit(a)
+        arr = gamma.rvs(size=n*b,
+                        a=theta[0],
+                        loc=theta[1],
+                        scale=theta[2],
+                        random_state=random_state)
+    elif family == "log-normal":
+        theta = lognorm.fit(a)
+        arr = lognorm.rvs(size=n*b,
+                          s=theta[0],
+                          loc=theta[1],
+                          scale=theta[2],
+                          random_state=random_state)
+    elif family == "inverse-gaussian":
+        theta = invgauss.fit(a)
+        arr = invgauss.rvs(size=n*b,
+                           mu=theta[0],
+                           loc=theta[1],
+                           scale=theta[2],
+                           random_state=random_state)
+    elif family == "pareto":
+        theta = pareto.fit(a)
+        arr = pareto.rvs(size=n*b,
+                         b=theta[0],
+                         loc=theta[1],
+                         scale=theta[2],
+                         random_state=random_state)
+    elif family == "beta":
+        theta = beta.fit(a)
+        arr = beta.rvs(size=n*b,
+                       a=theta[0],
+                       b=theta[1],
+                       loc=theta[2],
+                       scale=theta[3],
+                       random_state=random_state)
+    elif family == "uniform":
+        theta = uniform.fit(a)
+        arr = uniform.rvs(size=n*b,
+                          loc=theta[0],
+                          scale=theta[1],
+                          random_state=random_state)
+    elif family == "poisson":
+        theta = np.mean(a)
+        arr = poisson.rvs(size=n*b,
+                          mu=theta
+                          random_state=random_state)
+    else:
+        raise ValueError("Invalid family")
+
+    X = np.reshape(arr, newshape=(b, n))
+
+    if f is None:
+        return X
+    else:
+        return np.asarray([f(x) for x in X])
+
+
 def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
-                 boot_method="balanced", strata=None,
-                 random_state=None):
+                 boot_method="balanced", family=None,
+                 strata=None, random_state=None):
     """
     Calculate bootstrap confidence intervals
 
@@ -180,6 +319,20 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
     boot_method : string
         * 'ordinary'
         * 'balanced'
+        * 'parametric'
+    family : string (only used when boot_method is parametric)
+        * 'gaussian'
+        * 't'
+        * 'laplace'
+        * 'logistic'
+        * 'F'
+        * 'gamma'
+        * 'log-normal'
+        * 'inverse-gaussian'
+        * 'pareto'
+        * 'beta'
+        * 'uniform'
+        * 'poisson'
     strata : array-like or None
         Stratification labels
     random_state : int or None
@@ -187,18 +340,25 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
 
     Returns
     -------
+    (l, u) : tuple
+        Upper and lower confidence limits
     """
     if not (0 < p < 1):
         raise ValueError("p must be between zero and one")
 
-    if boot_method not in ["ordinary", "balanced"]:
+    if boot_method not in ["ordinary", "balanced", "parametric"]:
         raise ValueError(("boot_method must be 'ordinary'"
-                          " or 'balanced', {method} was"
+                          " 'balanced', or 'parametric', {method} was"
                           " supplied".
                          format(method=boot_method)))
 
-    boot_est = bootstrap(a=a, f=f, b=b, method=boot_method,
-                         strata=strata, random_state=random_state)
+    if boot_method == "parametric":
+        boot_est = param_bootstrap(a=a, f=f, b=b, family=family,
+                                   random_state=random_state)
+    else:
+        boot_est = bootstrap(a=a, f=f, b=b, method=boot_method,
+                             strata=strata, random_state=random_state)
+
     q = eqf(boot_est)
     alpha = 1 - p
 
