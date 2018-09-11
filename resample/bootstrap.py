@@ -283,7 +283,7 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
     elif family == "poisson":
         theta = np.mean(a)
         arr = poisson.rvs(size=n*b,
-                          mu=theta
+                          mu=theta,
                           random_state=random_state)
     else:
         raise ValueError("Invalid family")
