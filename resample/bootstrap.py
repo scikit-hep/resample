@@ -1,13 +1,11 @@
 from __future__ import division
-
 import numpy as np
 from resample.utils import eqf
 from scipy.stats import (norm, laplace,
-                         gamma, uniform,
-                         f as F, t, beta,
-                         lognorm, pareto,
-                         logistic, invgauss,
-                         poisson)
+                         gamma, f as F,
+                         t, beta, lognorm,
+                         pareto, logistic,
+                         invgauss, poisson)
 
 
 def jackknife(a, f=None):
@@ -187,7 +185,6 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
         * 'inverse-gaussian'
         * 'pareto'
         * 'beta'
-        * 'uniform'
         * 'poisson'
     random_state : int or None
         Random number seed
@@ -212,7 +209,7 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
                        scale=theta[1],
                        random_state=random_state)
     elif family == "t":
-        theta = t.fit(a)
+        theta = t.fit(a, fscale=1)
         arr = t.rvs(size=n*b,
                     df=theta[0],
                     loc=theta[1],
@@ -231,7 +228,7 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
                            scale=theta[1],
                            random_state=random_state)
     elif family == "F":
-        theta = F.fit(a)
+        theta = F.fit(a, floc=0, fscale=1)
         arr = F.rvs(size=n*b,
                     dfn=theta[0],
                     dfd=theta[1],
@@ -239,28 +236,28 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
                     scale=theta[3],
                     random_state=random_state)
     elif family == "gamma":
-        theta = gamma.fit(a)
+        theta = gamma.fit(a, floc=0)
         arr = gamma.rvs(size=n*b,
                         a=theta[0],
                         loc=theta[1],
                         scale=theta[2],
                         random_state=random_state)
     elif family == "log-normal":
-        theta = lognorm.fit(a)
+        theta = lognorm.fit(a, floc=0)
         arr = lognorm.rvs(size=n*b,
                           s=theta[0],
                           loc=theta[1],
                           scale=theta[2],
                           random_state=random_state)
     elif family == "inverse-gaussian":
-        theta = invgauss.fit(a)
+        theta = invgauss.fit(a, floc=0)
         arr = invgauss.rvs(size=n*b,
                            mu=theta[0],
                            loc=theta[1],
                            scale=theta[2],
                            random_state=random_state)
     elif family == "pareto":
-        theta = pareto.fit(a)
+        theta = pareto.fit(a, floc=0)
         arr = pareto.rvs(size=n*b,
                          b=theta[0],
                          loc=theta[1],
@@ -274,12 +271,6 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
                        loc=theta[2],
                        scale=theta[3],
                        random_state=random_state)
-    elif family == "uniform":
-        theta = uniform.fit(a)
-        arr = uniform.rvs(size=n*b,
-                          loc=theta[0],
-                          scale=theta[1],
-                          random_state=random_state)
     elif family == "poisson":
         theta = np.mean(a)
         arr = poisson.rvs(size=n*b,
@@ -331,7 +322,6 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
         * 'inverse-gaussian'
         * 'pareto'
         * 'beta'
-        * 'uniform'
         * 'poisson'
     strata : array-like or None
         Stratification labels
