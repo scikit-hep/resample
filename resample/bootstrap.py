@@ -392,6 +392,6 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
         return (theta - theta_std * t1, theta - theta_std * t2)
     else:
         raise ValueError(("ci_method must be 'percentile'"
-                          " 'bca', or 't', {method}"
+                          " 'bca', or 't', '{method}'"
                           " was supplied".
                           format(method=ci_method)))
