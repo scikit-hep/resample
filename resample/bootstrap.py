@@ -338,7 +338,7 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
 
     if boot_method not in ["ordinary", "balanced", "parametric"]:
         raise ValueError(("boot_method must be 'ordinary'"
-                          " 'balanced', or 'parametric', {method} was"
+                          " 'balanced', or 'parametric', '{method}' was"
                           " supplied".
                          format(method=boot_method)))
 
