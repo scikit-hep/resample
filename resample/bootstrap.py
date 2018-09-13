@@ -95,8 +95,8 @@ def empirical_influence(a, f):
     return (len(a) - 1) * (f(a) - jackknife(a, f))
 
 
-def bootstrap(a, f=None, b=100, method="balanced",
-              strata=None, random_state=None):
+def bootstrap(a, f=None, b=100, method="balanced", family=None,
+              strata=None, smooth=False, random_state=None):
     """
     Calculate function values from bootstrap samples or
     optionally return bootstrap samples themselves
@@ -112,69 +112,8 @@ def bootstrap(a, f=None, b=100, method="balanced",
     method : string
         * 'ordinary'
         * 'balanced'
-    strata : array-like or None
-        Stratification labels
-    random_state : int or None
-        Random number seed
-
-    Returns
-    -------
-    y | X : np.array
-        Function applied to each bootstrap sample
-        or bootstrap samples if f is None
-    """
-    np.random.seed(random_state)
-    a = np.asarray(a)
-
-    if strata is not None:
-        strata = np.asarray(strata)
-        if len(strata) != len(a):
-            raise ValueError("a and strata must have"
-                             " the same length")
-        masks = [strata == x for x in np.unique(strata)]
-        boot_strata = [bootstrap(a=a[m],
-                                 f=None,
-                                 b=b,
-                                 method=method,
-                                 strata=None,
-                                 random_state=random_state) for m in masks]
-        X = np.concatenate(boot_strata, axis=1)
-    else:
-        if method == "ordinary":
-            X = np.reshape(a[np.random.choice(range(a.shape[0]),
-                                              a.shape[0] * b)],
-                           newshape=(b,) + a.shape)
-        elif method == "balanced":
-            r = np.reshape([a] * b,
-                           newshape=(b * a.shape[0],) + a.shape[1:])
-            X = np.reshape(r[np.random.permutation(range(r.shape[0]))],
-                           newshape=(b,) + a.shape)
-        else:
-            raise ValueError("method must be either 'ordinary'"
-                             " , or 'balanced', '{method}' was"
-                             " supplied".format(method=method))
-
-    if f is None:
-        return X
-    else:
-        return np.asarray([f(x) for x in X])
-
-
-def param_bootstrap(a, f=None, b=100, family="gaussian",
-                    random_state=None):
-    """
-    Calculate function values from parametric bootstrap
-    samples or optionally return bootstrap samples themselves
-
-    Parameters
-    ----------
-    a : array-like
-        Original sample
-    f : callable or None
-        Function to be bootstrapped
-    b : int
-        Number of bootstrap samples
-    family : string
+        * 'parametric'
+    family : string or None
         * 'gaussian'
         * 't'
         * 'laplace'
@@ -186,6 +125,12 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
         * 'pareto'
         * 'beta'
         * 'poisson'
+    strata : array-like or None
+        Stratification labels, ignored when method
+        is parametric
+    smooth : boolean
+        Whether or not to add noise to bootstrap
+        samples, ignored when method is parametric
     random_state : int or None
         Random number seed
 
@@ -195,91 +140,132 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
         Function applied to each bootstrap sample
         or bootstrap samples if f is None
     """
+    np.random.seed(random_state)
     a = np.asarray(a)
-
-    if len(a.shape) > 1:
-        raise ValueError("a must be one-dimensional")
-
     n = len(a)
 
-    if family == "gaussian":
-        theta = norm.fit(a)
-        arr = norm.rvs(size=n*b,
-                       loc=theta[0],
-                       scale=theta[1],
-                       random_state=random_state)
-    elif family == "t":
-        theta = t.fit(a, fscale=1)
-        arr = t.rvs(size=n*b,
-                    df=theta[0],
-                    loc=theta[1],
-                    scale=theta[2],
-                    random_state=random_state)
-    elif family == "laplace":
-        theta = laplace.fit(a)
-        arr = laplace.rvs(size=n*b,
-                          loc=theta[0],
-                          scale=theta[1],
-                          random_state=random_state)
-    elif family == "logistic":
-        theta = logistic.fit(a)
-        arr = logistic.rvs(size=n*b,
-                           loc=theta[0],
-                           scale=theta[1],
-                           random_state=random_state)
-    elif family == "F":
-        theta = F.fit(a, floc=0, fscale=1)
-        arr = F.rvs(size=n*b,
-                    dfn=theta[0],
-                    dfd=theta[1],
-                    loc=theta[2],
-                    scale=theta[3],
-                    random_state=random_state)
-    elif family == "gamma":
-        theta = gamma.fit(a, floc=0)
-        arr = gamma.rvs(size=n*b,
-                        a=theta[0],
-                        loc=theta[1],
-                        scale=theta[2],
-                        random_state=random_state)
-    elif family == "log-normal":
-        theta = lognorm.fit(a, floc=0)
-        arr = lognorm.rvs(size=n*b,
-                          s=theta[0],
-                          loc=theta[1],
-                          scale=theta[2],
-                          random_state=random_state)
-    elif family == "inverse-gaussian":
-        theta = invgauss.fit(a, floc=0)
-        arr = invgauss.rvs(size=n*b,
-                           mu=theta[0],
-                           loc=theta[1],
-                           scale=theta[2],
-                           random_state=random_state)
-    elif family == "pareto":
-        theta = pareto.fit(a, floc=0)
-        arr = pareto.rvs(size=n*b,
-                         b=theta[0],
-                         loc=theta[1],
-                         scale=theta[2],
-                         random_state=random_state)
-    elif family == "beta":
-        theta = beta.fit(a)
-        arr = beta.rvs(size=n*b,
-                       a=theta[0],
-                       b=theta[1],
-                       loc=theta[2],
-                       scale=theta[3],
-                       random_state=random_state)
-    elif family == "poisson":
-        theta = np.mean(a)
-        arr = poisson.rvs(size=n*b,
-                          mu=theta,
-                          random_state=random_state)
+    # stratification not meaningful for parametric sampling
+    if strata is not None and (method != "parametric"):
+        strata = np.asarray(strata)
+        if len(strata) != len(a):
+            raise ValueError("a and strata must have"
+                             " the same length")
+        # recursively call bootstrap without stratification
+        # on the different strata
+        masks = [strata == x for x in np.unique(strata)]
+        boot_strata = [bootstrap(a=a[m],
+                                 f=None,
+                                 b=b,
+                                 method=method,
+                                 strata=None,
+                                 random_state=random_state) for m in masks]
+        # concatenate resampled strata along first column axis
+        X = np.concatenate(boot_strata, axis=1)
     else:
-        raise ValueError("Invalid family")
+        if method == "ordinary":
+            # i.i.d. sampling from ecdf of a
+            X = np.reshape(a[np.random.choice(range(a.shape[0]),
+                                              a.shape[0] * b)],
+                           newshape=(b,) + a.shape)
+        elif method == "balanced":
+            # permute b concatenated copies of a
+            r = np.reshape([a] * b,
+                           newshape=(b * a.shape[0],) + a.shape[1:])
+            X = np.reshape(r[np.random.permutation(range(r.shape[0]))],
+                           newshape=(b,) + a.shape)
+        elif method == "parametric":
+            if len(a.shape) > 1:
+                raise ValueError("a must be one-dimensional")
 
-    X = np.reshape(arr, newshape=(b, n))
+            # fit parameters by maximum likelihood and sample
+            if family == "gaussian":
+                theta = norm.fit(a)
+                arr = norm.rvs(size=n*b,
+                               loc=theta[0],
+                               scale=theta[1],
+                               random_state=random_state)
+            elif family == "t":
+                theta = t.fit(a, fscale=1)
+                arr = t.rvs(size=n*b,
+                            df=theta[0],
+                            loc=theta[1],
+                            scale=theta[2],
+                            random_state=random_state)
+            elif family == "laplace":
+                theta = laplace.fit(a)
+                arr = laplace.rvs(size=n*b,
+                                  loc=theta[0],
+                                  scale=theta[1],
+                                  random_state=random_state)
+            elif family == "logistic":
+                theta = logistic.fit(a)
+                arr = logistic.rvs(size=n*b,
+                                   loc=theta[0],
+                                   scale=theta[1],
+                                   random_state=random_state)
+            elif family == "F":
+                theta = F.fit(a, floc=0, fscale=1)
+                arr = F.rvs(size=n*b,
+                            dfn=theta[0],
+                            dfd=theta[1],
+                            loc=theta[2],
+                            scale=theta[3],
+                            random_state=random_state)
+            elif family == "gamma":
+                theta = gamma.fit(a, floc=0)
+                arr = gamma.rvs(size=n*b,
+                                a=theta[0],
+                                loc=theta[1],
+                                scale=theta[2],
+                                random_state=random_state)
+            elif family == "log-normal":
+                theta = lognorm.fit(a, floc=0)
+                arr = lognorm.rvs(size=n*b,
+                                  s=theta[0],
+                                  loc=theta[1],
+                                  scale=theta[2],
+                                  random_state=random_state)
+            elif family == "inverse-gaussian":
+                theta = invgauss.fit(a, floc=0)
+                arr = invgauss.rvs(size=n*b,
+                                   mu=theta[0],
+                                   loc=theta[1],
+                                   scale=theta[2],
+                                   random_state=random_state)
+            elif family == "pareto":
+                theta = pareto.fit(a, floc=0)
+                arr = pareto.rvs(size=n*b,
+                                 b=theta[0],
+                                 loc=theta[1],
+                                 scale=theta[2],
+                                 random_state=random_state)
+            elif family == "beta":
+                theta = beta.fit(a)
+                arr = beta.rvs(size=n*b,
+                               a=theta[0],
+                               b=theta[1],
+                               loc=theta[2],
+                               scale=theta[3],
+                               random_state=random_state)
+            elif family == "poisson":
+                theta = np.mean(a)
+                arr = poisson.rvs(size=n*b,
+                                  mu=theta,
+                                  random_state=random_state)
+            else:
+                raise ValueError("Invalid family")
+
+            X = np.reshape(arr, newshape=(b, n))
+        else:
+            raise ValueError("method must be either 'ordinary'"
+                             " , 'balanced', or 'parametric',"
+                             " '{method}' was supplied".
+                             format(method=method))
+
+    # samples are already smooth in the parametric case
+    if smooth and (method != "parametric"):
+        X += np.random.normal(size=X.shape,
+                              scale=1 / np.sqrt(n))
 
     if f is None:
         return X
@@ -289,7 +275,7 @@ def param_bootstrap(a, f=None, b=100, family="gaussian",
 
 def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
                  boot_method="balanced", family=None,
-                 strata=None, random_state=None):
+                 strata=None, smooth=False, random_state=None):
     """
     Calculate bootstrap confidence intervals
 
@@ -323,8 +309,12 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
         * 'pareto'
         * 'beta'
         * 'poisson'
-    strata : array-like or None
+    strata : array-like or None (only used when boot_method
+        is parametric)
         Stratification labels
+    smooth : boolean (not used when boot_method is parametric)
+        Whether or not to add noise to bootstrap
+        samples
     random_state : int or None
         Random number seed
 
@@ -342,12 +332,9 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
                           " supplied".
                          format(method=boot_method)))
 
-    if boot_method == "parametric":
-        boot_est = param_bootstrap(a=a, f=f, b=b, family=family,
-                                   random_state=random_state)
-    else:
-        boot_est = bootstrap(a=a, f=f, b=b, method=boot_method,
-                             strata=strata, random_state=random_state)
+    boot_est = bootstrap(a=a, f=f, b=b, method=boot_method,
+                         family=family, strata=strata,
+                         smooth=smooth, random_state=random_state)
 
     q = eqf(boot_est)
     alpha = 1 - p
