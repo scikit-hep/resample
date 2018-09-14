@@ -1,11 +1,11 @@
 from __future__ import division
 import numpy as np
-from resample.utils import eqf
 from scipy.stats import (norm, laplace,
                          gamma, f as F,
                          t, beta, lognorm,
                          pareto, logistic,
                          invgauss, poisson)
+from resample.utils import eqf
 
 
 def jackknife(a, f=None):
@@ -18,7 +18,8 @@ def jackknife(a, f=None):
     ----------
     a : array-like
         Sample
-    f : callable
+
+    f : callable or None, default : None
         Estimator
 
     Returns
@@ -43,6 +44,7 @@ def jackknife_bias(a, f):
     ----------
     a : array-like
         Sample
+
     f : callable
         Estimator
 
@@ -62,6 +64,7 @@ def jackknife_variance(a, f):
     ----------
     a : array-like
         Sample
+
     f : callable
         Estimator
 
@@ -84,6 +87,7 @@ def empirical_influence(a, f):
     ----------
     a : array-like
         Sample
+
     f : callable
         Estimator
 
@@ -105,33 +109,33 @@ def bootstrap(a, f=None, b=100, method="balanced", family=None,
     ----------
     a : array-like
         Original sample
-    f : callable or None
+
+    f : callable or None, default : None
         Function to be bootstrapped
-    b : int
+
+    b : int, default : 100
         Number of bootstrap samples
-    method : string
-        * 'ordinary'
-        * 'balanced'
-        * 'parametric'
-    family : string or None
-        * 'gaussian'
-        * 't'
-        * 'laplace'
-        * 'logistic'
-        * 'F'
-        * 'gamma'
-        * 'log-normal'
-        * 'inverse-gaussian'
-        * 'pareto'
-        * 'beta'
-        * 'poisson'
-    strata : array-like or None
+
+    method : string, {'ordinary', 'balanced', 'parametric'},
+            default : 'balanced'
+       Bootstrapping method
+
+    family : string or None, {'gaussian', 't','laplace',
+            'logistic', 'F', 'gamma', 'log-normal',
+            'inverse-gaussian', 'pareto', 'beta',
+            'poisson'}, default : None
+        Distribution family when performing parametric
+        bootstrapping
+
+    strata : array-like or None, default : None
         Stratification labels, ignored when method
         is parametric
-    smooth : boolean
-        Whether or not to add noise to bootstrap
+
+    smooth : boolean, default : False
+        Whether or not to add Gaussian noise to bootstrap
         samples, ignored when method is parametric
-    random_state : int or None
+
+    random_state : int or None, default : None
         Random number seed
 
     Returns
@@ -283,39 +287,40 @@ def bootstrap_ci(a, f, p=0.95, b=100, ci_method="percentile",
     ----------
     a : array-like
         Original sample
+
     f : callable
         Function to be bootstrapped
-    p : float
+
+    p : float, default : 0.95
         Confidence level
-    b : int
+
+    b : int, default : 100
         Number of bootstrap samples
-    ci_method : string
-        * 'percentile'
-        * 'bca'
-        * 't'
-    boot_method : string
-        * 'ordinary'
-        * 'balanced'
-        * 'parametric'
-    family : string (only used when boot_method is parametric)
-        * 'gaussian'
-        * 't'
-        * 'laplace'
-        * 'logistic'
-        * 'F'
-        * 'gamma'
-        * 'log-normal'
-        * 'inverse-gaussian'
-        * 'pareto'
-        * 'beta'
-        * 'poisson'
-    strata : array-like or None (only used when boot_method
-        is parametric)
-        Stratification labels
-    smooth : boolean (not used when boot_method is parametric)
-        Whether or not to add noise to bootstrap
-        samples
-    random_state : int or None
+
+    ci_method : string, {'percentile', 'bca', 't'},
+            default : 'percentile'
+        Confidence interval method
+
+    boot_method : string, {'ordinary', 'balanced',
+            'parametric'}, default : 'balanced'
+       Bootstrapping method
+
+    family : string or None, {'gaussian', 't','laplace',
+            'logistic', 'F', 'gamma', 'log-normal',
+            'inverse-gaussian', 'pareto', 'beta',
+            'poisson'}, default : None
+        Distribution family when performing parametric
+        bootstrapping
+
+    strata : array-like or None, default : None
+        Stratification labels, ignored when boot_method
+        is parametric
+
+    smooth : boolean, default : False
+        Whether or not to add Gaussian noise to bootstrap
+        samples, ignored when method is parametric
+
+    random_state : int or None, default : None
         Random number seed
 
     Returns

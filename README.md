@@ -8,7 +8,7 @@ Description
 Features
 --------
 
-* Bootstrap samples (ordinary or balanced, both with optional stratification) of arrays with arbitrary dimension 
+* Bootstrap samples (ordinary or balanced, both with optional stratification and smoothing) of arrays with arbitrary dimension
 * Parametric bootstrap samples (Gaussian, Poisson, gamma, etc.) of one-dimensional arrays
 * Bootstrap confidence intervals (percentile, BCA and Studentized) for any well-defined parameter
 * Randomization-based variants of traditional statistical tests (t-test, ANOVA F-test, K-S test, etc.)

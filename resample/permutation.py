@@ -1,31 +1,35 @@
 from __future__ import division
 import numpy as np
 from scipy.stats import rankdata
-from resample.utils import ecdf, distcorr
+from resample.utils import ecdf
 
 
 def ttest(a1, a2, b=100, dropna=True, random_state=None):
     """
     Perform permutation two sample t-test (the mean of a2
-    is subtracted from a1)
+    is subtracted from that of a1)
 
     Parameters
     ----------
     a1 : array-like
         First sample
+
     a2 : array-like
         Second sample
-    b : int
+
+    b : int, default : 100
         Number of permutations
-    dropna : boolean
+
+    dropna : boolean, default : True
         Whether or not to drop np.nan
-    random_state : int or None
+
+    random_state : int or None, default : None
         random number seed
 
     Returns
     -------
     {'t', 'prop'} : {float, float}
-        t statistic as well as proportion of permutation
+        T statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
     np.random.seed(random_state)
@@ -67,11 +71,14 @@ def anova(*args, b=100, dropna=True, random_state=None):
     ----------
     args : sequence of array-like
         Samples
-    b : int
+
+    b : int, default : 100
         Number of permutations
-    dropna : boolean
+
+    dropna : boolean, default : True
         Whether or not to drop np.nan
-    random_state : int or None
+
+    random_state : int or None, default : None
         random number seed
 
     Returns
@@ -120,19 +127,23 @@ def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
     ----------
     a1 : array-like
         First sample
+
     a2 : array-like
         Second sample
-    b : int
+
+    b : int, default : 100
         Number of permutations
-    dropna : boolean
+
+    dropna : boolean, default : True
         Whether or not to drop np.nan
-    random_state : int or None
+
+    random_state : int or None, default : None
         random number seed
 
     Returns
     -------
     {'w', 'prop'} : {int, float}
-        w statistic as well as proportion of permutation
+        W statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
     np.random.seed(random_state)
@@ -172,17 +183,20 @@ def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
     ----------
     args : sequence of array-like
         Samples
-    b : int
+
+    b : int, default : 100
         Number of permutations
-    dropna : boolean
+
+    dropna : boolean, default : True
         Whether or not to drop np.nan
-    random_state : int or None
+
+    random_state : int or None, default : None
         random number seed
 
     Returns
     -------
     {'h', 'prop'} : {float, float}
-        h statistic as well as proportion of permutation
+        H statistic as well as proportion of permutation
         distribution less than or equal to that statistic
     """
     np.random.seed(random_state)
@@ -227,23 +241,27 @@ def corr_test(a1, a2, method="pearson", b=100, dropna=True,
     ----------
     a1 : array-like
         First sample
+
     a2 : array-like
         Second sample
-    method : string
-        * 'pearson'
-        * 'spearman'
-        * 'distance'
-    b : int
+
+    method : string, {'pearson', 'spearman'},
+            default : 'pearson'
+        Correlation method
+
+    b : int, default : 100
         Number of permutations
-    dropna : boolean
+
+    dropna : boolean, default : True
         Whether or not to drop np.nan
-    random_state : int or None
+
+    random_state : int or None, default : None
         random number seed
 
     Returns
     -------
     {'corr', 'prop'} : {float, float}
-        correlation as well as proportion of permutation
+        Correlation as well as proportion of permutation
         distribution less than or equal to that statistic
     """
     np.random.seed(random_state)
@@ -277,10 +295,7 @@ def corr_test(a1, a2, method="pearson", b=100, dropna=True,
                          format(method=method))
 
     def corr(x, y):
-        if method in ["pearson", "spearman"]:
-            return np.corrcoef(x, y)[0, 1]
-        else:
-            return distcorr(x, y)
+        return np.corrcoef(x, y)[0, 1]
 
     c = corr(a[:, 0], a[:, 1])
 
@@ -298,13 +313,17 @@ def ks_test(a1, a2, b=100, dropna=True, random_state=None):
     ----------
     a1 : array-like
         First sample
+
     a2 : array-like
         Second sample
-    b : int
+
+    b : int, default : 100
         Number of permutations
-    dropna : boolean
+
+    dropna : boolean, default : True
         Whether or not to drop np.nan
-    random_state : int or None
+
+    random_state : int or None, default : None
         random number seed
 
     Returns

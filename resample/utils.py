@@ -71,11 +71,14 @@ def mise(f, g, d, n=100):
     ----------
     f : callable
         First function
+
     g : callable
         Second function
+
     d : (float, float)
         Domain
-    n : int
+
+    n : int, default : 100
         Number of evaluation points
 
     Returns
@@ -104,11 +107,14 @@ def sup_norm(f, g, d, n=100):
     ----------
     f : callable
         First function
+
     g : callable
         Second function
+
     d : (float, float)
         Domain
-    n : int
+
+    n : int, default : 100
         Number of evaluation points
 
     Returns
@@ -125,54 +131,3 @@ def sup_norm(f, g, d, n=100):
     p = np.linspace(d[0], d[1], n, endpoint=False)
 
     return np.max([abs(f(i) - g(i)) for i in p])
-
-
-def distcorr(a1, a2):
-    """
-    Calculate distance correlation between
-    two samples
-
-    Parameters
-    ----------
-    a1 : array-like
-        First sample
-    a2 : array-like
-        Second sample
-
-    Returns
-    -------
-    y : float
-        Distance correlation
-    """
-    n = len(a1)
-    n2 = len(a1)
-
-    if n != n2:
-        raise ValueError("Samples must have equal"
-                         " length")
-
-    a1 = np.asarray(a1)
-    a2 = np.asarray(a2)
-
-    a = np.zeros(shape=(n, n))
-    b = np.zeros(shape=(n, n))
-
-    for i in range(n):
-        for j in range(i+1, n):
-            a[i, j] = abs(a1[i] - a1[j])
-            b[i, j] = abs(a2[i] - a2[j])
-
-    a = a + a.T
-    b = b + b.T
-
-    a_bar = np.vstack([np.nanmean(a, axis=0)] * n)
-    b_bar = np.vstack([np.nanmean(b, axis=0)] * n)
-
-    A = a - a_bar - a_bar.T + np.full(shape=(n, n), fill_value=a_bar.mean())
-    B = b - b_bar - b_bar.T + np.full(shape=(n, n), fill_value=b_bar.mean())
-
-    cov_ab = np.sqrt(np.nansum(A * B)) / n
-    std_a = np.sqrt(np.sqrt(np.nansum(A**2)) / n)
-    std_b = np.sqrt(np.sqrt(np.nansum(B**2)) / n)
-
-    return cov_ab / std_a / std_b
