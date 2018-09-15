@@ -8,3 +8,4 @@ install_log.txt
 .pytest_cache
 resample/.coverage
 *.sh
+html*
