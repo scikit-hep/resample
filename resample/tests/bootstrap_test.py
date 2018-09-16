@@ -44,29 +44,29 @@ def test_balanced_bootstrap_eq_orig():
 
 def test_parametric_bootstrap_err_on_multivariate():
     with pytest.raises(ValueError):
-        boot = bootstrap(np.random.normal(size=(10, 2)),
-                         method="parametric",
-                         family="gaussian")
+        bootstrap(np.random.normal(size=(10, 2)),
+                  method="parametric",
+                  family="gaussian")
 
 
 def test_parametric_bootstrap_inv_family():
     with pytest.raises(ValueError):
-        boot = bootstrap(x,
-                         method="parametric",
-                         family="____")
+        bootstrap(x,
+                  method="parametric",
+                  family="____")
 
 
 @pytest.mark.parametrize("family", [("gaussian"),
-                                     ("t"),
-                                     ("laplace"),
-                                     ("logistic"),
-                                     ("F"),
-                                     ("gamma"),
-                                     ("log-normal"),
-                                     ("inverse-gaussian"),
-                                     ("pareto"),
-                                     ("beta"),
-                                     ("poisson")])
+                                    ("t"),
+                                    ("laplace"),
+                                    ("logistic"),
+                                    ("F"),
+                                    ("gamma"),
+                                    ("log-normal"),
+                                    ("inverse-gaussian"),
+                                    ("pareto"),
+                                    ("beta"),
+                                    ("poisson")])
 def test_parametric_bootstrap_shape(family):
     boot = bootstrap(x,
                      b=b,
