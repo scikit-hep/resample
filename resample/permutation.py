@@ -4,7 +4,7 @@ from scipy.stats import rankdata
 from resample.utils import ecdf
 
 
-def ttest(a1, a2, b=100, dropna=True, random_state=None):
+def ttest(a1, a2, b=100, random_state=None):
     """
     Perform permutation two sample t-test (the mean of a2
     is subtracted from that of a1)
@@ -20,9 +20,6 @@ def ttest(a1, a2, b=100, dropna=True, random_state=None):
     b : int, default : 100
         Number of permutations
 
-    dropna : boolean, default : True
-        Whether or not to drop np.nan
-
     random_state : int or None, default : None
         random number seed
 
@@ -37,9 +34,8 @@ def ttest(a1, a2, b=100, dropna=True, random_state=None):
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
 
-    if dropna:
-        a1 = a1[~np.isnan(a1)]
-        a2 = a2[~np.isnan(a2)]
+    a1 = a1[~np.isnan(a1)]
+    a2 = a2[~np.isnan(a2)]
 
     def g(x, y):
         return ((np.mean(x) - np.mean(y)) /
@@ -63,7 +59,7 @@ def ttest(a1, a2, b=100, dropna=True, random_state=None):
     return {"t": t, "prop": np.mean(permute_t <= t)}
 
 
-def anova(*args, b=100, dropna=True, random_state=None):
+def anova(*args, b=100, random_state=None):
     """
     Perform permutation one way analysis of variance
 
@@ -74,9 +70,6 @@ def anova(*args, b=100, dropna=True, random_state=None):
 
     b : int, default : 100
         Number of permutations
-
-    dropna : boolean, default : True
-        Whether or not to drop np.nan
 
     random_state : int or None, default : None
         random number seed
@@ -91,8 +84,7 @@ def anova(*args, b=100, dropna=True, random_state=None):
 
     args = [np.asarray(a) for a in args]
 
-    if dropna:
-        args = [a[~np.isnan(a)] for a in args]
+    args = [a[~np.isnan(a)] for a in args]
 
     t = len(args)
     ns = [len(a) for a in args]
@@ -119,7 +111,7 @@ def anova(*args, b=100, dropna=True, random_state=None):
     return {"f": f, "prop": np.mean(permute_f <= f)}
 
 
-def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
+def wilcoxon(a1, a2, b=100, random_state=None):
     """
     Perform permutation Wilcoxon rank sum test
 
@@ -133,9 +125,6 @@ def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
 
     b : int, default : 100
         Number of permutations
-
-    dropna : boolean, default : True
-        Whether or not to drop np.nan
 
     random_state : int or None, default : None
         random number seed
@@ -151,9 +140,8 @@ def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
 
-    if dropna:
-        a1 = a1[~np.isnan(a1)]
-        a2 = a2[~np.isnan(a2)]
+    a1 = a1[~np.isnan(a1)]
+    a2 = a2[~np.isnan(a2)]
 
     n1 = len(a1)
     n2 = len(a2)
@@ -175,7 +163,7 @@ def wilcoxon(a1, a2, b=100, dropna=True, random_state=None):
     return {"w": w, "prop": np.mean(permute_w <= w)}
 
 
-def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
+def kruskal_wallis(*args, b=100, random_state=None):
     """
     Perform permutation Kruskal-Wallis test
 
@@ -186,9 +174,6 @@ def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
 
     b : int, default : 100
         Number of permutations
-
-    dropna : boolean, default : True
-        Whether or not to drop np.nan
 
     random_state : int or None, default : None
         random number seed
@@ -202,9 +187,7 @@ def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
     np.random.seed(random_state)
 
     args = [np.asarray(a) for a in args]
-
-    if dropna:
-        args = [a[~np.isnan(a)] for a in args]
+    args = [a[~np.isnan(a)] for a in args]
 
     t = len(args)
     ns = [len(a) for a in args]
@@ -232,8 +215,7 @@ def kruskal_wallis(*args, b=100, dropna=True, random_state=None):
     return {"h": h, "prop": np.mean(permute_h <= h)}
 
 
-def corr_test(a1, a2, method="pearson", b=100, dropna=True,
-              random_state=None):
+def corr_test(a1, a2, method="pearson", b=100, random_state=None):
     """
     Perform permutation correlation test
 
@@ -251,9 +233,6 @@ def corr_test(a1, a2, method="pearson", b=100, dropna=True,
 
     b : int, default : 100
         Number of permutations
-
-    dropna : boolean, default : True
-        Whether or not to drop np.nan
 
     random_state : int or None, default : None
         random number seed
@@ -278,8 +257,7 @@ def corr_test(a1, a2, method="pearson", b=100, dropna=True,
 
     a = np.column_stack((a1, a2))
 
-    if dropna:
-        a = a[np.amax(~np.isnan(a), axis=1)]
+    a = a[np.amax(~np.isnan(a), axis=1)]
 
     if method in ["pearson", "distance"]:
         X = np.asarray([a] * b)
@@ -305,7 +283,7 @@ def corr_test(a1, a2, method="pearson", b=100, dropna=True,
     return {"c": c, "prop": np.mean(permute_c <= c)}
 
 
-def ks_test(a1, a2, b=100, dropna=True, random_state=None):
+def ks_test(a1, a2, b=100, random_state=None):
     """
     Perform permutation two sample K-S test
 
@@ -319,9 +297,6 @@ def ks_test(a1, a2, b=100, dropna=True, random_state=None):
 
     b : int, default : 100
         Number of permutations
-
-    dropna : boolean, default : True
-        Whether or not to drop np.nan
 
     random_state : int or None, default : None
         random number seed
@@ -337,9 +312,8 @@ def ks_test(a1, a2, b=100, dropna=True, random_state=None):
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
 
-    if dropna:
-        a1 = a1[~np.isnan(a1)]
-        a2 = a2[~np.isnan(a2)]
+    a1 = a1[~np.isnan(a1)]
+    a2 = a2[~np.isnan(a2)]
 
     n1 = len(a1)
     n2 = len(a2)

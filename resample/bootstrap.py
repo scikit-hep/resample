@@ -25,7 +25,7 @@ def jackknife(a, f=None):
     Returns
     -------
     y | X : np.array
-        Jackknife estimates
+        Jackknife estimates or leave-one-out samples
     """
     arr = np.asarray([a] * len(a))
     X = np.asarray([np.delete(x, i, 0) for i, x in enumerate(arr)])
