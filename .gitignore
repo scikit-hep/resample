@@ -9,3 +9,5 @@ install_log.txt
 resample/.coverage
 *.sh
 html*
+.doctrees
+_build

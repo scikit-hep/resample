@@ -3,7 +3,7 @@
 Description
 --------
 
-`resample` provides a set of tools for performing randomization-based inference in Python, primarily through the use of bootstrapping methods and Monte Carlo permutation tests.  See the [example notebook](https://github.com/dsaxton/resample/blob/master/examples/resample.ipynb) for a brief tutorial.
+`resample` provides a set of tools for performing randomization-based inference in Python, primarily through the use of bootstrapping methods and Monte Carlo permutation tests.  See the [example notebook](https://github.com/dsaxton/resample/blob/master/examples/resample.ipynb) for a brief tutorial.  Documentation can be found on [readthedocs](https://resample.readthedocs.io/en/latest/).
 
 Features
 --------
