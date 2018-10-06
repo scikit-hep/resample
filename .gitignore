@@ -11,3 +11,4 @@ resample/.coverage
 html*
 .doctrees
 _build
+*coverage*
