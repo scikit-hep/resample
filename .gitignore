@@ -12,3 +12,4 @@ html*
 .doctrees
 _build
 *coverage*
+.idea
