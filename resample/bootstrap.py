@@ -4,7 +4,7 @@ from scipy.stats import (
     norm,
     laplace,
     gamma,
-    f as F,
+    f as fdist,
     t,
     beta,
     lognorm,
@@ -36,12 +36,12 @@ def jackknife(a, f=None):
         Jackknife estimates or leave-one-out samples
     """
     arr = np.asarray([a] * len(a))
-    X = np.asarray([np.delete(x, i, 0) for i, x in enumerate(arr)])
+    x = np.asarray([np.delete(x, i, 0) for i, x in enumerate(arr)])
 
     if f is None:
-        return X
+        return x
     else:
-        return np.asarray([f(x) for x in X])
+        return np.asarray([f(s) for s in x])
 
 
 def jackknife_bias(a, f):
@@ -184,18 +184,18 @@ def bootstrap(
             for m in masks
         ]
         # concatenate resampled strata along first column axis
-        X = np.concatenate(boot_strata, axis=1)
+        x = np.concatenate(boot_strata, axis=1)
     else:
         if method == "ordinary":
             # i.i.d. sampling from ecdf of a
-            X = np.reshape(
+            x = np.reshape(
                 a[np.random.choice(range(a.shape[0]), a.shape[0] * b)],
                 newshape=(b,) + a.shape,
             )
         elif method == "balanced":
             # permute b concatenated copies of a
             r = np.reshape([a] * b, newshape=(b * a.shape[0],) + a.shape[1:])
-            X = np.reshape(
+            x = np.reshape(
                 r[np.random.permutation(range(r.shape[0]))], newshape=(b,) + a.shape
             )
         elif method == "parametric":
@@ -228,8 +228,8 @@ def bootstrap(
                     size=n * b, loc=theta[0], scale=theta[1], random_state=random_state
                 )
             elif family == "F":
-                theta = F.fit(a, floc=0, fscale=1)
-                arr = F.rvs(
+                theta = fdist.fit(a, floc=0, fscale=1)
+                arr = fdist.rvs(
                     size=n * b,
                     dfn=theta[0],
                     dfd=theta[1],
@@ -289,7 +289,7 @@ def bootstrap(
             else:
                 raise ValueError("Invalid family")
 
-            X = np.reshape(arr, newshape=(b, n))
+            x = np.reshape(arr, newshape=(b, n))
         else:
             raise ValueError(
                 "method must be either 'ordinary'"
@@ -299,12 +299,12 @@ def bootstrap(
 
     # samples are already smooth in the parametric case
     if smooth and (method != "parametric"):
-        X += np.random.normal(size=X.shape, scale=1 / np.sqrt(n))
+        x += np.random.normal(size=x.shape, scale=1 / np.sqrt(n))
 
     if f is None:
-        return X
+        return x
     else:
-        return np.asarray([f(x) for x in X])
+        return np.asarray([f(s) for s in x])
 
 
 def bootstrap_ci(
