@@ -38,23 +38,22 @@ def ttest(a1, a2, b=100, random_state=None):
     a2 = a2[~np.isnan(a2)]
 
     def g(x, y):
-        return ((np.mean(x) - np.mean(y)) /
-                np.sqrt(np.var(x, ddof=1) /
-                len(x) + np.var(y, ddof=1) / len(y)))
+        return (np.mean(x) - np.mean(y)) / np.sqrt(
+            np.var(x, ddof=1) / len(x) + np.var(y, ddof=1) / len(y)
+        )
 
     t = g(a1, a2)
 
     n1 = len(a1)
     n2 = len(a2)
 
-    X = np.apply_along_axis(func1d=np.random.permutation,
-                            arr=np.reshape(np.tile(np.append(a1, a2), b),
-                                           newshape=(b, n1 + n2)),
-                            axis=1)
+    X = np.apply_along_axis(
+        func1d=np.random.permutation,
+        arr=np.reshape(np.tile(np.append(a1, a2), b), newshape=(b, n1 + n2)),
+        axis=1,
+    )
 
-    permute_t = np.apply_along_axis(func1d=lambda s: g(s[:n1], s[n1:]),
-                                    arr=X,
-                                    axis=1)
+    permute_t = np.apply_along_axis(func1d=lambda s: g(s[:n1], s[n1:]), arr=X, axis=1)
 
     return {"t": t, "prop": np.mean(permute_t <= t)}
 
@@ -94,19 +93,19 @@ def anova(*args, b=100, random_state=None):
     a_bar = np.mean(arr)
 
     def g(a):
-        sse = np.sum([ns[i] * np.var(a[pos[i]:pos[i+1]]) for i in range(t)])
-        ssb = (np.sum([ns[i] * (np.mean(a[pos[i]:pos[i+1]]) - a_bar)**2
-                       for i in range(t)]))
+        sse = np.sum([ns[i] * np.var(a[pos[i] : pos[i + 1]]) for i in range(t)])
+        ssb = np.sum(
+            [ns[i] * (np.mean(a[pos[i] : pos[i + 1]]) - a_bar) ** 2 for i in range(t)]
+        )
         return (ssb / (t - 1)) / (sse / (n - t))
 
     X = np.reshape(np.tile(arr, b), newshape=(b, n))
 
     f = g(arr)
 
-    permute_f = np.apply_along_axis(func1d=(lambda x:
-                                            g(np.random.permutation(x))),
-                                    arr=X,
-                                    axis=1)
+    permute_f = np.apply_along_axis(
+        func1d=(lambda x: g(np.random.permutation(x))), arr=X, axis=1
+    )
 
     return {"f": f, "prop": np.mean(permute_f <= f)}
 
@@ -149,16 +148,15 @@ def wilcoxon(a1, a2, b=100, random_state=None):
     a = np.append(a1, a2)
     a = rankdata(a)
 
-    X = np.apply_along_axis(func1d=np.random.permutation,
-                            arr=np.reshape(np.tile(a, b),
-                                           newshape=(b, n1 + n2)),
-                            axis=1)
+    X = np.apply_along_axis(
+        func1d=np.random.permutation,
+        arr=np.reshape(np.tile(a, b), newshape=(b, n1 + n2)),
+        axis=1,
+    )
 
     w = np.sum(a[:n1])
 
-    permute_w = np.apply_along_axis(func1d=lambda s: np.sum(s[:n1]),
-                                    arr=X,
-                                    axis=1)
+    permute_w = np.apply_along_axis(func1d=lambda s: np.sum(s[:n1]), arr=X, axis=1)
 
     return {"w": w, "prop": np.mean(permute_w <= w)}
 
@@ -194,23 +192,23 @@ def kruskal_wallis(*args, b=100, random_state=None):
     n = np.sum(ns)
     pos = np.append(0, np.cumsum(ns))
     r_arr = rankdata(np.concatenate(args))
-    ri_means = [np.mean(r_arr[pos[i]:pos[i+1]]) for i in range(t)]
+    ri_means = [np.mean(r_arr[pos[i] : pos[i + 1]]) for i in range(t)]
     r_mean = np.mean(r_arr)
 
     def g(a):
-        num = np.sum([ns[i] * (ri_means[i] - r_mean)**2 for i in range(t)])
-        den = (np.sum([np.sum((r_arr[pos[i]:pos[i+1]] -
-               r_mean)**2) for i in range(t)]))
+        num = np.sum([ns[i] * (ri_means[i] - r_mean) ** 2 for i in range(t)])
+        den = np.sum(
+            [np.sum((r_arr[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)]
+        )
         return (n - 1) * num / den
 
     X = np.reshape(np.tile(r_arr, b), newshape=(b, n))
 
     h = g(r_arr)
 
-    permute_h = np.apply_along_axis(func1d=(lambda x:
-                                            g(np.random.permutation(x))),
-                                    arr=X,
-                                    axis=1)
+    permute_h = np.apply_along_axis(
+        func1d=(lambda x: g(np.random.permutation(x))), arr=X, axis=1
+    )
 
     return {"h": h, "prop": np.mean(permute_h <= h)}
 
@@ -252,8 +250,7 @@ def corr_test(a1, a2, method="pearson", b=100, random_state=None):
     n2 = len(a2)
 
     if n1 != n2:
-        raise ValueError("a1 and a2 must have have"
-                         " the same length")
+        raise ValueError("a1 and a2 must have have" " the same length")
 
     a = np.column_stack((a1, a2))
 
@@ -262,23 +259,21 @@ def corr_test(a1, a2, method="pearson", b=100, random_state=None):
     if method in ["pearson", "distance"]:
         X = np.asarray([a] * b)
     elif method == "spearman":
-        a = np.apply_along_axis(func1d=rankdata,
-                                arr=a,
-                                axis=0)
+        a = np.apply_along_axis(func1d=rankdata, arr=a, axis=0)
         X = np.asarray([a] * b)
     else:
-        raise ValueError("method must be either 'pearson'"
-                         " , 'spearman', or 'distance',"
-                         " '{method}' was supplied".
-                         format(method=method))
+        raise ValueError(
+            "method must be either 'pearson'"
+            " , 'spearman', or 'distance',"
+            " '{method}' was supplied".format(method=method)
+        )
 
     def corr(x, y):
         return np.corrcoef(x, y)[0, 1]
 
     c = corr(a[:, 0], a[:, 1])
 
-    permute_c = (np.asarray([corr(np.random.permutation(x[:, 0]), x[:, 1])
-                             for x in X]))
+    permute_c = np.asarray([corr(np.random.permutation(x[:, 0]), x[:, 1]) for x in X])
 
     return {"c": c, "prop": np.mean(permute_c <= c)}
 
@@ -325,20 +320,16 @@ def ks_test(a1, a2, b=100, random_state=None):
     d = np.max([abs(f1(v) - f2(v)) for v in a])
 
     def h(arr, i, m):
-        return (np.searchsorted(arr, i, side="right",
-                                sorter=None) / m)
+        return np.searchsorted(arr, i, side="right", sorter=None) / m
 
     def g(s):
         mask = np.ones(n, dtype=np.bool)
         mask[np.random.choice(range(n), size=n2, replace=False)] = False
 
-        return (np.max([abs(h(s[mask], i, n1) - h(s[~mask], i, n2))
-                        for i in s]))
+        return np.max([abs(h(s[mask], i, n1) - h(s[~mask], i, n2)) for i in s])
 
     X = np.reshape(np.tile(a, b), newshape=(b, n))
 
-    permute_d = np.apply_along_axis(func1d=g,
-                                    arr=X,
-                                    axis=1)
+    permute_d = np.apply_along_axis(func1d=g, arr=X, axis=1)
 
     return {"d": d, "prop": np.mean(permute_d <= d)}

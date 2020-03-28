@@ -22,8 +22,7 @@ def ecdf(a):
     n = len(a)
 
     def f(x):
-        return (np.searchsorted(a, x, side="right",
-                                sorter=None) / n)
+        return np.searchsorted(a, x, side="right", sorter=None) / n
 
     return f
 
@@ -47,14 +46,12 @@ def eqf(a):
     n = len(a)
 
     def inv(x):
-        return np.float(interp1d([(i + 1.0) / n
-                        for i in range(n)], a)(x))
+        return np.float(interp1d([(i + 1.0) / n for i in range(n)], a)(x))
 
     def f(x):
         if not (0 <= x <= 1):
-            raise ValueError("Argument must be"
-                             " between zero and one")
-        elif x < 1/n:
+            raise ValueError("Argument must be" " between zero and one")
+        elif x < 1 / n:
             return a[0]
         else:
             return inv(x)
@@ -87,15 +84,17 @@ def mise(f, g, d, n=100):
         Estimated MISE
     """
     if d[1] <= d[0]:
-        raise ValueError("Invalid domain,"
-                         " upper bound must be"
-                         " strictly greater"
-                         " than lower bound")
+        raise ValueError(
+            "Invalid domain,"
+            " upper bound must be"
+            " strictly greater"
+            " than lower bound"
+        )
 
     p = np.linspace(d[0], d[1], n, endpoint=False)
     w = (d[1] - d[0]) / n
 
-    return np.sum([w * (f(i) - g(i))**2 for i in p])
+    return np.sum([w * (f(i) - g(i)) ** 2 for i in p])
 
 
 def sup_norm(f, g, d, n=100):
@@ -123,10 +122,12 @@ def sup_norm(f, g, d, n=100):
         Estimated supremum norm
     """
     if d[1] <= d[0]:
-        raise ValueError("Invalid domain,"
-                         " upper bound must be"
-                         " strictly greater"
-                         " than lower bound")
+        raise ValueError(
+            "Invalid domain,"
+            " upper bound must be"
+            " strictly greater"
+            " than lower bound"
+        )
 
     p = np.linspace(d[0], d[1], n, endpoint=False)
 

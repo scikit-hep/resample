@@ -1,12 +1,14 @@
 import pytest
 import numpy as np
 from resample.utils import ecdf, sup_norm
-from resample.bootstrap import (bootstrap,
-                                bootstrap_ci,
-                                jackknife_bias,
-                                jackknife_variance,
-                                jackknife,
-                                empirical_influence)
+from resample.bootstrap import (
+    bootstrap,
+    bootstrap_ci,
+    jackknife_bias,
+    jackknife_variance,
+    jackknife,
+    empirical_influence,
+)
 
 np.random.seed(2357)
 
@@ -44,34 +46,34 @@ def test_balanced_bootstrap_eq_orig():
 
 def test_parametric_bootstrap_err_on_multivariate():
     with pytest.raises(ValueError):
-        bootstrap(np.random.normal(size=(10, 2)),
-                  method="parametric",
-                  family="gaussian")
+        bootstrap(
+            np.random.normal(size=(10, 2)), method="parametric", family="gaussian"
+        )
 
 
 def test_parametric_bootstrap_inv_family():
     with pytest.raises(ValueError):
-        bootstrap(x,
-                  method="parametric",
-                  family="____")
+        bootstrap(x, method="parametric", family="____")
 
 
-@pytest.mark.parametrize("family", [("gaussian"),
-                                    ("t"),
-                                    ("laplace"),
-                                    ("logistic"),
-                                    ("F"),
-                                    ("gamma"),
-                                    ("log-normal"),
-                                    ("inverse-gaussian"),
-                                    ("pareto"),
-                                    ("beta"),
-                                    ("poisson")])
+@pytest.mark.parametrize(
+    "family",
+    [
+        ("gaussian"),
+        ("t"),
+        ("laplace"),
+        ("logistic"),
+        ("F"),
+        ("gamma"),
+        ("log-normal"),
+        ("inverse-gaussian"),
+        ("pareto"),
+        ("beta"),
+        ("poisson"),
+    ],
+)
 def test_parametric_bootstrap_shape(family):
-    boot = bootstrap(x,
-                     b=b,
-                     method="parametric",
-                     family=family)
+    boot = bootstrap(x, b=b, method="parametric", family=family)
     assert boot.shape == (b, n)
 
 
@@ -117,13 +119,9 @@ def test_bootstrap_ci_inv_p():
         bootstrap_ci(x, f=np.mean, p=2)
 
 
-@pytest.mark.parametrize("ci_method", [("percentile"),
-                                       ("bca"),
-                                       ("t")])
+@pytest.mark.parametrize("ci_method", [("percentile"), ("bca"), ("t")])
 def test_bootstrap_ci_len(ci_method):
-    ci = bootstrap_ci(x,
-                      f=np.mean,
-                      ci_method=ci_method)
+    ci = bootstrap_ci(x, f=np.mean, ci_method=ci_method)
     assert len(ci) == 2
 
 
