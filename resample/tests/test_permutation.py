@@ -1,8 +1,6 @@
 import numpy as np
 from resample.permutation import ttest, anova, ks_test
 
-np.random.seed(2357)
-
 
 def test_t_sq_eq_f():
     x = np.random.randn(100)
