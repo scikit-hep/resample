@@ -10,8 +10,6 @@ from resample.bootstrap import (
     empirical_influence,
 )
 
-np.random.seed(2357)
-
 n = 100
 b = 100
 x = np.random.random(n)
@@ -59,17 +57,17 @@ def test_parametric_bootstrap_inv_family():
 @pytest.mark.parametrize(
     "family",
     [
-        ("gaussian"),
-        ("t"),
-        ("laplace"),
-        ("logistic"),
-        ("F"),
-        ("gamma"),
-        ("log-normal"),
-        ("inverse-gaussian"),
-        ("pareto"),
-        ("beta"),
-        ("poisson"),
+        "gaussian",
+        "t",
+        "laplace",
+        "logistic",
+        "F",
+        "gamma",
+        "log-normal",
+        "inverse-gaussian",
+        "pareto",
+        "beta",
+        "poisson",
     ],
 )
 def test_parametric_bootstrap_shape(family):
@@ -119,7 +117,7 @@ def test_bootstrap_ci_inv_p():
         bootstrap_ci(x, f=np.mean, p=2)
 
 
-@pytest.mark.parametrize("ci_method", [("percentile"), ("bca"), ("t")])
+@pytest.mark.parametrize("ci_method", ["percentile", "bca", "t"])
 def test_bootstrap_ci_len(ci_method):
     ci = bootstrap_ci(x, f=np.mean, ci_method=ci_method)
     assert len(ci) == 2
