@@ -1,4 +1,3 @@
-from __future__ import division
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -49,9 +48,10 @@ def eqf(a):
         return np.float(interp1d([(i + 1.0) / n for i in range(n)], a)(x))
 
     def f(x):
-        if not (0 <= x <= 1):
-            raise ValueError("Argument must be" " between zero and one")
+        if not 0 <= x <= 1:
+            raise ValueError("Argument must be between zero and one")
         elif x < 1 / n:
+            # TODO: How to handle this case?
             return a[0]
         else:
             return inv(x)
@@ -85,10 +85,10 @@ def mise(f, g, d, n=100):
     """
     if d[1] <= d[0]:
         raise ValueError(
-            "Invalid domain,"
-            " upper bound must be"
-            " strictly greater"
-            " than lower bound"
+            "Invalid domain, "
+            "upper bound must be "
+            "strictly greater "
+            "than lower bound "
         )
 
     p = np.linspace(d[0], d[1], n, endpoint=False)
@@ -123,10 +123,10 @@ def sup_norm(f, g, d, n=100):
     """
     if d[1] <= d[0]:
         raise ValueError(
-            "Invalid domain,"
-            " upper bound must be"
-            " strictly greater"
-            " than lower bound"
+            "Invalid domain, "
+            "upper bound must be "
+            "strictly greater "
+            "than lower bound "
         )
 
     p = np.linspace(d[0], d[1], n, endpoint=False)

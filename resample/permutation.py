@@ -1,4 +1,3 @@
-from __future__ import division
 import numpy as np
 from scipy.stats import rankdata
 from resample.utils import ecdf
@@ -225,7 +224,7 @@ def corr_test(a1, a2, method="pearson", b=100, random_state=None):
     a2 : array-like
         Second sample
 
-    method : string, {'pearson', 'spearman'},
+    method : str, {'pearson', 'spearman'},
             default : 'pearson'
         Correlation method
 
@@ -250,7 +249,7 @@ def corr_test(a1, a2, method="pearson", b=100, random_state=None):
     n2 = len(a2)
 
     if n1 != n2:
-        raise ValueError("a1 and a2 must have have" " the same length")
+        raise ValueError("a1 and a2 must have have the same length")
 
     a = np.column_stack((a1, a2))
 
@@ -328,8 +327,8 @@ def ks_test(a1, a2, b=100, random_state=None):
 
         return np.max([abs(h(s[mask], i, n1) - h(s[~mask], i, n2)) for i in s])
 
-    X = np.reshape(np.tile(a, b), newshape=(b, n))
+    x = np.reshape(np.tile(a, b), newshape=(b, n))
 
-    permute_d = np.apply_along_axis(func1d=g, arr=X, axis=1)
+    permute_d = np.apply_along_axis(func1d=g, arr=x, axis=1)
 
     return {"d": d, "prop": np.mean(permute_d <= d)}

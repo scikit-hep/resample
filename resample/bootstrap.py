@@ -1,4 +1,3 @@
-from __future__ import division
 import numpy as np
 from scipy.stats import (
     norm,
@@ -132,11 +131,11 @@ def bootstrap(
     b : int, default : 100
         Number of bootstrap samples
 
-    method : string, {'ordinary', 'balanced', 'parametric'},
+    method : str, {'ordinary', 'balanced', 'parametric'},
             default : 'balanced'
        Bootstrapping method
 
-    family : string or None, {'gaussian', 't','laplace',
+    family : str or None, {'gaussian', 't','laplace',
             'logistic', 'F', 'gamma', 'log-normal',
             'inverse-gaussian', 'pareto', 'beta',
             'poisson'}, default : None
@@ -336,15 +335,15 @@ def bootstrap_ci(
     b : int, default : 100
         Number of bootstrap samples
 
-    ci_method : string, {'percentile', 'bca', 't'},
+    ci_method : str, {'percentile', 'bca', 't'},
             default : 'percentile'
         Confidence interval method
 
-    boot_method : string, {'ordinary', 'balanced',
+    boot_method : str, {'ordinary', 'balanced',
             'parametric'}, default : 'balanced'
        Bootstrapping method
 
-    family : string or None, {'gaussian', 't','laplace',
+    family : str or None, {'gaussian', 't','laplace',
             'logistic', 'F', 'gamma', 'log-normal',
             'inverse-gaussian', 'pareto', 'beta',
             'poisson'}, default : None
