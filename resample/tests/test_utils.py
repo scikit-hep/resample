@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from resample.utils import ecdf, mise, sup_norm
+from resample.utils import ecdf, eqf, mise, sup_norm
 
 
 def test_ecdf_increasing():
@@ -24,8 +24,25 @@ def test_ecdf_simple_cases():
     assert g(3) == 1.0
 
 
+def test_eqf_simple_cases():
+    g = eqf([0, 1, 2, 3])
+    assert g(0.25) == 0
+    assert g(0.5) == 1
+    assert g(0.75) == 2
+    assert g(1.0) == 3
+
+
+@pytest.mark.parametrize("arg", [-1, 1.5])
+def test_eqf_out_of_bounds(arg):
+    g = eqf([0, 1, 2, 3])
+    msg = "Argument must be between zero and one"
+    with pytest.raises(ValueError, match=msg):
+        g(arg)
+
+
 def test_mise_invalid_domain():
-    with pytest.raises(ValueError):
+    msg = "Invalid domain"
+    with pytest.raises(ValueError, match=msg):
         mise(abs, abs, (1, 0))
 
 
@@ -34,7 +51,8 @@ def test_mise_identical_functions():
 
 
 def test_sup_norm_invalid_domain():
-    with pytest.raises(ValueError):
+    msg = "Invalid domain"
+    with pytest.raises(ValueError, match=msg):
         sup_norm(abs, abs, (1, 0))
 
 
