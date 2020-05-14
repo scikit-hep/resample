@@ -111,7 +111,7 @@ def empirical_influence(a: np.ndarray, f: Callable) -> float:
 
 def bootstrap(
     a: np.ndarray,
-    f: Callable = None,
+    f: Optional[Callable] = None,
     b: int = 100,
     method: str = "balanced",
     family: Optional[str] = None,
