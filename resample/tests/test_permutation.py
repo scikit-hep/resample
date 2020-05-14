@@ -6,7 +6,7 @@ def test_t_sq_eq_f():
     x = np.random.randn(100)
     y = np.random.randn(100)
     tsq = ttest(x, y)["t"] ** 2
-    f = anova(x, y)["f"]
+    f = anova([x, y])["f"]
     assert np.isclose(tsq, f)
 
 

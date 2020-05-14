@@ -59,7 +59,7 @@ def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Di
     return {"t": t, "prop": np.mean(permute_t <= t)}
 
 
-def anova(*args: List, b: int = 100, random_state=None) -> Dict:
+def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     """
     Perform permutation one way analysis of variance
 
@@ -83,7 +83,6 @@ def anova(*args: List, b: int = 100, random_state=None) -> Dict:
     np.random.seed(random_state)
 
     args = [np.asarray(a) for a in args]
-
     args = [a[~np.isnan(a)] for a in args]
 
     t = len(args)
@@ -162,7 +161,7 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
     return {"w": w, "prop": np.mean(permute_w <= w)}
 
 
-def kruskal_wallis(*args: List, b: int = 100, random_state=None) -> Dict:
+def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     """
     Perform permutation Kruskal-Wallis test
 
@@ -198,17 +197,15 @@ def kruskal_wallis(*args: List, b: int = 100, random_state=None) -> Dict:
 
     def g(a):
         num = np.sum([ns[i] * (ri_means[i] - r_mean) ** 2 for i in range(t)])
-        den = np.sum(
-            [np.sum((r_arr[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)]
-        )
+        den = np.sum([np.sum((a[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)])
         return (n - 1) * num / den
 
-    X = np.reshape(np.tile(r_arr, b), newshape=(b, n))
+    x = np.reshape(np.tile(r_arr, b), newshape=(b, n))
 
     h = g(r_arr)
 
     permute_h = np.apply_along_axis(
-        func1d=(lambda x: g(np.random.permutation(x))), arr=X, axis=1
+        func1d=(lambda s: g(np.random.permutation(s))), arr=x, axis=1
     )
 
     return {"h": h, "prop": np.mean(permute_h <= h)}
