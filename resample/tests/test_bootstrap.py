@@ -1,14 +1,15 @@
-import pytest
 import numpy as np
-from resample.utils import ecdf, sup_norm
+import pytest
+
 from resample.bootstrap import (
     bootstrap,
     bootstrap_ci,
+    empirical_influence,
+    jackknife,
     jackknife_bias,
     jackknife_variance,
-    jackknife,
-    empirical_influence,
 )
+from resample.utils import ecdf, sup_norm
 
 n = 100
 b = 100
@@ -36,20 +37,22 @@ def test_smooth_bootstrap_shape():
     assert boot.shape == (b, n)
 
 
-def test_balanced_bootstrap_eq_orig():
+def test_balanced_bootstrap_distributions_equal():
     xbal = np.ravel(bootstrap(x, method="balanced"))
     g = ecdf(xbal)
     assert sup_norm(f, g, (-10, 10)) == 0.0
 
 
-def test_parametric_bootstrap_err_on_multivariate():
+def test_parametric_bootstrap_raises_on_multivariate():
+    # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap(
             np.random.normal(size=(10, 2)), method="parametric", family="gaussian"
         )
 
 
-def test_parametric_bootstrap_inv_family():
+def test_parametric_bootstrap_invalid_family():
+    # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap(x, method="parametric", family="____")
 
@@ -75,29 +78,31 @@ def test_parametric_bootstrap_shape(family):
     assert boot.shape == (b, n)
 
 
-def test_bootstrap_dim():
+def test_bootstrap_shape():
     arr = np.random.normal(size=(16, 8, 4, 2))
     boot = bootstrap(arr, b=b)
     assert boot.shape == (b, 16, 8, 4, 2)
 
 
-def test_bootstrap_eq_along_axis():
+def test_bootstrap_equal_along_axis():
     arr = np.reshape(np.tile([0, 1, 2], 3), newshape=(3, 3))
     boot = bootstrap(arr, b=10)
     assert np.all([np.array_equal(arr, a) for a in boot])
 
 
 def test_bootstrap_full_strata():
-    boot = bootstrap(x, b=b, strata=list(range(n)))
+    boot = bootstrap(x, b=b, strata=np.array(range(n)))
     assert np.all([np.array_equal(x, a) for a in boot])
 
 
-def test_bootstrap_inv_strata():
+def test_bootstrap_invalid_strata():
+    # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap(x, strata=np.arange(len(x) + 1))
 
 
-def test_bootstrap_inv_method():
+def test_bootstrap_invalid_method():
+    # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap(x, method="____")
 
@@ -107,12 +112,13 @@ def test_jackknife_known_bias():
     assert np.isclose(est, 0)
 
 
-def test_jackknife_known_var():
+def test_jackknife_known_variance():
     est = jackknife_variance(x, np.mean)
     assert np.isclose(est, np.var(x, ddof=1) / len(x))
 
 
-def test_bootstrap_ci_inv_p():
+def test_bootstrap_ci_invalid_p():
+    # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap_ci(x, f=np.mean, p=2)
 
@@ -123,11 +129,13 @@ def test_bootstrap_ci_len(ci_method):
     assert len(ci) == 2
 
 
-def test_bootstrap_ci_inv_boot_method():
+def test_bootstrap_ci_invalid_boot_method():
+    # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap_ci(x, f=np.mean, boot_method="____")
 
 
-def test_bootstrap_ci_inv_ci_method():
+def test_bootstrap_ci_invalid_ci_method():
+    # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap_ci(x, f=np.mean, ci_method="____")

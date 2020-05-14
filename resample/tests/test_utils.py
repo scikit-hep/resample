@@ -17,7 +17,7 @@ def test_ecdf_at_infinity():
 
 
 def test_ecdf_simple_cases():
-    g = ecdf([0, 1, 2, 3])
+    g = ecdf(np.array([0, 1, 2, 3]))
     assert g(0) == 0.25
     assert g(1) == 0.5
     assert g(2) == 0.75
@@ -25,7 +25,7 @@ def test_ecdf_simple_cases():
 
 
 def test_eqf_simple_cases():
-    g = eqf([0, 1, 2, 3])
+    g = eqf(np.array([0, 1, 2, 3]))
     assert g(0.25) == 0
     assert g(0.5) == 1
     assert g(0.75) == 2
@@ -33,8 +33,8 @@ def test_eqf_simple_cases():
 
 
 @pytest.mark.parametrize("arg", [-1, 1.5])
-def test_eqf_out_of_bounds(arg):
-    g = eqf([0, 1, 2, 3])
+def test_eqf_out_of_bounds_raises(arg):
+    g = eqf(np.array([0, 1, 2, 3]))
     msg = "Argument must be between zero and one"
     with pytest.raises(ValueError, match=msg):
         g(arg)
