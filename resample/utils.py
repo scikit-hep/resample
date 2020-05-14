@@ -1,8 +1,10 @@
+from typing import Callable, Tuple
+
 import numpy as np
 from scipy.interpolate import interp1d
 
 
-def ecdf(a):
+def ecdf(a: np.ndarray) -> Callable:
     """
     Return the empirical distribution function
     for the given sample
@@ -14,7 +16,7 @@ def ecdf(a):
 
     Returns
     -------
-    f : callable
+    callable
         Empirical distribution function
     """
     a = np.sort(a)
@@ -26,7 +28,7 @@ def ecdf(a):
     return f
 
 
-def eqf(a):
+def eqf(a: np.ndarray) -> Callable:
     """
     Return an empirical quantile function
     for the given sample
@@ -59,7 +61,7 @@ def eqf(a):
     return f
 
 
-def mise(f, g, d, n=100):
+def mise(f: Callable, g: Callable, d: Tuple[float, float], n: int = 100):
     """
     Estimate mean integrated squared error
     between two functions using Riemann sums
@@ -97,7 +99,7 @@ def mise(f, g, d, n=100):
     return np.sum([w * (f(i) - g(i)) ** 2 for i in p])
 
 
-def sup_norm(f, g, d, n=100):
+def sup_norm(f: Callable, g: Callable, d: Tuple[float, float], n: int = 100):
     """
     Estimate supremum norm of the difference
     of two functions

@@ -1,9 +1,11 @@
+from typing import List, Dict
+
 import numpy as np
 from scipy.stats import rankdata
 from resample.utils import ecdf
 
 
-def ttest(a1, a2, b=100, random_state=None):
+def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
     Perform permutation two sample t-test (the mean of a2
     is subtracted from that of a1)
@@ -57,7 +59,7 @@ def ttest(a1, a2, b=100, random_state=None):
     return {"t": t, "prop": np.mean(permute_t <= t)}
 
 
-def anova(*args, b=100, random_state=None):
+def anova(*args: List, b: int = 100, random_state=None) -> Dict:
     """
     Perform permutation one way analysis of variance
 
@@ -109,7 +111,7 @@ def anova(*args, b=100, random_state=None):
     return {"f": f, "prop": np.mean(permute_f <= f)}
 
 
-def wilcoxon(a1, a2, b=100, random_state=None):
+def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
     Perform permutation Wilcoxon rank sum test
 
@@ -160,7 +162,7 @@ def wilcoxon(a1, a2, b=100, random_state=None):
     return {"w": w, "prop": np.mean(permute_w <= w)}
 
 
-def kruskal_wallis(*args, b=100, random_state=None):
+def kruskal_wallis(*args: List, b: int = 100, random_state=None) -> Dict:
     """
     Perform permutation Kruskal-Wallis test
 
@@ -212,7 +214,13 @@ def kruskal_wallis(*args, b=100, random_state=None):
     return {"h": h, "prop": np.mean(permute_h <= h)}
 
 
-def corr_test(a1, a2, method="pearson", b=100, random_state=None):
+def corr_test(
+    a1: np.ndarray,
+    a2: np.ndarray,
+    method: str = "pearson",
+    b: int = 100,
+    random_state=None,
+) -> Dict:
     """
     Perform permutation correlation test
 
@@ -277,7 +285,7 @@ def corr_test(a1, a2, method="pearson", b=100, random_state=None):
     return {"c": c, "prop": np.mean(permute_c <= c)}
 
 
-def ks_test(a1, a2, b=100, random_state=None):
+def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
     Perform permutation two sample K-S test
 
