@@ -197,7 +197,7 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
 
     def g(a):
         num = np.sum([ns[i] * (ri_means[i] - r_mean) ** 2 for i in range(t)])
-        den = np.sum([np.sum((a[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)])
+        den = np.sum([np.sum((a[pos[i]: pos[i + 1]] - r_mean) ** 2) for i in range(t)])
         return (n - 1) * num / den
 
     x = np.reshape(np.tile(r_arr, b), newshape=(b, n))
