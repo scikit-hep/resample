@@ -6,8 +6,7 @@ from scipy.interpolate import interp1d
 
 def ecdf(a: np.ndarray) -> Callable:
     """
-    Return the empirical distribution function
-    for the given sample
+    Return the empirical distribution function for the given sample.
 
     Parameters
     ----------
@@ -30,8 +29,7 @@ def ecdf(a: np.ndarray) -> Callable:
 
 def eqf(a: np.ndarray) -> Callable:
     """
-    Return an empirical quantile function
-    for the given sample
+    Return an empirical quantile function for the given sample.
 
     Parameters
     ----------
@@ -61,10 +59,9 @@ def eqf(a: np.ndarray) -> Callable:
     return f
 
 
-def mise(f: Callable, g: Callable, d: Tuple[float, float], n: int = 100):
+def mise(f: Callable, g: Callable, d: Tuple[float, float], n: int = 100) -> float:
     """
-    Estimate mean integrated squared error
-    between two functions using Riemann sums
+    Estimate mean integrated squared error between two functions using Riemann sums.
 
     Parameters
     ----------
@@ -99,10 +96,9 @@ def mise(f: Callable, g: Callable, d: Tuple[float, float], n: int = 100):
     return np.sum([w * (f(i) - g(i)) ** 2 for i in p])
 
 
-def sup_norm(f: Callable, g: Callable, d: Tuple[float, float], n: int = 100):
+def sup_norm(f: Callable, g: Callable, d: Tuple[float, float], n: int = 100) -> float:
     """
-    Estimate supremum norm of the difference
-    of two functions
+    Estimate supremum norm of the difference of two functions.
 
     Parameters
     ----------

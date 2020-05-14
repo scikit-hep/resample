@@ -20,9 +20,8 @@ from resample.utils import eqf
 
 def jackknife(a: np.ndarray, f: Optional[Callable] = None) -> np.ndarray:
     """
-    Calculate jackknife estimates for a given sample
-    and estimator, return leave-one-out samples
-    if estimator is not specified
+    Calculate jackknife estimates for a given sample and estimator, return
+    leave-one-out samples if estimator is not specified.
 
     Parameters
     ----------
@@ -90,8 +89,8 @@ def jackknife_variance(a: np.ndarray, f: Callable) -> float:
 
 def empirical_influence(a: np.ndarray, f: Callable) -> float:
     """
-    Calculate the empirical influence function for a given
-    sample and estimator using the jackknife method
+    Calculate the empirical influence function for a given sample and estimator
+    using the jackknife method.
 
     Parameters
     ----------
@@ -120,8 +119,8 @@ def bootstrap(
     random_state=None,
 ):
     """
-    Calculate function values from bootstrap samples or
-    optionally return bootstrap samples themselves
+    Calculate function values from bootstrap samples or optionally return
+    bootstrap samples themselves.
 
     Parameters
     ----------
@@ -322,7 +321,7 @@ def bootstrap_ci(
     random_state=None,
 ) -> Tuple[float, float]:
     """
-    Calculate bootstrap confidence intervals
+    Calculate bootstrap confidence intervals.
 
     Parameters
     ----------

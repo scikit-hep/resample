@@ -7,8 +7,8 @@ from resample.utils import ecdf
 
 def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation two sample t-test (the mean of a2
-    is subtracted from that of a1)
+    Perform permutation two sample t-test (the mean of a2 is subtracted from that of
+    a1).
 
     Parameters
     ----------
@@ -61,7 +61,7 @@ def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Di
 
 def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation one way analysis of variance
+    Perform permutation one way analysis of variance.
 
     Parameters
     ----------
@@ -112,7 +112,7 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
 
 def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation Wilcoxon rank sum test
+    Perform permutation Wilcoxon rank sum test.
 
     Parameters
     ----------
@@ -163,7 +163,7 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
 
 def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation Kruskal-Wallis test
+    Perform permutation Kruskal-Wallis test.
 
     Parameters
     ----------
@@ -219,7 +219,7 @@ def corr_test(
     random_state=None,
 ) -> Dict:
     """
-    Perform permutation correlation test
+    Perform permutation correlation test.
 
     Parameters
     ----------
@@ -284,7 +284,7 @@ def corr_test(
 
 def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation two sample K-S test
+    Perform permutation two sample Kolmogorov-Smirnov test.
 
     Parameters
     ----------
