@@ -43,7 +43,7 @@ def test_balanced_bootstrap_distributions_equal():
     assert sup_norm(f, g, (-10, 10)) == 0.0
 
 
-def test_parametric_bootstrap_raises_on_multivariate():
+def test_parametric_bootstrap_multivariate_raises():
     # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap(
@@ -51,7 +51,7 @@ def test_parametric_bootstrap_raises_on_multivariate():
         )
 
 
-def test_parametric_bootstrap_invalid_family():
+def test_parametric_bootstrap_invalid_family_raises():
     # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap(x, method="parametric", family="____")
@@ -95,13 +95,13 @@ def test_bootstrap_full_strata():
     assert np.all([np.array_equal(x, a) for a in boot])
 
 
-def test_bootstrap_invalid_strata():
+def test_bootstrap_invalid_strata_raises():
     # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap(x, strata=np.arange(len(x) + 1))
 
 
-def test_bootstrap_invalid_method():
+def test_bootstrap_invalid_method_raises():
     # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap(x, method="____")
@@ -117,7 +117,7 @@ def test_jackknife_known_variance():
     assert np.isclose(est, np.var(x, ddof=1) / len(x))
 
 
-def test_bootstrap_ci_invalid_p():
+def test_bootstrap_ci_invalid_p_raises():
     # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap_ci(x, f=np.mean, p=2)
@@ -129,13 +129,13 @@ def test_bootstrap_ci_len(ci_method):
     assert len(ci) == 2
 
 
-def test_bootstrap_ci_invalid_boot_method():
+def test_bootstrap_ci_invalid_boot_method_raises():
     # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap_ci(x, f=np.mean, boot_method="____")
 
 
-def test_bootstrap_ci_invalid_ci_method():
+def test_bootstrap_ci_invalid_ci_method_raises():
     # TODO: Test error message
     with pytest.raises(ValueError):
         bootstrap_ci(x, f=np.mean, ci_method="____")
