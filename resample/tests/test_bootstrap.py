@@ -32,11 +32,6 @@ def test_ordinary_bootstrap_shape():
     assert boot.shape == (b, n)
 
 
-def test_smooth_bootstrap_shape():
-    boot = bootstrap(x, b=b, smooth=True)
-    assert boot.shape == (b, n)
-
-
 def test_balanced_bootstrap_distributions_equal():
     xbal = np.ravel(bootstrap(x, method="balanced"))
     g = ecdf(xbal)

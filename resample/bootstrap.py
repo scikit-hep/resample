@@ -115,7 +115,6 @@ def bootstrap(
     method: str = "balanced",
     family: Optional[str] = None,
     strata: Optional[np.ndarray] = None,
-    smooth: bool = False,
     random_state=None,
 ):
     """
@@ -147,10 +146,6 @@ def bootstrap(
     strata : array-like or None, default : None
         Stratification labels, ignored when method
         is parametric
-
-    smooth : boolean, default : False
-        Whether or not to add Gaussian noise to bootstrap
-        samples, ignored when method is parametric
 
     random_state : int or None, default : None
         Random number seed
@@ -298,10 +293,6 @@ def bootstrap(
                 " '{method}' was supplied".format(method=method)
             )
 
-    # samples are already smooth in the parametric case
-    if smooth and (method != "parametric"):
-        x += np.random.normal(size=x.shape, scale=1 / np.sqrt(n))
-
     if f is None:
         return x
     else:
@@ -317,7 +308,6 @@ def bootstrap_ci(
     boot_method: str = "balanced",
     family: Optional[str] = None,
     strata: Optional[np.ndarray] = None,
-    smooth: bool = False,
     random_state=None,
 ) -> Tuple[float, float]:
     """
@@ -356,10 +346,6 @@ def bootstrap_ci(
         Stratification labels, ignored when boot_method
         is parametric
 
-    smooth : boolean, default : False
-        Whether or not to add Gaussian noise to bootstrap
-        samples, ignored when method is parametric
-
     random_state : int or None, default : None
         Random number seed
 
@@ -387,7 +373,6 @@ def bootstrap_ci(
         method=boot_method,
         family=family,
         strata=strata,
-        smooth=smooth,
         random_state=random_state,
     )
 
