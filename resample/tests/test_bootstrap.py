@@ -131,3 +131,7 @@ def test_bootstrap_ci_inv_boot_method():
 def test_bootstrap_ci_inv_ci_method():
     with pytest.raises(ValueError):
         bootstrap_ci(x, f=np.mean, ci_method="____")
+
+
+def test_fails():
+    assert False
