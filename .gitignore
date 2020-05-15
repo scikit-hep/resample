@@ -13,3 +13,4 @@ html*
 _build
 *coverage*
 .idea
+.mypy*
