@@ -44,16 +44,16 @@ def test_balanced_bootstrap_distributions_equal():
 
 
 def test_parametric_bootstrap_multivariate_raises():
-    # TODO: Test error message
-    with pytest.raises(ValueError):
+    msg = "must be one-dimensional"
+    with pytest.raises(ValueError, match=msg):
         bootstrap(
             np.random.normal(size=(10, 2)), method="parametric", family="gaussian"
         )
 
 
 def test_parametric_bootstrap_invalid_family_raises():
-    # TODO: Test error message
-    with pytest.raises(ValueError):
+    msg = "Invalid family"
+    with pytest.raises(ValueError, match=msg):
         bootstrap(x, method="parametric", family="____")
 
 
@@ -96,14 +96,14 @@ def test_bootstrap_full_strata():
 
 
 def test_bootstrap_invalid_strata_raises():
-    # TODO: Test error message
-    with pytest.raises(ValueError):
+    msg = "must have the same length"
+    with pytest.raises(ValueError, match=msg):
         bootstrap(x, strata=np.arange(len(x) + 1))
 
 
 def test_bootstrap_invalid_method_raises():
-    # TODO: Test error message
-    with pytest.raises(ValueError):
+    msg = "method must be either 'ordinary', 'balanced', or 'parametric'"
+    with pytest.raises(ValueError, match=msg):
         bootstrap(x, method="____")
 
 
@@ -130,12 +130,12 @@ def test_bootstrap_ci_len(ci_method):
 
 
 def test_bootstrap_ci_invalid_boot_method_raises():
-    # TODO: Test error message
-    with pytest.raises(ValueError):
+    msg = "must be 'ordinary', 'balanced', or 'parametric'"
+    with pytest.raises(ValueError, match=msg):
         bootstrap_ci(x, f=np.mean, boot_method="____")
 
 
 def test_bootstrap_ci_invalid_ci_method_raises():
-    # TODO: Test error message
-    with pytest.raises(ValueError):
+    msg = "method must be 'percentile', 'bca', or 't'"
+    with pytest.raises(ValueError, match=msg):
         bootstrap_ci(x, f=np.mean, ci_method="____")
