@@ -1,0 +1,30 @@
+trigger:
+- master
+
+pr:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.6'
+
+- script: python -m pip install --upgrade pip
+  displayName: 'Upgrade pip'
+
+- script: |
+    pip install -r requirements.txt
+    pip install black mypy pytest pytest-cov
+  displayName: 'Install requirements'
+
+- script: black --check ./resample
+  displayName: 'Check code formatting'
+
+- script: mypy ./resample
+  displayName: 'Run type checks'
+
+- script: pytest ./resample/tests --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
+  displayName: 'Run tests'
