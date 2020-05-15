@@ -16,22 +16,22 @@ strategy:
       imageName: 'ubuntu-latest'
       pythonVersion: '3.8'
     mac36:
-      imageName: 'macos-10.14'
+      imageName: 'macos-latest'
       pythonVersion: '3.6'
     mac37:
-      imageName: 'macos-10.14'
+      imageName: 'macos-latest'
       pythonVersion: '3.7'
     mac38:
-      imageName: 'macos-10.14'
+      imageName: 'macos-latest'
       pythonVersion: '3.8'
     windows36:
-      imageName: 'vs2017-win2016'
+      imageName: 'windows-latest'
       pythonVersion: '3.6'
     windows37:
-      imageName: 'vs2017-win2016'
+      imageName: 'windows-latest'
       pythonVersion: '3.7'
     windows38:
-      imageName: 'vs2017-win2016'
+      imageName: 'windows-latest'
       pythonVersion: '3.8'
 
 pool:
