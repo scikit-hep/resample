@@ -4,18 +4,28 @@ trigger:
 pr:
 - master
 
+strategy:
+  matrix:
+    linux36:
+      imageName: 'ubuntu-latest'
+      pythonVersion: '3.6'
+    mac36:
+      imageName: 'macos-10.14'
+      pythonVersion: '3.6'
+    windows36:
+      imageName: 'vs2017-win2016'
+      pythonVersion: '3.6'
+
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: $(imageName)
 
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '3.6'
-
-- script: python -m pip install --upgrade pip
-  displayName: 'Upgrade pip'
+    versionSpec: $(pythonVersion)
 
 - script: |
+    python -m pip install --upgrade pip
     pip install -r requirements.txt
     pip install black mypy pytest pytest-cov
   displayName: 'Install requirements'
