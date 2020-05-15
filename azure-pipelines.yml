@@ -15,11 +15,16 @@ steps:
 - script: python -m pip install --upgrade pip
   displayName: 'Upgrade pip'
 
-- script: pip install -r requirements.txt
+- script: |
+    pip install -r requirements.txt
+    pip install black mypy pytest pytest-cov
   displayName: 'Install requirements'
 
-- script: |
-    pip install pytest
-    pip install pytest-cov
-    pytest ./resample/tests --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
+- script: black --check ./resample
+  displayName: 'Check code formatting'
+
+- script: mypy ./resample
+  displayName: 'Run type checks'
+
+- script: pytest ./resample/tests --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
   displayName: 'Run tests'
