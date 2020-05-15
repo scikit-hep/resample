@@ -22,5 +22,4 @@ steps:
     pip install pytest
     pip install pytest-cov
     pytest ./resample/tests --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
-  displayName: 'Test with pytest'
-  
+  displayName: 'Run tests'
