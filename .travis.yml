@@ -2,7 +2,6 @@ env:
   - CODECOV_TOKEN="f002902d-57d7-4620-9c90-06fc547e8200"
 language: python
 python:
-  - "3.4"
   - "3.5"
   - "3.5-dev"
   - "3.6"
