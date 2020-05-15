@@ -1,12 +1,14 @@
+from typing import List, Dict
+
 import numpy as np
 from scipy.stats import rankdata
 from resample.utils import ecdf
 
 
-def ttest(a1, a2, b=100, random_state=None):
+def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation two sample t-test (the mean of a2
-    is subtracted from that of a1)
+    Perform permutation two sample t-test (the mean of a2 is subtracted from that of
+    a1).
 
     Parameters
     ----------
@@ -57,9 +59,9 @@ def ttest(a1, a2, b=100, random_state=None):
     return {"t": t, "prop": np.mean(permute_t <= t)}
 
 
-def anova(*args, b=100, random_state=None):
+def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation one way analysis of variance
+    Perform permutation one way analysis of variance.
 
     Parameters
     ----------
@@ -81,7 +83,6 @@ def anova(*args, b=100, random_state=None):
     np.random.seed(random_state)
 
     args = [np.asarray(a) for a in args]
-
     args = [a[~np.isnan(a)] for a in args]
 
     t = len(args)
@@ -109,9 +110,9 @@ def anova(*args, b=100, random_state=None):
     return {"f": f, "prop": np.mean(permute_f <= f)}
 
 
-def wilcoxon(a1, a2, b=100, random_state=None):
+def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation Wilcoxon rank sum test
+    Perform permutation Wilcoxon rank sum test.
 
     Parameters
     ----------
@@ -160,9 +161,9 @@ def wilcoxon(a1, a2, b=100, random_state=None):
     return {"w": w, "prop": np.mean(permute_w <= w)}
 
 
-def kruskal_wallis(*args, b=100, random_state=None):
+def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation Kruskal-Wallis test
+    Perform permutation Kruskal-Wallis test.
 
     Parameters
     ----------
@@ -196,25 +197,29 @@ def kruskal_wallis(*args, b=100, random_state=None):
 
     def g(a):
         num = np.sum([ns[i] * (ri_means[i] - r_mean) ** 2 for i in range(t)])
-        den = np.sum(
-            [np.sum((r_arr[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)]
-        )
+        den = np.sum([np.sum((a[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)])
         return (n - 1) * num / den
 
-    X = np.reshape(np.tile(r_arr, b), newshape=(b, n))
+    x = np.reshape(np.tile(r_arr, b), newshape=(b, n))
 
     h = g(r_arr)
 
     permute_h = np.apply_along_axis(
-        func1d=(lambda x: g(np.random.permutation(x))), arr=X, axis=1
+        func1d=(lambda s: g(np.random.permutation(s))), arr=x, axis=1
     )
 
     return {"h": h, "prop": np.mean(permute_h <= h)}
 
 
-def corr_test(a1, a2, method="pearson", b=100, random_state=None):
+def corr_test(
+    a1: np.ndarray,
+    a2: np.ndarray,
+    method: str = "pearson",
+    b: int = 100,
+    random_state=None,
+) -> Dict:
     """
-    Perform permutation correlation test
+    Perform permutation correlation test.
 
     Parameters
     ----------
@@ -277,9 +282,9 @@ def corr_test(a1, a2, method="pearson", b=100, random_state=None):
     return {"c": c, "prop": np.mean(permute_c <= c)}
 
 
-def ks_test(a1, a2, b=100, random_state=None):
+def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation two sample K-S test
+    Perform permutation two sample Kolmogorov-Smirnov test.
 
     Parameters
     ----------

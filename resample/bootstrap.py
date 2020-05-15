@@ -1,3 +1,5 @@
+from typing import Callable, Optional, Tuple
+
 import numpy as np
 from scipy.stats import (
     norm,
@@ -12,14 +14,14 @@ from scipy.stats import (
     invgauss,
     poisson,
 )
+
 from resample.utils import eqf
 
 
-def jackknife(a, f=None):
+def jackknife(a: np.ndarray, f: Optional[Callable] = None) -> np.ndarray:
     """
-    Calculate jackknife estimates for a given sample
-    and estimator, return leave-one-out samples
-    if estimator is not specified
+    Calculate jackknife estimates for a given sample and estimator, return
+    leave-one-out samples if estimator is not specified.
 
     Parameters
     ----------
@@ -31,7 +33,7 @@ def jackknife(a, f=None):
 
     Returns
     -------
-    y | X : np.array
+    np.ndarray
         Jackknife estimates or leave-one-out samples
     """
     arr = np.asarray([a] * len(a))
@@ -43,9 +45,9 @@ def jackknife(a, f=None):
         return np.asarray([f(s) for s in x])
 
 
-def jackknife_bias(a, f):
+def jackknife_bias(a: np.ndarray, f: Callable) -> float:
     """
-    Calculate jackknife estimate of bias
+    Calculate jackknife estimate of bias.
 
     Parameters
     ----------
@@ -57,15 +59,15 @@ def jackknife_bias(a, f):
 
     Returns
     -------
-    y : float
+    float
         Jackknife estimate of bias
     """
     return (len(a) - 1) * np.mean(jackknife(a, f) - f(a))
 
 
-def jackknife_variance(a, f):
+def jackknife_variance(a: np.ndarray, f: Callable) -> float:
     """
-    Calculate jackknife estimate of variance
+    Calculate jackknife estimate of variance.
 
     Parameters
     ----------
@@ -85,10 +87,10 @@ def jackknife_variance(a, f):
     return (len(a) - 1) * np.mean((x - np.mean(x)) ** 2)
 
 
-def empirical_influence(a, f):
+def empirical_influence(a: np.ndarray, f: Callable) -> float:
     """
-    Calculate the empirical influence function for a given
-    sample and estimator using the jackknife method
+    Calculate the empirical influence function for a given sample and estimator
+    using the jackknife method.
 
     Parameters
     ----------
@@ -100,25 +102,25 @@ def empirical_influence(a, f):
 
     Returns
     -------
-    y : np.array
+    np.ndarray
         Empirical influence values
     """
     return (len(a) - 1) * (f(a) - jackknife(a, f))
 
 
 def bootstrap(
-    a,
-    f=None,
-    b=100,
-    method="balanced",
-    family=None,
-    strata=None,
-    smooth=False,
+    a: np.ndarray,
+    f: Optional[Callable] = None,
+    b: int = 100,
+    method: str = "balanced",
+    family: Optional[str] = None,
+    strata: Optional[np.ndarray] = None,
+    smooth: bool = False,
     random_state=None,
 ):
     """
-    Calculate function values from bootstrap samples or
-    optionally return bootstrap samples themselves
+    Calculate function values from bootstrap samples or optionally return
+    bootstrap samples themselves.
 
     Parameters
     ----------
@@ -307,19 +309,19 @@ def bootstrap(
 
 
 def bootstrap_ci(
-    a,
-    f,
-    p=0.95,
-    b=100,
-    ci_method="percentile",
-    boot_method="balanced",
-    family=None,
-    strata=None,
-    smooth=False,
+    a: np.ndarray,
+    f: Callable,
+    p: float = 0.95,
+    b: int = 100,
+    ci_method: str = "percentile",
+    boot_method: str = "balanced",
+    family: Optional[str] = None,
+    strata: Optional[np.ndarray] = None,
+    smooth: bool = False,
     random_state=None,
-):
+) -> Tuple[float, float]:
     """
-    Calculate bootstrap confidence intervals
+    Calculate bootstrap confidence intervals.
 
     Parameters
     ----------
@@ -393,7 +395,7 @@ def bootstrap_ci(
     alpha = 1 - p
 
     if ci_method == "percentile":
-        return (q(alpha / 2), q(1 - alpha / 2))
+        return q(alpha / 2), q(1 - alpha / 2)
     elif ci_method == "bca":
         theta = f(a)
         # bias correction
@@ -409,7 +411,7 @@ def bootstrap_ci(
         p1 = norm.cdf(z_naught + (z_naught + z_low) / (1 - acc * (z_naught + z_low)))
         p2 = norm.cdf(z_naught + (z_naught + z_high) / (1 - acc * (z_naught + z_high)))
 
-        return (q(p1), q(p2))
+        return q(p1), q(p2)
     elif ci_method == "t":
         theta = f(a)
         theta_std = np.std(boot_est)
@@ -418,7 +420,7 @@ def bootstrap_ci(
         t1 = tq(1 - alpha)
         t2 = tq(alpha)
 
-        return (theta - theta_std * t1, theta - theta_std * t2)
+        return theta - theta_std * t1, theta - theta_std * t2
     else:
         raise ValueError(
             (
