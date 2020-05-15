@@ -20,5 +20,7 @@ steps:
 
 - script: |
     pip install pytest
-    pytest ./resample/tests
+    pip install pytest-cov
+    pytest ./resample/tests --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
   displayName: 'Test with pytest'
+  
