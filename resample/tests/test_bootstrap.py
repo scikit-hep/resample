@@ -118,8 +118,8 @@ def test_jackknife_known_variance():
 
 
 def test_bootstrap_ci_invalid_p_raises():
-    # TODO: Test error message
-    with pytest.raises(ValueError):
+    msg = "p must be between zero and one"
+    with pytest.raises(ValueError, match=msg):
         bootstrap_ci(x, f=np.mean, p=2)
 
 
