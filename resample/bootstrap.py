@@ -293,9 +293,9 @@ def bootstrap(
             x = np.reshape(arr, newshape=(b, n))
         else:
             raise ValueError(
-                "method must be either 'ordinary'"
-                " , 'balanced', or 'parametric',"
-                " '{method}' was supplied".format(method=method)
+                "method must be either 'ordinary', "
+                "'balanced', or 'parametric', "
+                "'{method}' was supplied".format(method=method)
             )
 
     # samples are already smooth in the parametric case
@@ -374,9 +374,9 @@ def bootstrap_ci(
     if boot_method not in ["ordinary", "balanced", "parametric"]:
         raise ValueError(
             (
-                "boot_method must be 'ordinary'"
-                " 'balanced', or 'parametric', '{method}' was"
-                " supplied".format(method=boot_method)
+                "boot_method must be 'ordinary', "
+                "'balanced', or 'parametric', '{method}' was "
+                "supplied".format(method=boot_method)
             )
         )
 
@@ -424,8 +424,8 @@ def bootstrap_ci(
     else:
         raise ValueError(
             (
-                "ci_method must be 'percentile'"
-                " 'bca', or 't', '{method}'"
-                " was supplied".format(method=ci_method)
+                "ci_method must be 'percentile', "
+                "'bca', or 't', '{method}' "
+                "was supplied".format(method=ci_method)
             )
         )
