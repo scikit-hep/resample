@@ -45,14 +45,8 @@ steps:
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
-    pip install black mypy pytest pytest-cov
+    pip install pytest pytest-cov
   displayName: 'Install requirements'
-
-- script: black --check ./resample
-  displayName: 'Check code formatting'
-
-- script: mypy ./resample
-  displayName: 'Run type checks'
 
 - script: pytest ./resample/tests --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
   displayName: 'Run tests'
