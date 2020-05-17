@@ -115,7 +115,6 @@ def bootstrap(
     method: str = "balanced",
     family: Optional[str] = None,
     strata: Optional[np.ndarray] = None,
-    smooth: bool = False,
     random_state=None,
 ):
     """
@@ -147,10 +146,6 @@ def bootstrap(
     strata : array-like or None, default : None
         Stratification labels, ignored when method
         is parametric
-
-    smooth : boolean, default : False
-        Whether or not to add Gaussian noise to bootstrap
-        samples, ignored when method is parametric
 
     random_state : int or None, default : None
         Random number seed
@@ -293,14 +288,10 @@ def bootstrap(
             x = np.reshape(arr, newshape=(b, n))
         else:
             raise ValueError(
-                "method must be either 'ordinary'"
-                " , 'balanced', or 'parametric',"
-                " '{method}' was supplied".format(method=method)
+                "method must be either 'ordinary', "
+                "'balanced', or 'parametric', "
+                "'{method}' was supplied".format(method=method)
             )
-
-    # samples are already smooth in the parametric case
-    if smooth and (method != "parametric"):
-        x += np.random.normal(size=x.shape, scale=1 / np.sqrt(n))
 
     if f is None:
         return x
@@ -317,7 +308,6 @@ def bootstrap_ci(
     boot_method: str = "balanced",
     family: Optional[str] = None,
     strata: Optional[np.ndarray] = None,
-    smooth: bool = False,
     random_state=None,
 ) -> Tuple[float, float]:
     """
@@ -356,10 +346,6 @@ def bootstrap_ci(
         Stratification labels, ignored when boot_method
         is parametric
 
-    smooth : boolean, default : False
-        Whether or not to add Gaussian noise to bootstrap
-        samples, ignored when method is parametric
-
     random_state : int or None, default : None
         Random number seed
 
@@ -374,9 +360,9 @@ def bootstrap_ci(
     if boot_method not in ["ordinary", "balanced", "parametric"]:
         raise ValueError(
             (
-                "boot_method must be 'ordinary'"
-                " 'balanced', or 'parametric', '{method}' was"
-                " supplied".format(method=boot_method)
+                "boot_method must be 'ordinary', "
+                "'balanced', or 'parametric', '{method}' was "
+                "supplied".format(method=boot_method)
             )
         )
 
@@ -387,7 +373,6 @@ def bootstrap_ci(
         method=boot_method,
         family=family,
         strata=strata,
-        smooth=smooth,
         random_state=random_state,
     )
 
@@ -424,8 +409,8 @@ def bootstrap_ci(
     else:
         raise ValueError(
             (
-                "ci_method must be 'percentile'"
-                " 'bca', or 't', '{method}'"
-                " was supplied".format(method=ci_method)
+                "ci_method must be 'percentile', "
+                "'bca', or 't', '{method}' "
+                "was supplied".format(method=ci_method)
             )
         )
