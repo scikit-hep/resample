@@ -290,7 +290,7 @@ def bootstrap(
             raise ValueError(
                 "method must be either 'ordinary', "
                 "'balanced', or 'parametric', "
-                "'{method}' was supplied".format(method=method)
+                f"'{method}' was supplied"
             )
 
     if f is None:
@@ -361,8 +361,8 @@ def bootstrap_ci(
         raise ValueError(
             (
                 "boot_method must be 'ordinary', "
-                "'balanced', or 'parametric', '{method}' was "
-                "supplied".format(method=boot_method)
+                f"'balanced', or 'parametric', '{boot_method}' was "
+                "supplied"
             )
         )
 
@@ -410,7 +410,7 @@ def bootstrap_ci(
         raise ValueError(
             (
                 "ci_method must be 'percentile', "
-                "'bca', or 't', '{method}' "
-                "was supplied".format(method=ci_method)
+                f"'bca', or 't', '{ci_method}' "
+                "was supplied"
             )
         )

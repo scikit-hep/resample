@@ -278,9 +278,9 @@ def corr_test(
         X = np.asarray([a] * b)
     else:
         raise ValueError(
-            "method must be either 'pearson'"
-            " , 'spearman', or 'distance',"
-            " '{method}' was supplied".format(method=method)
+            "method must be either 'pearson', "
+            "'spearman', or 'distance', "
+            f"'{method}' was supplied"
         )
 
     def corr(x, y):
