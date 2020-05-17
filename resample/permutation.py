@@ -1,7 +1,8 @@
-from typing import List, Dict
+from typing import Dict, List
 
 import numpy as np
 from scipy.stats import rankdata
+
 from resample.utils import ecdf
 
 

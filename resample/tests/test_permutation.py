@@ -1,5 +1,6 @@
 import numpy as np
-from resample.permutation import ttest, anova, ks_test
+
+from resample.permutation import anova, ks_test, ttest
 
 
 def test_t_squared_equals_f():
