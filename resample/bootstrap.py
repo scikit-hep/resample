@@ -44,7 +44,6 @@ def jackknife(a: np.ndarray, f: Optional[Callable] = None) -> np.ndarray:
     else:
         return np.asarray([f(s) for s in x])
 
-
 def jackknife_bias(a: np.ndarray, f: Callable) -> float:
     """
     Calculate jackknife estimate of bias.
