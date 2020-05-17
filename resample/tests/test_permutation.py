@@ -14,8 +14,9 @@ def test_t_squared_equals_f():
 def test_ks_separable_data():
     x = np.arange(10)
     y = np.arange(10, 20)
-    d = ks_test(x, y)["d"]
-    prop = ks_test(x, y)["prop"]
+    result = ks_test(x, y)
+    d = result["d"]
+    prop = result["prop"]
     assert np.isclose(d, 1.0)
     assert np.isclose(prop, 0.0)
 
