@@ -46,7 +46,8 @@ steps:
     python -m pip install --upgrade pip
     pip install -r requirements.txt
     pip install pytest pytest-cov
+    pip install .
   displayName: 'Install requirements'
 
-- script: pytest ./resample/tests --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
+- script: pytest ./src/resample/tests --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
   displayName: 'Run tests'
