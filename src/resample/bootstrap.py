@@ -1,6 +1,7 @@
 from typing import Callable, Optional, Tuple
 
 import numpy as np
+import numba as nb
 from scipy.stats import (
     norm,
     laplace,
@@ -18,36 +19,63 @@ from scipy.stats import (
 from resample.utils import eqf
 
 
-def jackknife(a: np.ndarray, f: Optional[Callable] = None) -> np.ndarray:
+@nb.njit
+def _jackknife_generator(a: np.ndarray):
+    n = len(a)
+    x = np.empty(n - 1, dtype=a.dtype)
+    for i in range(n - 1):
+        x[i] = a[1 + i]
+    # yield x0
+    yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
+
+    # update of x needs to change values only up to i
+    # for a = [0, 1, 2]
+    # x0 = [1, 2, 3] (yielded above)
+    # x1 = [0, 2, 3]
+    # x2 = [0, 1, 3]
+    # x3 = [0, 1, 2]
+    for i in range(1, n):
+        for j in range(i):
+            x[j] = a[j]
+        yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
+
+
+def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
     """
-    Calculate jackknife estimates for a given sample and estimator, return
-    leave-one-out samples if estimator is not specified.
+    Calculate jackknife estimates for a given sample and estimator.
+
+    The jackknife is a linear approximation to the bootstrap. In contrast to the
+    bootstrap it is deterministic and does not use random numbers. The caveat is the
+    computational cost of the jackknife, which is O(N^2) for N samples, compared
+    to O(N x M) for M bootstrap replicas. For large samples, the bootstrap is more
+    efficient.
 
     Parameters
     ----------
     a : array-like
         Sample
 
-    f : callable or None, default : None
+    f : callable
         Estimator
 
     Returns
     -------
     np.ndarray
-        Jackknife estimates or leave-one-out samples
+        Jackknife estimates
     """
-    arr = np.asarray([a] * len(a))
-    x = np.asarray([np.delete(x, i, 0) for i, x in enumerate(arr)])
-
-    if f is None:
-        return x
-    else:
-        return np.asarray([f(s) for s in x])
+    a = np.atleast_1d(a)
+    return np.asarray([f(x) for x in _jackknife_generator(a)])
 
 
 def jackknife_bias(a: np.ndarray, f: Callable) -> float:
     """
     Calculate jackknife estimate of bias.
+
+    The bias estimate is accurate to O(n^{-1}), where n is the number of samples.
+    If the bias is exactly O(n^{-1}), then the estimate is exact.
+
+    Wikipedia:
+    https://en.wikipedia.org/wiki/Jackknife_resampling
 
     Parameters
     ----------
@@ -62,12 +90,45 @@ def jackknife_bias(a: np.ndarray, f: Callable) -> float:
     float
         Jackknife estimate of bias
     """
-    return (len(a) - 1) * np.mean(jackknife(a, f) - f(a))
+    mj = np.mean(jackknife(a, f))
+    return (len(a) - 1) * (mj - f(a))
+
+
+def jackknife_bias_corrected(a: np.ndarray, f: Callable) -> float:
+    """
+    Calculates bias-corrected estimate of the function with the jackknife.
+
+    Removes a bias of O(n^{-1}), leaving bias of order O(n^{-2}).
+    If the original function has a bias of exactly O(n^{-1})), the
+    corrected result is now unbiased.
+
+    Wikipedia:
+    https://en.wikipedia.org/wiki/Jackknife_resampling
+
+    Parameters
+    ----------
+    a : array-like
+        Sample
+
+    f : callable
+        Estimator
+
+    Returns
+    -------
+    float
+        Jackknife estimate of bias
+    """
+    mj = np.mean(jackknife(a, f))
+    n = len(a)
+    return n * f(a) - (n - 1) * mj
 
 
 def jackknife_variance(a: np.ndarray, f: Callable) -> float:
     """
     Calculate jackknife estimate of variance.
+
+    Wikipedia:
+    https://en.wikipedia.org/wiki/Jackknife_resampling
 
     Parameters
     ----------
@@ -82,9 +143,10 @@ def jackknife_variance(a: np.ndarray, f: Callable) -> float:
     y : float
         Jackknife estimate of variance
     """
-    x = jackknife(a, f)
-
-    return (len(a) - 1) * np.mean((x - np.mean(x)) ** 2)
+    # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
+    #   = np.var(fj, ddof=0) * (n - 1)
+    fj = jackknife(a, f)
+    return (len(a) - 1) * np.var(fj, ddof=0)
 
 
 def empirical_influence(a: np.ndarray, f: Callable) -> float:

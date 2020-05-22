@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from numpy.testing import assert_equal
 
 from resample.bootstrap import (
     bootstrap,
@@ -7,6 +8,7 @@ from resample.bootstrap import (
     empirical_influence,
     jackknife,
     jackknife_bias,
+    jackknife_bias_corrected,
     jackknife_variance,
 )
 from resample.utils import ecdf, sup_norm
@@ -17,9 +19,54 @@ x = np.random.random(n)
 f = ecdf(x)
 
 
-def test_jackknife_shape():
-    jack = jackknife(x)
-    assert jack.shape == (n, n - 1)
+def test_jackknife():
+    x = [0, 1, 2, 3]
+    r = jackknife(x, lambda x: x.copy())
+    assert_equal(r, [[1, 2, 3], [0, 2, 3], [0, 1, 3], [0, 1, 2]])
+
+
+def test_jackknife_bias():
+    x = [0, 1, 2, 3]
+    # bias is exactly zero for linear functions
+    r = jackknife_bias(x, np.mean)
+    assert r == 0
+
+    # this "mean" has a bias of exactly O(n^{-1})
+    def bad_mean(x):
+        return (np.sum(x) + 2) / len(x)
+
+    x = [0, 1, 2]
+    r = jackknife_bias(x, bad_mean)
+    mean_loo_f = np.mean([bad_mean([1, 2]), bad_mean([0, 2]), bad_mean([0, 1])])
+    # (5/2 + 4/2 + 3/2) / 3 = 12 / 6 = 2
+    assert mean_loo_f == 2.0
+    # f = 5/3
+    # (n-1) * (mean_loo_f - f)
+    # (3 - 1) * (6/3 - 5/3) = 2/3
+    assert r == pytest.approx(2.0 / 3.0)
+    # note: 2/3 is exactly the bias of bad_mean for n = 3
+
+
+def test_jackknife_bias_corrected():
+    # this "mean" has a bias of exactly O(n^{-1})
+    def bad_mean(x):
+        return (np.sum(x) + 2) / len(x)
+
+    # bias correction is exact up to O(n^{-1})
+    x = [0, 1, 2]
+    r = jackknife_bias_corrected(x, bad_mean)
+    assert r == 1.0  # which is the correct unbiased mean
+
+
+def test_jackknife_variance():
+    x = [0, 1, 2]
+    r = jackknife_variance(x, np.mean)
+    # formula is (n - 1) / n * sum((jf - mean(jf)) ** 2)
+    # fj = [3/2, 1, 1/2]
+    # mfj = 1
+    # ((3/2 - 1)^2 + (1 - 1)^2 + (1/2 - 1)^2) * 2 / 3
+    # (1/4 + 1/4) / 3 * 2 = 1/3
+    assert r == pytest.approx(1.0 / 3.0)
 
 
 def test_empirical_influence_shape():
@@ -100,16 +147,6 @@ def test_bootstrap_invalid_method_raises():
     msg = "method must be either 'ordinary', 'balanced', or 'parametric'"
     with pytest.raises(ValueError, match=msg):
         bootstrap(x, method="____")
-
-
-def test_jackknife_known_bias():
-    est = jackknife_bias(x, np.mean)
-    assert np.isclose(est, 0)
-
-
-def test_jackknife_known_variance():
-    est = jackknife_variance(x, np.mean)
-    assert np.isclose(est, np.var(x, ddof=1) / len(x))
 
 
 def test_bootstrap_ci_invalid_p_raises():

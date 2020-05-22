@@ -16,6 +16,6 @@ setup(
     author="Daniel Saxton",
     license="BSD-3-Clause",
     packages=["src/resample"],
-    install_requires=["numpy>=1.17", "scipy>=1.1"],
+    install_requires=["numpy>=1.17", "scipy>=1.1", "numba>=0.49.1"],
     zip_safe=False,
 )
