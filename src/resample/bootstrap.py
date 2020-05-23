@@ -61,7 +61,7 @@ def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        Jackknife estimates
+        Jackknife samples.
     """
     a = np.atleast_1d(a)
     return np.asarray([f(x) for x in _jackknife_generator(a)])
@@ -83,12 +83,12 @@ def jackknife_bias(a: np.ndarray, f: Callable) -> np.ndarray:
         Sample. Must be one-dimensional.
 
     f : callable
-        Estimator. Can be any mapping R^N -> R^M, where N is the number of samples.
+        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
 
     Returns
     -------
-    float
-        Jackknife estimate of bias
+    np.ndarray
+        Jackknife estimate of bias.
     """
     mj = np.mean(jackknife(a, f), axis=0)
     return (len(a) - 1) * (mj - f(a))
@@ -111,12 +111,12 @@ def jackknife_bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
         Sample. Must be one-dimensional.
 
     f : callable
-        Estimator. Can be any mapping R^N -> R^M, where N is the number of samples.
+        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
 
     Returns
     -------
-    float
-        Jackknife estimate of bias
+    np.ndarray
+        Estimate with O(n^{-1}) bias removed.
     """
     mj = np.mean(jackknife(a, f), axis=0)
     n = len(a)
@@ -136,12 +136,12 @@ def jackknife_variance(a: np.ndarray, f: Callable) -> np.ndarray:
         Sample. Must be one-dimensional.
 
     f : callable
-        Estimator. Can be any mapping R^N -> R^M, where N is the number of samples.
+        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
 
     Returns
     -------
-    y : float
-        Jackknife estimate of variance
+    np.ndarray
+        Jackknife estimate of variance.
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
     #   = np.var(fj, ddof=0) * (n - 1)
@@ -149,7 +149,7 @@ def jackknife_variance(a: np.ndarray, f: Callable) -> np.ndarray:
     return (len(a) - 1) * np.var(fj, ddof=0, axis=0)
 
 
-def empirical_influence(a: np.ndarray, f: Callable) -> float:
+def empirical_influence(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculate the empirical influence function for a given sample and estimator
     using the jackknife method.
@@ -157,15 +157,15 @@ def empirical_influence(a: np.ndarray, f: Callable) -> float:
     Parameters
     ----------
     a : array-like
-        Sample
+        Sample. Must be one-dimensional.
 
     f : callable
-        Estimator
+        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
 
     Returns
     -------
     np.ndarray
-        Empirical influence values
+        Empirical influence values.
     """
     return (len(a) - 1) * (f(a) - jackknife(a, f))
 
