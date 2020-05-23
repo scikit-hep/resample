@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_almost_equal
 
 from resample.bootstrap import (
     bootstrap,
@@ -47,6 +47,16 @@ def test_jackknife_bias_order_n_minus_one():
     # (3 - 1) * (6/3 - 5/3) = 2/3
     # note: 2/3 is exactly the bias of bad_mean for n = 3
     assert r == pytest.approx(2.0 / 3.0)
+
+
+def test_jackknife_bias_array_map():
+    # compute mean and (biased) variance simultanously
+    def fcn(x):
+        return np.mean(x), np.var(x, ddof=0)
+
+    x = [0, 1, 2]
+    r = jackknife_bias(x, fcn)
+    assert_almost_equal(r, (0.0, -1.0 / 3.0))
 
 
 def test_jackknife_bias_corrected():
