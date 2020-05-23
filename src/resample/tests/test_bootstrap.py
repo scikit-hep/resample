@@ -25,26 +25,28 @@ def test_jackknife():
     assert_equal(r, [[1, 2, 3], [0, 2, 3], [0, 1, 3], [0, 1, 2]])
 
 
-def test_jackknife_bias():
+def test_jackknife_bias_unbiased():
     x = [0, 1, 2, 3]
     # bias is exactly zero for linear functions
     r = jackknife_bias(x, np.mean)
     assert r == 0
 
+
+def test_jackknife_bias_order_n_minus_one():
     # this "mean" has a bias of exactly O(n^{-1})
     def bad_mean(x):
         return (np.sum(x) + 2) / len(x)
 
     x = [0, 1, 2]
     r = jackknife_bias(x, bad_mean)
-    mean_loo_f = np.mean([bad_mean([1, 2]), bad_mean([0, 2]), bad_mean([0, 1])])
+    mean_jk = np.mean([bad_mean([1, 2]), bad_mean([0, 2]), bad_mean([0, 1])])
     # (5/2 + 4/2 + 3/2) / 3 = 12 / 6 = 2
-    assert mean_loo_f == 2.0
+    assert mean_jk == 2.0
     # f = 5/3
-    # (n-1) * (mean_loo_f - f)
+    # (n-1) * (mean_jk - f)
     # (3 - 1) * (6/3 - 5/3) = 2/3
-    assert r == pytest.approx(2.0 / 3.0)
     # note: 2/3 is exactly the bias of bad_mean for n = 3
+    assert r == pytest.approx(2.0 / 3.0)
 
 
 def test_jackknife_bias_corrected():
