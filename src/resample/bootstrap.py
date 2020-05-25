@@ -1,6 +1,7 @@
 from typing import Callable, Optional, Tuple
 
 import numpy as np
+import numba as nb
 from scipy.stats import (
     norm,
     laplace,
@@ -18,76 +19,137 @@ from scipy.stats import (
 from resample.utils import eqf
 
 
-def jackknife(a: np.ndarray, f: Optional[Callable] = None) -> np.ndarray:
+@nb.njit
+def _jackknife_generator(a: np.ndarray) -> np.ndarray:
+    n = len(a)
+    x = np.empty(n - 1, dtype=a.dtype)
+    for i in range(n - 1):
+        x[i] = a[1 + i]
+    # yield x0
+    yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
+
+    # update of x needs to change values only up to i
+    # for a = [0, 1, 2, 3]
+    # x0 = [1, 2, 3] (yielded above)
+    # x1 = [0, 2, 3]
+    # x2 = [0, 1, 3]
+    # x3 = [0, 1, 2]
+    for i in range(1, n):
+        for j in range(i):
+            x[j] = a[j]
+        yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
+
+
+def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
     """
-    Calculate jackknife estimates for a given sample and estimator, return
-    leave-one-out samples if estimator is not specified.
+    Calculate jackknife estimates for a given sample and estimator.
+
+    The jackknife is a linear approximation to the bootstrap. In contrast to the
+    bootstrap it is deterministic and does not use random numbers. The caveat is the
+    computational cost of the jackknife, which is O(N^2) for N samples, compared
+    to O(N x M) for M bootstrap replicas. For large samples, the bootstrap is more
+    efficient.
 
     Parameters
     ----------
     a : array-like
-        Sample
+        Sample. Must be one-dimensional.
 
-    f : callable or None, default : None
-        Estimator
+    f : callable
+        Estimator. Can be any mapping R^N -> R^M, where N is the number of samples.
 
     Returns
     -------
     np.ndarray
-        Jackknife estimates or leave-one-out samples
+        Jackknife samples.
     """
-    arr = np.asarray([a] * len(a))
-    x = np.asarray([np.delete(x, i, 0) for i, x in enumerate(arr)])
-
-    if f is None:
-        return x
-    else:
-        return np.asarray([f(s) for s in x])
+    a = np.atleast_1d(a)
+    return np.asarray([f(x) for x in _jackknife_generator(a)])
 
 
-def jackknife_bias(a: np.ndarray, f: Callable) -> float:
+def jackknife_bias(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
+    The bias estimate is accurate to O(n^{-1}), where n is the number of samples.
+    If the bias is exactly O(n^{-1}), then the estimate is exact.
+
+    Wikipedia:
+    https://en.wikipedia.org/wiki/Jackknife_resampling
+
     Parameters
     ----------
     a : array-like
-        Sample
+        Sample. Must be one-dimensional.
 
     f : callable
-        Estimator
+        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
 
     Returns
     -------
-    float
-        Jackknife estimate of bias
+    np.ndarray
+        Jackknife estimate of bias.
     """
-    return (len(a) - 1) * np.mean(jackknife(a, f) - f(a))
+    mj = np.mean(jackknife(a, f), axis=0)
+    return (len(a) - 1) * (mj - f(a))
 
 
-def jackknife_variance(a: np.ndarray, f: Callable) -> float:
+def jackknife_bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
+    """
+    Calculates bias-corrected estimate of the function with the jackknife.
+
+    Removes a bias of O(n^{-1}), leaving bias of order O(n^{-2}).
+    If the original function has a bias of exactly O(n^{-1})), the
+    corrected result is now unbiased.
+
+    Wikipedia:
+    https://en.wikipedia.org/wiki/Jackknife_resampling
+
+    Parameters
+    ----------
+    a : array-like
+        Sample. Must be one-dimensional.
+
+    f : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
+
+    Returns
+    -------
+    np.ndarray
+        Estimate with O(n^{-1}) bias removed.
+    """
+    mj = np.mean(jackknife(a, f), axis=0)
+    n = len(a)
+    return n * f(a) - (n - 1) * mj
+
+
+def jackknife_variance(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 
+    Wikipedia:
+    https://en.wikipedia.org/wiki/Jackknife_resampling
+
     Parameters
     ----------
     a : array-like
-        Sample
+        Sample. Must be one-dimensional.
 
     f : callable
-        Estimator
+        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
 
     Returns
     -------
-    y : float
-        Jackknife estimate of variance
+    np.ndarray
+        Jackknife estimate of variance.
     """
-    x = jackknife(a, f)
+    # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
+    #   = np.var(fj, ddof=0) * (n - 1)
+    fj = jackknife(a, f)
+    return (len(a) - 1) * np.var(fj, ddof=0, axis=0)
 
-    return (len(a) - 1) * np.mean((x - np.mean(x)) ** 2)
 
-
-def empirical_influence(a: np.ndarray, f: Callable) -> float:
+def empirical_influence(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculate the empirical influence function for a given sample and estimator
     using the jackknife method.
@@ -95,15 +157,15 @@ def empirical_influence(a: np.ndarray, f: Callable) -> float:
     Parameters
     ----------
     a : array-like
-        Sample
+        Sample. Must be one-dimensional.
 
     f : callable
-        Estimator
+        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
 
     Returns
     -------
     np.ndarray
-        Empirical influence values
+        Empirical influence values.
     """
     return (len(a) - 1) * (f(a) - jackknife(a, f))
 
