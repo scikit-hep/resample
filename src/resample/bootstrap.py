@@ -46,8 +46,8 @@ def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
 
     The jackknife is a linear approximation to the bootstrap. In contrast to the
     bootstrap it is deterministic and does not use random numbers. The caveat is the
-    computational cost of the jackknife, which is O(N^2) for N samples, compared
-    to O(N x M) for M bootstrap replicas. For large samples, the bootstrap is more
+    computational cost of the jackknife, which is O(n^2) for n observations, compared
+    to O(n x k) for k bootstrap replicas. For large samples, the bootstrap is more
     efficient.
 
     Parameters
@@ -56,7 +56,8 @@ def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
         Sample. Must be one-dimensional.
 
     f : callable
-        Estimator. Can be any mapping R^N -> R^M, where N is the number of samples.
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
 
     Returns
     -------
@@ -71,7 +72,7 @@ def jackknife_bias(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
-    The bias estimate is accurate to O(n^{-1}), where n is the number of samples.
+    The bias estimate is accurate to O(n^{-1}), where n is the sample size.
     If the bias is exactly O(n^{-1}), then the estimate is exact.
 
     Wikipedia:
@@ -83,7 +84,8 @@ def jackknife_bias(a: np.ndarray, f: Callable) -> np.ndarray:
         Sample. Must be one-dimensional.
 
     f : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
 
     Returns
     -------
@@ -98,9 +100,9 @@ def jackknife_bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculates bias-corrected estimate of the function with the jackknife.
 
-    Removes a bias of O(n^{-1}), leaving bias of order O(n^{-2}).
-    If the original function has a bias of exactly O(n^{-1})), the
-    corrected result is now unbiased.
+    Removes a bias of O(n^{-1}), where n is the sample size, leaving bias
+    of order O(n^{-2}). If the original function has a bias of exactly
+    O(n^{-1})), the corrected result is now unbiased.
 
     Wikipedia:
     https://en.wikipedia.org/wiki/Jackknife_resampling
@@ -111,7 +113,8 @@ def jackknife_bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
         Sample. Must be one-dimensional.
 
     f : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
 
     Returns
     -------
@@ -136,7 +139,8 @@ def jackknife_variance(a: np.ndarray, f: Callable) -> np.ndarray:
         Sample. Must be one-dimensional.
 
     f : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
 
     Returns
     -------
@@ -160,7 +164,8 @@ def empirical_influence(a: np.ndarray, f: Callable) -> np.ndarray:
         Sample. Must be one-dimensional.
 
     f : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵐ, where n is the number of samples.
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
 
     Returns
     -------
