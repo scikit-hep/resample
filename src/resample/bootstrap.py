@@ -1,7 +1,7 @@
 from typing import Callable, Optional, Tuple
 
-import numpy as np
 import numba as nb
+import numpy as np
 from scipy.stats import (
     beta,
     f as fdist,
