@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from resample.utils import ecdf, eqf, mise, sup_norm
 
 

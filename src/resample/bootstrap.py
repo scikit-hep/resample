@@ -1,19 +1,19 @@
 from typing import Callable, Optional, Tuple
 
-import numpy as np
 import numba as nb
+import numpy as np
 from scipy.stats import (
-    norm,
-    laplace,
-    gamma,
-    f as fdist,
-    t,
     beta,
-    lognorm,
-    pareto,
-    logistic,
+    f as fdist,
+    gamma,
     invgauss,
+    laplace,
+    logistic,
+    lognorm,
+    norm,
+    pareto,
     poisson,
+    t,
 )
 
 from resample.utils import eqf
