@@ -23,10 +23,10 @@ jobs:
         pip install -r requirements.txt
         pip install black flake8 isort mypy
     - name: Format
-      run: black --check resample
+      run: black --check ./src/resample
     - name: Lint
-      run: flake8 resample
+      run: flake8 ./src/resample
     - name: Check imports
-      run: isort --recursive --check-only resample
+      run: isort --recursive --check-only ./src/resample
     - name: Type check
-      run: mypy resample
+      run: mypy ./src/resample

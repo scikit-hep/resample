@@ -219,7 +219,7 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
         func1d=(lambda s: g(np.random.permutation(s))), arr=x, axis=1
     )
 
-    return {"h": h, "prop": np.mean(permute_h <= h)}
+    return {"h": h, "prop": np.mean(permute_h > h)}
 
 
 def corr_test(
@@ -347,4 +347,4 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
 
     permute_d = np.apply_along_axis(func1d=g, arr=x, axis=1)
 
-    return {"d": d, "prop": np.mean(permute_d <= d)}
+    return {"d": d, "prop": np.mean(permute_d > d)}
