@@ -53,7 +53,7 @@ def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
     return np.asarray([f(x) for x in _jackknife_generator(a)])
 
 
-def jackknife_bias(a: np.ndarray, f: Callable) -> np.ndarray:
+def bias(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -81,7 +81,7 @@ def jackknife_bias(a: np.ndarray, f: Callable) -> np.ndarray:
     return (len(a) - 1) * (mj - f(a))
 
 
-def jackknife_bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
+def bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculates bias-corrected estimate of the function with the jackknife.
 
@@ -111,7 +111,7 @@ def jackknife_bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
     return n * f(a) - (n - 1) * mj
 
 
-def jackknife_variance(a: np.ndarray, f: Callable) -> np.ndarray:
+def variance(a: np.ndarray, f: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 

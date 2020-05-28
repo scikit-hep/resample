@@ -15,8 +15,8 @@ from scipy.stats import (
     t,
 )
 
-from resample.utils import eqf
 from resample.jackknife import jackknife
+from resample.utils import eqf
 
 
 def empirical_influence(a: np.ndarray, f: Callable) -> np.ndarray:
