@@ -1,18 +1,13 @@
 import numpy as np
 import pytest
 
-from resample.bootstrap import bootstrap, bootstrap_ci, empirical_influence
+from resample.bootstrap import bootstrap, bootstrap_ci
 from resample.utils import ecdf, sup_norm
 
 n = 100
 b = 100
 x = np.random.random(n)
 f = ecdf(x)
-
-
-def test_empirical_influence_shape():
-    emp = empirical_influence(x, f=np.mean)
-    assert len(emp) == n
 
 
 def test_ordinary_bootstrap_shape():

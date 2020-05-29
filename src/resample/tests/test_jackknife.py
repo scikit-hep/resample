@@ -2,7 +2,13 @@ import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal
 import pytest
 
-from resample.jackknife import bias, bias_corrected, jackknife, variance
+from resample.jackknife import (
+    bias,
+    bias_corrected,
+    empirical_influence,
+    jackknife,
+    variance,
+)
 
 
 def test_jackknife():
@@ -65,3 +71,10 @@ def test_jackknife_variance():
     # ((3/2 - 1)^2 + (1 - 1)^2 + (1/2 - 1)^2) * 2 / 3
     # (1/4 + 1/4) / 3 * 2 = 1/3
     assert r == pytest.approx(1.0 / 3.0)
+
+
+def test_empirical_influence_shape():
+    n = 100
+    arr = np.random.random(n)
+    emp = empirical_influence(arr, f=np.mean)
+    assert len(emp) == n

@@ -136,3 +136,25 @@ def variance(a: np.ndarray, f: Callable) -> np.ndarray:
     #   = np.var(fj, ddof=0) * (n - 1)
     fj = jackknife(a, f)
     return (len(a) - 1) * np.var(fj, ddof=0, axis=0)
+
+
+def empirical_influence(a: np.ndarray, f: Callable) -> np.ndarray:
+    """
+    Calculate the empirical influence function for a given sample and estimator
+    using the jackknife method.
+
+    Parameters
+    ----------
+    a : array-like
+        Sample. Must be one-dimensional.
+
+    f : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+
+    Returns
+    -------
+    np.ndarray
+        Empirical influence values.
+    """
+    return (len(a) - 1) * (f(a) - jackknife(a, f))
