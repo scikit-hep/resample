@@ -1,13 +1,16 @@
-from typing import Callable
+from typing import Callable, Sequence
 
 import numba as nb
 import numpy as np
 
 
 @nb.njit
-def _jackknife_generator(a: np.ndarray) -> np.ndarray:
-    n = len(a)
-    x = np.empty(n - 1, dtype=a.dtype)
+def _resample(a: np.ndarray) -> np.ndarray:
+    """
+    Numba implementation of jackknife resampling.
+    """
+    n = a.shape[0]
+    x = np.empty((n - 1, *a.shape[1:]), dtype=a.dtype)
     for i in range(n - 1):
         x[i] = a[1 + i]
     # yield x0
@@ -23,6 +26,36 @@ def _jackknife_generator(a: np.ndarray) -> np.ndarray:
         for j in range(i):
             x[j] = a[j]
         yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
+
+
+def resample(a: Sequence) -> np.ndarray:
+    """
+    Generator of jackknife'd samples.
+
+    Parameters
+    ----------
+    a: array-like
+        Sample. Must be at least one-dimensional and the first dimension must walk over
+        the iid observations.
+
+    Yields
+    ------
+    array with same shape and type as input, but with the size of the first dimension
+    reduced by one.
+
+    Notes
+    -----
+    To increase performance we update the resampled array on each iteration *in place*.
+    To store resampled arrays somewhere (not recommended), one has to make copies
+    explicitly, e.g.:
+
+    ```
+    r = []
+    for x in resample(a):
+        r.append(x.copy())
+    ```
+    """
+    return _resample(np.atleast_1d(a))
 
 
 def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
@@ -49,11 +82,10 @@ def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
     np.ndarray
         Jackknife samples.
     """
-    a = np.atleast_1d(a)
-    return np.asarray([f(x) for x in _jackknife_generator(a)])
+    return np.asarray([f(x) for x in resample(a)])
 
 
-def bias(a: np.ndarray, f: Callable) -> np.ndarray:
+def bias(a: Sequence, f: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -81,7 +113,7 @@ def bias(a: np.ndarray, f: Callable) -> np.ndarray:
     return (len(a) - 1) * (mj - f(a))
 
 
-def bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
+def bias_corrected(a: Sequence, f: Callable) -> np.ndarray:
     """
     Calculates bias-corrected estimate of the function with the jackknife.
 
@@ -111,7 +143,7 @@ def bias_corrected(a: np.ndarray, f: Callable) -> np.ndarray:
     return n * f(a) - (n - 1) * mj
 
 
-def variance(a: np.ndarray, f: Callable) -> np.ndarray:
+def variance(a: Sequence, f: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 
@@ -138,7 +170,7 @@ def variance(a: np.ndarray, f: Callable) -> np.ndarray:
     return (len(a) - 1) * np.var(fj, ddof=0, axis=0)
 
 
-def empirical_influence(a: np.ndarray, f: Callable) -> np.ndarray:
+def empirical_influence(a: Sequence, f: Callable) -> np.ndarray:
     """
     Calculate the empirical influence function for a given sample and estimator
     using the jackknife method.
