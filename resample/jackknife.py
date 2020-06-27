@@ -1,34 +1,13 @@
-from typing import Callable, Sequence
+"""
+Jackknife resampling.
+"""
 
+from typing import Callable, Sequence
 import numba as nb
 import numpy as np
 
 
-@nb.njit
-def _resample(a: np.ndarray) -> np.ndarray:
-    """
-    Numba implementation of jackknife resampling.
-    """
-    n = a.shape[0]
-    x = np.empty((n - 1, *a.shape[1:]), dtype=a.dtype)
-    for i in range(n - 1):
-        x[i] = a[1 + i]
-    # yield x0
-    yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
-
-    # update of x needs to change values only up to i
-    # for a = [0, 1, 2, 3]
-    # x0 = [1, 2, 3] (yielded above)
-    # x1 = [0, 2, 3]
-    # x2 = [0, 1, 3]
-    # x3 = [0, 1, 2]
-    for i in range(1, n):
-        for j in range(i):
-            x[j] = a[j]
-        yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
-
-
-def resample(a: Sequence) -> np.ndarray:
+def resample(sample: Sequence) -> np.ndarray:
     """
     Generator of jackknife'd samples.
 
@@ -55,10 +34,10 @@ def resample(a: Sequence) -> np.ndarray:
         r.append(x.copy())
     ```
     """
-    return _resample(np.atleast_1d(a))
+    return _resample(np.atleast_1d(sample))
 
 
-def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
+def jackknife(sample: np.ndarray, fcn: Callable) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
@@ -70,10 +49,10 @@ def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
 
     Parameters
     ----------
-    a : array-like
+    sample : array-like
         Sample. Must be one-dimensional.
 
-    f : callable
+    fcn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
@@ -82,10 +61,10 @@ def jackknife(a: np.ndarray, f: Callable) -> np.ndarray:
     np.ndarray
         Jackknife samples.
     """
-    return np.asarray([f(x) for x in resample(a)])
+    return np.asarray([fcn(x) for x in resample(sample)])
 
 
-def bias(a: Sequence, f: Callable) -> np.ndarray:
+def bias(sample: Sequence, fcn: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -97,10 +76,10 @@ def bias(a: Sequence, f: Callable) -> np.ndarray:
 
     Parameters
     ----------
-    a : array-like
+    sample : array-like
         Sample. Must be one-dimensional.
 
-    f : callable
+    fcn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
@@ -109,11 +88,13 @@ def bias(a: Sequence, f: Callable) -> np.ndarray:
     np.ndarray
         Jackknife estimate of bias.
     """
-    mj = np.mean(jackknife(a, f), axis=0)
-    return (len(a) - 1) * (mj - f(a))
+    n = len(sample)
+    theta = fcn(sample)
+    mean_theta = np.mean(jackknife(sample, fcn), axis=0)
+    return (n - 1) * (mean_theta - theta)
 
 
-def bias_corrected(a: Sequence, f: Callable) -> np.ndarray:
+def bias_corrected(sample: Sequence, fcn: Callable) -> np.ndarray:
     """
     Calculates bias-corrected estimate of the function with the jackknife.
 
@@ -126,10 +107,10 @@ def bias_corrected(a: Sequence, f: Callable) -> np.ndarray:
 
     Parameters
     ----------
-    a : array-like
+    sample : array-like
         Sample. Must be one-dimensional.
 
-    f : callable
+    fcn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
@@ -138,12 +119,13 @@ def bias_corrected(a: Sequence, f: Callable) -> np.ndarray:
     np.ndarray
         Estimate with O(1/n) bias removed.
     """
-    mj = np.mean(jackknife(a, f), axis=0)
-    n = len(a)
-    return n * f(a) - (n - 1) * mj
+    n = len(sample)
+    theta = fcn(sample)
+    mean_theta = np.mean(jackknife(sample, fcn), axis=0)
+    return n * theta - (n - 1) * mean_theta
 
 
-def variance(a: Sequence, f: Callable) -> np.ndarray:
+def variance(sample: Sequence, fcn: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 
@@ -152,10 +134,10 @@ def variance(a: Sequence, f: Callable) -> np.ndarray:
 
     Parameters
     ----------
-    a : array-like
+    sample : array-like
         Sample. Must be one-dimensional.
 
-    f : callable
+    fcn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
@@ -166,21 +148,22 @@ def variance(a: Sequence, f: Callable) -> np.ndarray:
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
     #   = np.var(fj, ddof=0) * (n - 1)
-    fj = jackknife(a, f)
-    return (len(a) - 1) * np.var(fj, ddof=0, axis=0)
+    thetas = jackknife(sample, fcn)
+    n = len(sample)
+    return (n - 1) * np.var(thetas, ddof=0, axis=0)
 
 
-def empirical_influence(a: Sequence, f: Callable) -> np.ndarray:
+def empirical_influence(sample: Sequence, fcn: Callable) -> np.ndarray:
     """
     Calculate the empirical influence function for a given sample and estimator
     using the jackknife method.
 
     Parameters
     ----------
-    a : array-like
+    sample : array-like
         Sample. Must be one-dimensional.
 
-    f : callable
+    fcn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
@@ -189,4 +172,29 @@ def empirical_influence(a: Sequence, f: Callable) -> np.ndarray:
     np.ndarray
         Empirical influence values.
     """
-    return (len(a) - 1) * (f(a) - jackknife(a, f))
+    n = len(sample)
+    return (n - 1) * (fcn(sample) - jackknife(sample, fcn))
+
+
+@nb.njit
+def _resample(sample: np.ndarray) -> np.ndarray:
+    """
+    Numba implementation of jackknife resampling.
+    """
+    n = len(sample)
+    x = np.empty((n - 1, *sample.shape[1:]), dtype=sample.dtype)
+    for i in range(n - 1):
+        x[i] = sample[1 + i]
+    # yield x0
+    yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
+
+    # update of x needs to change values only up to i
+    # for a = [0, 1, 2, 3]
+    # x0 = [1, 2, 3] (yielded above)
+    # x1 = [0, 2, 3]
+    # x2 = [0, 1, 3]
+    # x3 = [0, 1, 2]
+    for i in range(1, n):
+        for j in range(i):
+            x[j] = sample[j]
+        yield x.view(x.dtype)  # must return view to avoid a numba life-time bug

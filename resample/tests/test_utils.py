@@ -1,7 +1,12 @@
 import numpy as np
 import pytest
 
-from resample.utils import ecdf, eqf, mise, sup_norm
+from resample.utils import (
+    empirical_cdf as ecdf,
+    empirical_quantile as eqf,
+    mise,
+    sup_norm,
+)
 
 
 def test_ecdf_increasing():

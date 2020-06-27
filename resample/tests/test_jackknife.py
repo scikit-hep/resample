@@ -95,5 +95,5 @@ def test_variance():
 def test_empirical_influence_shape():
     n = 100
     arr = np.random.random(n)
-    emp = empirical_influence(arr, f=np.mean)
+    emp = empirical_influence(arr, np.mean)
     assert len(emp) == n

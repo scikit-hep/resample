@@ -4,10 +4,9 @@ Bootstrap resampling.
 
 from typing import Callable, Optional, Tuple, Sequence
 import numpy as np
-from scipy import stats
-
 from resample.jackknife import jackknife
 from resample.utils import empirical_quantile
+from scipy import stats
 
 
 def resample(

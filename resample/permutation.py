@@ -3,7 +3,7 @@ from typing import Dict, List
 import numpy as np
 from scipy.stats import rankdata
 
-from resample.utils import ecdf
+from resample.utils import empirical_cdf as ecdf
 
 
 def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
