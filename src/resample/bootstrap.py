@@ -182,7 +182,8 @@ def _resample_ordinary(
         raise NotImplementedError
 
     # i.i.d. sampling from empirical cumulative distribution of sample
-    yield rng.choice(sample, size)
+    for _ in range(size):
+        yield rng.choice(sample, size)
 
 
 def _resample_balanced(
