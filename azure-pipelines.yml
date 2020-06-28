@@ -44,10 +44,10 @@ steps:
 
 - script: |
     python -m pip install --upgrade pip
-    pip install -r requirements.txt
-    pip install pytest pytest-cov
-    pip install .
+    python -m pip install -r requirements.txt
+    python -m pip install pytest pytest-cov
+    python -m pip install .
   displayName: 'Install requirements'
 
-- script: pytest --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
+- script: python -m pytest --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
   displayName: 'Run tests'

@@ -16,3 +16,4 @@ _build
 .idea
 benchmarks/.asv/
 junit
+py[0-9]*
