@@ -224,13 +224,7 @@ def test_confidence_interval_invalid_p_raises():
         confidence_interval(np.mean, (1, 2, 3), cl=2)
 
 
-# def test_confidence_interval_invalid_boot_method_raises():
-#     msg = "must be 'ordinary', 'balanced', or 'parametric'"
-#     with pytest.raises(ValueError, match=msg):
-#         confidence_interval(x, np.mean, boot_method="____")
-#
-#
-# def test_confidence_interval_invalid_ci_method_raises():
-#     msg = "method must be 'percentile', 'bca', or 't'"
-#     with pytest.raises(ValueError, match=msg):
-#         confidence_interval(x, np.mean, ci_method="____")
+def test_confidence_interval_invalid_ci_method_raises():
+    msg = "method must be 'percentile', 'student', or 'bca'"
+    with pytest.raises(ValueError, match=msg):
+        confidence_interval(np.mean, (1, 2, 3), ci_method="foobar")

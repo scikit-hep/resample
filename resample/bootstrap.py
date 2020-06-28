@@ -160,12 +160,12 @@ def confidence_interval(
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha / 2)
 
+    theta = fn(sample)
+
     if ci_method == "student":
-        theta = fn(sample)
         return _confidence_interval_studentized(theta, thetas, alpha / 2)
 
     if ci_method == "bca":
-        theta = fn(sample)
         j_thetas = _jackknife(fn, sample)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
@@ -257,7 +257,7 @@ def _confidence_interval_studentized(
     q = _quantile_gen(z)
     theta_std_1 = theta_std * q(alpha_half)
     theta_std_2 = theta_std * q(1 - alpha_half)
-    return theta - theta_std_1, theta + theta_std_2
+    return theta + theta_std_1, theta + theta_std_2
 
 
 def _confidence_interval_bca(
