@@ -12,7 +12,7 @@ def resample(
     sample: Sequence,
     size: int = 1000,
     method: str = "balanced",
-    strata: Optional[np.ndarray] = None,
+    strata: Optional[Sequence] = None,
     random_state: Optional[Union[np.random.Generator, int]] = None,
 ) -> np.ndarray:
     """
