@@ -440,6 +440,8 @@ good-names=i,
            g,
            p,
            q,
+           fn,
+           cl,
            ex,
            Run,
            _

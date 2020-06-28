@@ -1,12 +1,11 @@
 """
 Bootstrap resampling.
 """
-
-from typing import Callable, Optional, Tuple, Sequence
+from typing import Callable, Optional, Tuple, Sequence, Union
 import numpy as np
-from resample.jackknife import jackknife
-from resample.utils import empirical_quantile
 from scipy import stats
+from resample.jackknife import jackknife as _jackknife
+from resample.empirical import quantile as _quantile
 
 
 def resample(
@@ -14,7 +13,7 @@ def resample(
     size: int,
     method: str = "balanced",
     strata: Optional[np.ndarray] = None,
-    rng: Optional[np.random.Generator] = None,
+    random_state: Optional[Union[np.random.Generator, int]] = None,
 ) -> np.ndarray:
     """
     Generator of bootstrap samples.
@@ -23,25 +22,21 @@ def resample(
     ----------
     sample : array-like
         Original sample.
-
     size : int, optional
         Number of bootstrap samples to generate. Default is 100.
-
     method : str or None, optional
         How to generate bootstrap samples. Supported are 'ordinary', 'balanced', or a
         recognized name for a statistical distribution for a parametric bootstrap.
         Default is 'balanced'.
-
-        Supported distribution names: 'gaussian' (alternative: 'norm'), 't'
-        (alternative: 'student'), 'laplace', 'logistic', 'F' (alternative: 'f'),
-        'gamma', 'log-normal' (alternative: 'lognorm'), 'inverse-gaussian'
-        (alternative: 'invgauss'), 'pareto', 'beta', 'poisson'.
-
+        Supported distribution names: 'normal' (alternative: 'gaussian', 'norm'),
+        'student' (alternative: 't'), 'laplace', 'logistic', 'F' (alternative: 'f'),
+        'beta', 'gamma', 'log-normal' (alternative: 'lognorm', 'log-gaussian'),
+        'inverse-gaussian' (alternative: 'invgauss'), 'pareto', 'poisson'.
     strata : array-like or None
         Stratification labels. Default is None.
-
-    rng : np.random.Generator, optional
-        Random number generator instance. Default is the default generator of numpy.
+    random_state : np.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Yields
     ------
@@ -59,8 +54,12 @@ def resample(
         if strata.shape != sample.shape:
             raise ValueError("a and strata must have the same shape")
 
-    if rng is None:
+    if random_state is None:
         rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     if method == "balanced":
         return _resample_balanced(sample, size, strata, rng)
@@ -79,10 +78,8 @@ def bootstrap(sample: np.ndarray, fcn: Callable, size: int = 100, **kwds) -> np.
     ----------
     sample : array-like
         Original sample.
-
     fcn : Callable
         Bootstrap samples are passed to this function.
-
     **kwds
         Keywords are forwarded to `resample`.
 
@@ -128,17 +125,13 @@ def confidence_interval(
     ----------
     sample : array-like
         Original sample.
-
     fcn : callable
         Function to be bootstrapped.
-
     cl : float, default : 0.95
         Confidence level. Asymptotically, this is the probability that the interval
         contains the true value.
-
     ci_method : str, {'percentile', 'student', 'bca'}, optional
         Confidence interval method. Default is 'percentile'.
-
     **kwds
         Keyword arguments forwarded to :func:`bootstrap`.
 
@@ -162,7 +155,7 @@ def confidence_interval(
 
     if ci_method == "bca":
         theta = fcn(sample)
-        j_thetas = jackknife(sample, fcn)
+        j_thetas = _jackknife(sample, fcn)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha)
 
     raise ValueError(
@@ -181,7 +174,9 @@ def _resample_ordinary(
         raise NotImplementedError
 
     # i.i.d. sampling from empirical cumulative distribution of sample
-    yield rng.choice(sample, size)
+    n = len(sample)
+    for _ in range(size):
+        yield rng.choice(sample, size=n, replace=True)
 
 
 def _resample_balanced(
@@ -193,12 +188,12 @@ def _resample_balanced(
     if strata is not None:
         raise NotImplementedError
 
-    # effectively computes a random permutation of `size`
-    # concatenated copies of `sample`
-    n_sample = len(sample)
-    indices = rng.permutation(n_sample * size)
+    # effectively computes a random permutation of `size` concatenated
+    # copies of `sample` and returns `size` equal chunks of that
+    n = len(sample)
+    indices = rng.permutation(n * size)
     for i in range(size):
-        sel = indices[i * n_sample : (i + 1) * n_sample]
+        sel = indices[i * n : (i + 1) * n] % n
         yield sample[sel]
 
 
@@ -215,30 +210,48 @@ def _resample_parametric(
     dist = {
         # put aliases here
         "gaussian": stats.norm,
+        "normal": stats.norm,
         "log-normal": stats.lognorm,
+        "log-gaussian": stats.lognorm,
         "inverse-gaussian": stats.invgauss,
-    }.get(family, getattr(stats, family.lower()))
+        "student": stats.t,
+    }.get(family, None)
+    if dist is None:
+        # use scipy.stats name
+        dist = getattr(stats, family.lower())
 
-    if dist is stats.t:
-        fit_kwd = {"fscale": 1}
-    elif dist is stats.f:
+    if dist == stats.t:
+        fit_kwd = {"fscale": 1}  # HD: I think this should not be fixed to 1
+    elif dist in {stats.f, stats.beta}:
         fit_kwd = {"floc": 0, "fscale": 1}
     elif dist in (stats.gamma, stats.lognorm, stats.invgauss, stats.pareto):
         fit_kwd = {"floc": 0}
     else:
         fit_kwd = {}
 
+    if sample.ndim > 1:
+        if dist is not stats.norm:
+            raise ValueError("multivariate data is only supported for 'gaussian'")
+        dist = stats.multivariate_normal
+        dist.fit = lambda x: (np.mean(x, axis=0), np.cov(x.T, ddof=1))
+
     # fit parameters by maximum likelihood and sample from that
-    dist = dist(*dist.fit(sample, **fit_kwd))
+    if dist == stats.poisson:
+        # poisson has no fit method
+        args = (np.mean(sample), 0, 1)
+    else:
+        args = dist.fit(sample, **fit_kwd)
+
+    n = len(sample)
     for _ in range(size):
-        yield dist.rvs(sample.shape, random_state=rng)
+        yield dist.rvs(*args, size=n, random_state=rng)
 
 
 def _confidence_interval_percentile(
     thetas: np.ndarray, alpha_half: float,
 ) -> Tuple[float, float]:
-    quantile = empirical_quantile(thetas)
-    return quantile(alpha_half), quantile(1 - alpha_half)
+    q = _quantile(thetas)
+    return q(alpha_half), q(1 - alpha_half)
 
 
 def _confidence_interval_studentized(
@@ -247,7 +260,7 @@ def _confidence_interval_studentized(
     theta_std = np.std(thetas)
     # quantile function of studentized bootstrap estimates
     z = (thetas - theta) / theta_std
-    q = empirical_quantile(z)
+    q = _quantile(z)
     theta_std_1 = theta_std * q(1 - alpha_half)
     theta_std_2 = theta_std * q(alpha_half)
     return theta - theta_std_1, theta + theta_std_2
@@ -274,5 +287,5 @@ def _confidence_interval_bca(
     p_low = norm.cdf(z_naught + z_low / (1 - acc * z_low))
     p_high = norm.cdf(z_naught + z_high / (1 - acc * z_high))
 
-    q = empirical_quantile(thetas)
+    q = _quantile(thetas)
     return q(p_low), q(p_high)

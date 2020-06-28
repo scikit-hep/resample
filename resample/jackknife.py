@@ -13,14 +13,15 @@ def resample(sample: Sequence) -> np.ndarray:
 
     Parameters
     ----------
-    a: array-like
-        Sample. Must be at least one-dimensional and the first dimension must walk over
-        the iid observations.
+    sample: array-like
+        Sample. If the sequence is multi-dimensional, the first dimension must walk over
+        i.i.d. observations.
 
     Yields
     ------
-    array with same shape and type as input, but with the size of the first dimension
-    reduced by one.
+    ndarray
+        array with same shape and type as input, but with the size of the first
+        dimension reduced by one.
 
     Notes
     -----
@@ -37,7 +38,7 @@ def resample(sample: Sequence) -> np.ndarray:
     return _resample(np.atleast_1d(sample))
 
 
-def jackknife(sample: np.ndarray, fcn: Callable) -> np.ndarray:
+def jackknife(sample: np.ndarray, fn: Callable) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
@@ -51,20 +52,19 @@ def jackknife(sample: np.ndarray, fcn: Callable) -> np.ndarray:
     ----------
     sample : array-like
         Sample. Must be one-dimensional.
-
-    fcn : callable
+    fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
     Returns
     -------
-    np.ndarray
+    ndarray
         Jackknife samples.
     """
-    return np.asarray([fcn(x) for x in resample(sample)])
+    return np.asarray([fn(x) for x in resample(sample)])
 
 
-def bias(sample: Sequence, fcn: Callable) -> np.ndarray:
+def bias(sample: Sequence, fn: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -78,23 +78,22 @@ def bias(sample: Sequence, fcn: Callable) -> np.ndarray:
     ----------
     sample : array-like
         Sample. Must be one-dimensional.
-
-    fcn : callable
+    fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
     Returns
     -------
-    np.ndarray
+    ndarray
         Jackknife estimate of bias.
     """
     n = len(sample)
-    theta = fcn(sample)
-    mean_theta = np.mean(jackknife(sample, fcn), axis=0)
+    theta = fn(sample)
+    mean_theta = np.mean(jackknife(sample, fn), axis=0)
     return (n - 1) * (mean_theta - theta)
 
 
-def bias_corrected(sample: Sequence, fcn: Callable) -> np.ndarray:
+def bias_corrected(sample: Sequence, fn: Callable) -> np.ndarray:
     """
     Calculates bias-corrected estimate of the function with the jackknife.
 
@@ -109,23 +108,22 @@ def bias_corrected(sample: Sequence, fcn: Callable) -> np.ndarray:
     ----------
     sample : array-like
         Sample. Must be one-dimensional.
-
-    fcn : callable
+    fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
     Returns
     -------
-    np.ndarray
+    ndarray
         Estimate with O(1/n) bias removed.
     """
     n = len(sample)
-    theta = fcn(sample)
-    mean_theta = np.mean(jackknife(sample, fcn), axis=0)
+    theta = fn(sample)
+    mean_theta = np.mean(jackknife(sample, fn), axis=0)
     return n * theta - (n - 1) * mean_theta
 
 
-def variance(sample: Sequence, fcn: Callable) -> np.ndarray:
+def variance(sample: Sequence, fn: Callable) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 
@@ -136,44 +134,20 @@ def variance(sample: Sequence, fcn: Callable) -> np.ndarray:
     ----------
     sample : array-like
         Sample. Must be one-dimensional.
-
-    fcn : callable
+    fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
 
     Returns
     -------
-    np.ndarray
+    ndarray
         Jackknife estimate of variance.
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
     #   = np.var(fj, ddof=0) * (n - 1)
-    thetas = jackknife(sample, fcn)
+    thetas = jackknife(sample, fn)
     n = len(sample)
     return (n - 1) * np.var(thetas, ddof=0, axis=0)
-
-
-def empirical_influence(sample: Sequence, fcn: Callable) -> np.ndarray:
-    """
-    Calculate the empirical influence function for a given sample and estimator
-    using the jackknife method.
-
-    Parameters
-    ----------
-    sample : array-like
-        Sample. Must be one-dimensional.
-
-    fcn : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
-        and k is the length of the output array.
-
-    Returns
-    -------
-    np.ndarray
-        Empirical influence values.
-    """
-    n = len(sample)
-    return (n - 1) * (fcn(sample) - jackknife(sample, fcn))
 
 
 @nb.njit
