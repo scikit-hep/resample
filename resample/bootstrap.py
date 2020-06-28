@@ -43,9 +43,11 @@ def resample(
         Bootstrap sample.
     """
     # Stratification:
-    # Data is not iid, but consists of several distinct classes. Stratification
-    # makes sure that each class is resampled independently, to maintain the
-    # relative proportions of each class in the bootstrapped sample.
+    # If data is not iid, but consists of several distinct classes, stratification
+    # ensures that the relative proportions of each class are maintained in each
+    # replicated sample. This is a stricter constraint than that offered by the
+    # balanced bootstrap, which only guarantees that classes have the original
+    # proportions over all replicas.
 
     sample = np.atleast_1d(sample)
     if strata is not None:
@@ -154,7 +156,7 @@ def confidence_interval(
 
     if ci_method == "bca":
         theta = fn(sample)
-        j_thetas = _jackknife(sample, fn)
+        j_thetas = _jackknife(fn, sample)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha)
 
     raise ValueError(
