@@ -33,28 +33,25 @@ def resample(
         'inverse-gaussian' (also: 'invgauss'), 'pareto', 'poisson'.
     strata : array-like, optional
         Stratification labels. Must have the same shape as `sample`. Default is None.
-    random_state : np.random.Generator or int, optional
+    random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
+
+    Notes
+    -----
+    Stratification:
+
+    If data is not iid, but consists of several distinct classes, stratification
+    ensures that the relative proportions of each class are maintained in each
+    replicated sample. This is a stricter constraint than that offered by the
+    balanced bootstrap, which only guarantees that classes have the original
+    proportions over all replicas.
 
     Yields
     ------
     ndarray
         Bootstrap sample.
     """
-    # Stratification:
-    # If data is not iid, but consists of several distinct classes, stratification
-    # ensures that the relative proportions of each class are maintained in each
-    # replicated sample. This is a stricter constraint than that offered by the
-    # balanced bootstrap, which only guarantees that classes have the original
-    # proportions over all replicas.
-
-    sample = np.atleast_1d(sample)
-    if strata is not None:
-        strata = np.atleast_1d(strata)
-        if strata.shape != sample.shape:
-            raise ValueError("a and strata must have the same shape")
-
     if random_state is None:
         rng = np.random.default_rng()
     elif isinstance(random_state, int):
@@ -62,11 +59,44 @@ def resample(
     else:
         rng = random_state
 
+    sample = np.atleast_1d(sample)
+
+    if strata is not None:
+        strata = np.atleast_1d(strata)
+        if strata.shape != sample.shape:
+            raise ValueError("a and strata must have the same shape")
+        return _resample_stratified(sample, size, method, strata, rng)
+
     if method == "balanced":
-        return _resample_balanced(sample, size, strata, rng)
+        return _resample_balanced(sample, size, rng)
     if method == "ordinary":
-        return _resample_ordinary(sample, size, strata, rng)
-    return _resample_parametric(sample, size, method, strata, rng)
+        return _resample_ordinary(sample, size, rng)
+
+    dist = {
+        # put aliases here
+        "gaussian": stats.norm,
+        "normal": stats.norm,
+        "log-normal": stats.lognorm,
+        "log-gaussian": stats.lognorm,
+        "inverse-gaussian": stats.invgauss,
+        "student": stats.t,
+    }.get(method, None)
+
+    if dist is None:
+        # use scipy.stats name
+        try:
+            dist = getattr(stats, method.lower())
+        except AttributeError:
+            raise ValueError("Invalid family: '{}'".format(method))
+
+    if sample.ndim > 1:
+        if dist != stats.norm:
+            raise ValueError("family '%s' only supports 1D samples" % method)
+        if sample.ndim > 2:
+            raise ValueError("multivariate normal only works with 2D samples")
+        dist = stats.multivariate_normal
+
+    return _resample_parametric(sample, size, dist, rng)
 
 
 def bootstrap(fn: Callable, sample: np.ndarray, size: int = 100, **kwds) -> np.ndarray:
@@ -89,26 +119,6 @@ def bootstrap(fn: Callable, sample: np.ndarray, size: int = 100, **kwds) -> np.n
     np.array
         Results of `fn` applied to each bootstrap sample.
     """
-    # if strata is not None and (method != "parametric"):
-    #     strata = np.asarray(strata)
-    #     if len(strata) != len(a):
-    #         raise ValueError("a and strata must have" " the same length")
-    #     # recursively call bootstrap without stratification
-    #     # on the different strata
-    #     masks = [strata == x for x in np.unique(strata)]
-    #     boot_strata = [
-    #         bootstrap(
-    #             a=a[m],
-    #             f=None,
-    #             b=b,
-    #             method=method,
-    #             strata=None,
-    #             random_state=random_state,
-    #         )
-    #         for m in masks
-    #     ]
-    #     # concatenate resampled strata along first column axis
-    #     x = np.concatenate(boot_strata, axis=1)
     return np.asarray([fn(x) for x in resample(sample, size, **kwds)])
 
 
@@ -165,15 +175,18 @@ def confidence_interval(
     )
 
 
-def _resample_ordinary(
-    sample: np.ndarray,
-    size: int,
-    strata: Optional[np.ndarray],
-    rng: np.random.Generator,
-) -> np.ndarray:
-    if strata is not None:
-        raise NotImplementedError
+def _resample_stratified(sample, size, method, strata, rng):
+    # call resample on sub-samples and merge the replicas
+    sub_samples = [sample[strata == x] for x in np.unique(strata)]
+    for sub_replicas in zip(
+        *[resample(s, size, method=method, random_state=rng) for s in sub_samples]
+    ):
+        yield np.concatenate(sub_replicas, axis=0)
 
+
+def _resample_ordinary(
+    sample: np.ndarray, size: int, rng: np.random.Generator,
+) -> np.ndarray:
     # i.i.d. sampling from empirical cumulative distribution of sample
     n = len(sample)
     for _ in range(size):
@@ -181,14 +194,8 @@ def _resample_ordinary(
 
 
 def _resample_balanced(
-    sample: np.ndarray,
-    size: int,
-    strata: Optional[np.ndarray],
-    rng: np.random.Generator,
+    sample: np.ndarray, size: int, rng: np.random.Generator,
 ) -> np.ndarray:
-    if strata is not None:
-        raise NotImplementedError
-
     # effectively computes a random permutation of `size` concatenated
     # copies of `sample` and returns `size` equal chunks of that
     n = len(sample)
@@ -216,38 +223,8 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
 
 
 def _resample_parametric(
-    sample: np.ndarray,
-    size: int,
-    family: str,
-    strata: Optional[np.ndarray],
-    rng: np.random.Generator,
+    sample: np.ndarray, size: int, dist, rng: np.random.Generator,
 ) -> np.ndarray:
-    if strata is not None:
-        raise NotImplementedError
-
-    dist = {
-        # put aliases here
-        "gaussian": stats.norm,
-        "normal": stats.norm,
-        "log-normal": stats.lognorm,
-        "log-gaussian": stats.lognorm,
-        "inverse-gaussian": stats.invgauss,
-        "student": stats.t,
-    }.get(family, None)
-    if dist is None:
-        # use scipy.stats name
-        try:
-            dist = getattr(stats, family.lower())
-        except AttributeError:
-            raise ValueError("Invalid family: '{}'".format(family))
-
-    if sample.ndim > 1:
-        if dist != stats.norm:
-            raise ValueError("family '%s' only supports 1D samples" % family)
-        if sample.ndim > 2:
-            raise ValueError("multivariate normal only works with 2D samples")
-        dist = stats.multivariate_normal
-
     n = len(sample)
 
     # fit parameters by maximum likelihood and sample from that
