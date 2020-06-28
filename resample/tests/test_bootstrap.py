@@ -5,9 +5,15 @@ from pytest import approx
 from scipy import stats
 from collections import Counter
 
-from resample.bootstrap import resample, bootstrap, confidence_interval
+from resample.bootstrap import (
+    resample,
+    bootstrap,
+    confidence_interval,
+    _fit_parametric_family,
+)
 
-PARAMETRIC_CONTINUOUS = (
+PARAMETRIC_CONTINUOUS = {
+    # use scipy.stats names here
     "norm",
     "t",
     "laplace",
@@ -18,30 +24,29 @@ PARAMETRIC_CONTINUOUS = (
     "lognorm",
     "invgauss",
     "pareto",
-)
-PARAMETRIC_DISCRETE = ("poisson",)
-PARAMETRIC = PARAMETRIC_CONTINUOUS + PARAMETRIC_DISCRETE
-NON_PARAMETRIC = ("ordinary", "balanced")
-ALL_METHODS = NON_PARAMETRIC + PARAMETRIC
-
-# n = 100
-# b = 100
-# x = np.random.rand(n)
-# f = ecdf(x)
+}
+PARAMETRIC_DISCRETE = {"poisson"}
+PARAMETRIC = PARAMETRIC_CONTINUOUS | PARAMETRIC_DISCRETE
+NON_PARAMETRIC = {"ordinary", "balanced"}
+ALL_METHODS = NON_PARAMETRIC | PARAMETRIC
 
 
 @pytest.mark.parametrize("method", ALL_METHODS)
 def test_resample_shape_1d(method):
-    x = (1, 2, 3)
+    if method == "beta":
+        x = (0.1, 0.2, 0.3)
+    else:
+        x = (1, 2, 3)
     n_rep = 5
     count = 0
-    for bx in resample(x, n_rep, method=method):
-        assert len(bx) == len(x)
-        count += 1
+    with np.errstate(invalid="ignore"):
+        for bx in resample(x, n_rep, method=method):
+            assert len(bx) == len(x)
+            count += 1
     assert count == n_rep
 
 
-@pytest.mark.parametrize("method", NON_PARAMETRIC + ("normal",))
+@pytest.mark.parametrize("method", NON_PARAMETRIC | {"norm"})
 def test_resample_shape_2d(method):
     x = [(1, 2), (4, 3), (6, 5)]
     n_rep = 5
@@ -52,7 +57,18 @@ def test_resample_shape_2d(method):
     assert count == n_rep
 
 
-@pytest.mark.parametrize("method", NON_PARAMETRIC + PARAMETRIC_CONTINUOUS)
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
+def test_resample_shape_4d(method):
+    x = np.ones((2, 3, 4, 5))
+    n_rep = 5
+    count = 0
+    for bx in resample(x, 5, method=method):
+        assert bx.shape == np.shape(x)
+        count += 1
+    assert count == n_rep
+
+
+@pytest.mark.parametrize("method", NON_PARAMETRIC | PARAMETRIC_CONTINUOUS)
 def test_resample_1d_parametric(method):
     # distribution parameters for parametric families
     args = {
@@ -65,17 +81,6 @@ def test_resample_1d_parametric(method):
         "pareto": (1,),
     }.get(method, ())
 
-    # fit conditions, must be in sync with bootstrap._resample_parametric
-    fit_kwd = {
-        "t": {"fscale": 1},
-        "f": {"floc": 0, "fscale": 1},
-        "beta": {"floc": 0, "fscale": 1},
-        "gamma": {"floc": 0},
-        "lognorm": {"floc": 0},
-        "invgauss": {"floc": 0},
-        "pareto": {"floc": 0},
-    }.get(method, {})
-
     if method in ("ordinary", "balanced"):
         dist = stats.norm
     else:
@@ -85,10 +90,9 @@ def test_resample_1d_parametric(method):
 
     x = dist.rvs(*args, size=1000, random_state=rng)
 
-    # get MLE parameters for this sample
-    par = dist.fit(x, **fit_kwd)
-
-    # make equidistant bins in quantile space
+    # make equidistant bins in quantile space for this particular data set
+    with np.errstate(invalid="ignore"):
+        par = _fit_parametric_family(dist, x)
     prob = np.linspace(0, 1, 11)
     xe = dist(*par).ppf(prob)
 
@@ -102,11 +106,12 @@ def test_resample_1d_parametric(method):
     # compute P values for replicas compared to original
     prob = []
     wsum = 0
-    for bx in resample(x, 100, method=method, random_state=rng):
-        w = np.histogram(bx, bins=xe)[0]
-        wsum += w
-        c = stats.chisquare(w, wref)
-        prob.append(c.pvalue)
+    with np.errstate(invalid="ignore"):
+        for bx in resample(x, 100, method=method, random_state=rng):
+            w = np.histogram(bx, bins=xe)[0]
+            wsum += w
+            c = stats.chisquare(w, wref)
+            prob.append(c.pvalue)
 
     if method == "balanced":
         # balanced bootstrap exactly reproduces frequencies in original sample
@@ -147,68 +152,45 @@ def test_resample_1d_parametric_poisson():
     assert c.pvalue > 0.01
 
 
-# def test_parametric_bootstrap_multivariate_raises():
-#     msg = "must be one-dimensional"
-#     with pytest.raises(ValueError, match=msg):
-#         bootstrap(
-#             np.random.normal(size=(10, 2)), method="parametric", family="gaussian"
-#         )
-#
-#
-# def test_parametric_bootstrap_invalid_family_raises():
-#     msg = "Invalid family"
-#     with pytest.raises(ValueError, match=msg):
-#         bootstrap(x, method="parametric", family="____")
-#
-#
-# @pytest.mark.parametrize(
-#     "family",
-#     [
-#         "gaussian",
-#         "t",
-#         "laplace",
-#         "logistic",
-#         "F",
-#         "gamma",
-#         "log-normal",
-#         "inverse-gaussian",
-#         "pareto",
-#         "beta",
-#         "poisson",
-#     ],
-# )
-# def test_parametric_bootstrap_shape(family):
-#     boot = bootstrap(x, b=b, method="parametric", family=family)
-#     assert boot.shape == (b, n)
-#
-#
-# def test_bootstrap_shape():
-#     arr = np.random.normal(size=(16, 8, 4, 2))
-#     boot = bootstrap(arr, b=b)
-#     assert boot.shape == (b, 16, 8, 4, 2)
-#
-#
-# def test_bootstrap_equal_along_axis():
-#     arr = np.reshape(np.tile([0, 1, 2], 3), newshape=(3, 3))
-#     boot = bootstrap(arr, b=10)
-#     assert np.all([np.array_equal(arr, a) for a in boot])
-#
-#
-# def test_bootstrap_full_strata():
-#     boot = bootstrap(x, b=b, strata=np.array(range(n)))
-#     assert np.all([np.array_equal(x, a) for a in boot])
-#
-#
-# def test_bootstrap_invalid_strata_raises():
-#     msg = "must have the same length"
-#     with pytest.raises(ValueError, match=msg):
-#         bootstrap(x, strata=np.arange(len(x) + 1))
-#
-#
-# def test_bootstrap_invalid_method_raises():
-#     msg = "method must be either 'ordinary', 'balanced', or 'parametric'"
-#     with pytest.raises(ValueError, match=msg):
-#         bootstrap(x, method="____")
+def test_resample_invalid_family_raises():
+    msg = "Invalid family"
+    with pytest.raises(ValueError, match=msg):
+        for _ in resample((1, 2, 3), method="foobar"):
+            pass
+
+
+@pytest.mark.parametrize("method", PARAMETRIC - {"norm"})
+def test_resample_2d_parametric_raises(method):
+    with pytest.raises(ValueError):
+        for _ in resample(np.ones((2, 2)), method=method):
+            pass
+
+
+def test_resample_3d_parametric_normal_raises():
+    with pytest.raises(ValueError):
+        for _ in resample(np.ones((2, 2, 2)), method="normal"):
+            pass
+
+
+def test_resample_equal_along_axis():
+    data = np.reshape(np.tile([0, 1, 2], 3), newshape=(3, 3))
+    for b in resample(data, size=2):
+        assert_equal(data, b)
+
+
+def test_resample_full_strata():
+    data = np.arange(3)
+    for b in resample(data, size=2, strata=data):
+        assert_equal(data, b)
+
+
+def test_resample_invalid_strata_raises():
+    msg = "must have the same shape"
+    with pytest.raises(ValueError, match=msg):
+        for _ in resample((1, 2, 3), strata=np.arange(4)):
+            pass
+
+
 #
 #
 # def test_confidence_interval_invalid_p_raises():

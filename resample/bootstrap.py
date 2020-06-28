@@ -5,7 +5,7 @@ from typing import Callable, Optional, Tuple, Sequence, Union
 import numpy as np
 from scipy import stats
 from resample.jackknife import jackknife as _jackknife
-from resample.empirical import quantile as _quantile
+from resample.empirical import quantile_gen as _quantile_gen
 
 
 def resample(
@@ -67,7 +67,7 @@ def resample(
     return _resample_parametric(sample, size, method, strata, rng)
 
 
-def bootstrap(sample: np.ndarray, fcn: Callable, size: int = 100, **kwds) -> np.ndarray:
+def bootstrap(fn: Callable, sample: np.ndarray, size: int = 100, **kwds) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
 
@@ -75,17 +75,17 @@ def bootstrap(sample: np.ndarray, fcn: Callable, size: int = 100, **kwds) -> np.
 
     Parameters
     ----------
+    fn : Callable
+        Bootstrap samples are passed to this function.
     sample : array-like
         Original sample.
-    fcn : Callable
-        Bootstrap samples are passed to this function.
     **kwds
         Keywords are forwarded to `resample`.
 
     Returns
     -------
     np.array
-        Results of `fcn` applied to each bootstrap sample.
+        Results of `fn` applied to each bootstrap sample.
     """
     # if strata is not None and (method != "parametric"):
     #     strata = np.asarray(strata)
@@ -107,12 +107,12 @@ def bootstrap(sample: np.ndarray, fcn: Callable, size: int = 100, **kwds) -> np.
     #     ]
     #     # concatenate resampled strata along first column axis
     #     x = np.concatenate(boot_strata, axis=1)
-    return np.asarray([fcn(x) for x in resample(sample, size, **kwds)])
+    return np.asarray([fn(x) for x in resample(sample, size, **kwds)])
 
 
 def confidence_interval(
+    fn: Callable,
     sample: np.ndarray,
-    fcn: Callable,
     cl: float = 0.95,
     ci_method: str = "percentile",
     **kwds,
@@ -122,10 +122,10 @@ def confidence_interval(
 
     Parameters
     ----------
+    fn : callable
+        Function to be bootstrapped.
     sample : array-like
         Original sample.
-    fcn : callable
-        Function to be bootstrapped.
     cl : float, default : 0.95
         Confidence level. Asymptotically, this is the probability that the interval
         contains the true value.
@@ -143,18 +143,18 @@ def confidence_interval(
         raise ValueError("cl must be between zero and one")
 
     alpha = 1 - cl
-    thetas = bootstrap(sample, fcn, **kwds)
+    thetas = bootstrap(sample, fn, **kwds)
 
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha)
 
     if ci_method == "student":
-        theta = fcn(sample)
+        theta = fn(sample)
         return _confidence_interval_studentized(theta, thetas, alpha)
 
     if ci_method == "bca":
-        theta = fcn(sample)
-        j_thetas = _jackknife(sample, fcn)
+        theta = fn(sample)
+        j_thetas = _jackknife(sample, fn)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha)
 
     raise ValueError(
@@ -196,6 +196,23 @@ def _resample_balanced(
         yield sample[sel]
 
 
+def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tuple:
+    if dist == stats.multivariate_normal:
+        # has no fit method...
+        return (np.mean(sample, axis=0), np.cov(sample.T, ddof=1))
+
+    if dist == stats.t:
+        fit_kwd = {"fscale": 1}  # HD: I think this should not be fixed to 1
+    elif dist in {stats.f, stats.beta}:
+        fit_kwd = {"floc": 0, "fscale": 1}
+    elif dist in (stats.gamma, stats.lognorm, stats.invgauss, stats.pareto):
+        fit_kwd = {"floc": 0}
+    else:
+        fit_kwd = {}
+
+    return dist.fit(sample, **fit_kwd)
+
+
 def _resample_parametric(
     sample: np.ndarray,
     size: int,
@@ -217,22 +234,17 @@ def _resample_parametric(
     }.get(family, None)
     if dist is None:
         # use scipy.stats name
-        dist = getattr(stats, family.lower())
-
-    if dist == stats.t:
-        fit_kwd = {"fscale": 1}  # HD: I think this should not be fixed to 1
-    elif dist in {stats.f, stats.beta}:
-        fit_kwd = {"floc": 0, "fscale": 1}
-    elif dist in (stats.gamma, stats.lognorm, stats.invgauss, stats.pareto):
-        fit_kwd = {"floc": 0}
-    else:
-        fit_kwd = {}
+        try:
+            dist = getattr(stats, family.lower())
+        except AttributeError:
+            raise ValueError("Invalid family: '{}'".format(family))
 
     if sample.ndim > 1:
-        if dist is not stats.norm:
-            raise ValueError("multivariate data is only supported for 'gaussian'")
+        if dist != stats.norm:
+            raise ValueError("family '%s' only supports 1D samples" % family)
+        if sample.ndim > 2:
+            raise ValueError("multivariate normal only works with 2D samples")
         dist = stats.multivariate_normal
-        dist.fit = lambda x: (np.mean(x, axis=0), np.cov(x.T, ddof=1))
 
     n = len(sample)
 
@@ -244,7 +256,7 @@ def _resample_parametric(
         for _ in range(size):
             yield rng.poisson(mu, size=n)
     else:
-        args = dist.fit(sample, **fit_kwd)
+        args = _fit_parametric_family(dist, sample)
         dist = dist(*args)
         for _ in range(size):
             yield dist.rvs(size=n, random_state=rng)
@@ -253,7 +265,7 @@ def _resample_parametric(
 def _confidence_interval_percentile(
     thetas: np.ndarray, alpha_half: float,
 ) -> Tuple[float, float]:
-    q = _quantile(thetas)
+    q = _quantile_gen(thetas)
     return q(alpha_half), q(1 - alpha_half)
 
 
@@ -263,7 +275,7 @@ def _confidence_interval_studentized(
     theta_std = np.std(thetas)
     # quantile function of studentized bootstrap estimates
     z = (thetas - theta) / theta_std
-    q = _quantile(z)
+    q = _quantile_gen(z)
     theta_std_1 = theta_std * q(1 - alpha_half)
     theta_std_2 = theta_std * q(alpha_half)
     return theta - theta_std_1, theta + theta_std_2
@@ -290,5 +302,5 @@ def _confidence_interval_bca(
     p_low = norm.cdf(z_naught + z_low / (1 - acc * z_low))
     p_high = norm.cdf(z_naught + z_high / (1 - acc * z_high))
 
-    q = _quantile(thetas)
+    q = _quantile_gen(thetas)
     return q(p_low), q(p_high)

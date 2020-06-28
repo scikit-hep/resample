@@ -12,33 +12,33 @@ from resample.jackknife import (
 
 
 def test_resample_1d():
-    a = (1, 2, 3)
+    data = (1, 2, 3)
 
     r = []
-    for x in resample(a):
+    for x in resample(data):
         r.append(x.copy())
     assert_equal(r, [[2, 3], [1, 3], [1, 2]])
 
 
 def test_resample_2d():
-    a = ((1, 2), (3, 4), (5, 6))
+    data = ((1, 2), (3, 4), (5, 6))
 
     r = []
-    for x in resample(a):
+    for x in resample(data):
         r.append(x.copy())
     assert_equal(r, [[(3, 4), (5, 6)], [(1, 2), (5, 6)], [(1, 2), (3, 4)]])
 
 
 def test_jackknife():
-    a = (1, 2, 3)
-    r = jackknife(a, lambda x: x.copy())
+    data = (1, 2, 3)
+    r = jackknife(lambda x: x.copy(), data)
     assert_equal(r, [[2, 3], [1, 3], [1, 2]])
 
 
 def test_bias_on_unbiased():
-    x = [0, 1, 2, 3]
+    data = (0, 1, 2, 3)
     # bias is exactly zero for linear functions
-    r = bias(x, np.mean)
+    r = bias(np.mean, data)
     assert r == 0
 
 
@@ -47,8 +47,8 @@ def test_bias_on_biased_order_n_minus_one():
     def bad_mean(x):
         return (np.sum(x) + 2) / len(x)
 
-    x = [0, 1, 2]
-    r = bias(x, bad_mean)
+    data = (0, 1, 2)
+    r = bias(bad_mean, data)
     mean_jk = np.mean([bad_mean([1, 2]), bad_mean([0, 2]), bad_mean([0, 1])])
     # (5/2 + 4/2 + 3/2) / 3 = 12 / 6 = 2
     assert mean_jk == 2.0
@@ -61,11 +61,11 @@ def test_bias_on_biased_order_n_minus_one():
 
 def test_bias_on_array_map():
     # compute mean and (biased) variance simultanously
-    def fcn(x):
+    def fn(x):
         return np.mean(x), np.var(x, ddof=0)
 
-    x = [0, 1, 2]
-    r = bias(x, fcn)
+    data = (0, 1, 2)
+    r = bias(fn, data)
     assert_almost_equal(r, (0.0, -1.0 / 3.0))
 
 
@@ -75,14 +75,14 @@ def test_bias_corrected():
         return (np.sum(x) + 2) / len(x)
 
     # bias correction is exact up to O(n^{-1})
-    x = [0, 1, 2]
-    r = bias_corrected(x, bad_mean)
+    data = (0, 1, 2)
+    r = bias_corrected(bad_mean, data)
     assert r == 1.0  # which is the correct unbiased mean
 
 
 def test_variance():
-    x = [0, 1, 2]
-    r = variance(x, np.mean)
+    data = (0, 1, 2)
+    r = variance(np.mean, data)
     # formula is (n - 1) / n * sum((jf - mean(jf)) ** 2)
     # fj = [3/2, 1, 1/2]
     # mfj = 1

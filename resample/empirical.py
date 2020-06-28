@@ -7,10 +7,10 @@ density function.
 from typing import Callable, Sequence
 import numpy as np
 from scipy.interpolate import interp1d as _interp1d
-from resample import jackknife as _jackknife
+from resample.jackknife import jackknife as _jackknife
 
 
-def cdf(sample: np.ndarray) -> Callable:
+def cdf_gen(sample: np.ndarray) -> Callable:
     """
     Return the empirical distribution function for the given sample.
 
@@ -29,7 +29,7 @@ def cdf(sample: np.ndarray) -> Callable:
     return lambda x: np.searchsorted(sample, x, side="right", sorter=None) / n
 
 
-def quantile(sample: np.ndarray) -> Callable:
+def quantile_gen(sample: np.ndarray) -> Callable:
     """
     Return an empirical quantile function for the given sample.
 
@@ -58,24 +58,23 @@ def quantile(sample: np.ndarray) -> Callable:
     return quant
 
 
-def influence(sample: Sequence, fn: Callable) -> np.ndarray:
+def influence(fn: Callable, sample: Sequence) -> np.ndarray:
     """
     Calculate the empirical influence function for a given sample and estimator
     using the jackknife method.
 
     Parameters
     ----------
-    sample : array-like
-        Sample. Must be one-dimensional.
-
     fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
+    sample : array-like
+        Sample. Must be one-dimensional.
 
     Returns
     -------
-    np.ndarray
+    ndarray
         Empirical influence values.
     """
     n = len(sample)
-    return (n - 1) * (fn(sample) - _jackknife(sample, fn))
+    return (n - 1) * (fn(sample) - _jackknife(fn, sample))

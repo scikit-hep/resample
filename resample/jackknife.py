@@ -38,7 +38,7 @@ def resample(sample: Sequence) -> np.ndarray:
     return _resample(np.atleast_1d(sample))
 
 
-def jackknife(sample: np.ndarray, fn: Callable) -> np.ndarray:
+def jackknife(fn: Callable, sample: np.ndarray) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
@@ -50,11 +50,11 @@ def jackknife(sample: np.ndarray, fn: Callable) -> np.ndarray:
 
     Parameters
     ----------
-    sample : array-like
-        Sample. Must be one-dimensional.
     fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
+    sample : array-like
+        Sample. Must be one-dimensional.
 
     Returns
     -------
@@ -64,7 +64,7 @@ def jackknife(sample: np.ndarray, fn: Callable) -> np.ndarray:
     return np.asarray([fn(x) for x in resample(sample)])
 
 
-def bias(sample: Sequence, fn: Callable) -> np.ndarray:
+def bias(fn: Callable, sample: Sequence) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -76,11 +76,11 @@ def bias(sample: Sequence, fn: Callable) -> np.ndarray:
 
     Parameters
     ----------
-    sample : array-like
-        Sample. Must be one-dimensional.
     fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
+    sample : array-like
+        Sample. Must be one-dimensional.
 
     Returns
     -------
@@ -89,11 +89,11 @@ def bias(sample: Sequence, fn: Callable) -> np.ndarray:
     """
     n = len(sample)
     theta = fn(sample)
-    mean_theta = np.mean(jackknife(sample, fn), axis=0)
+    mean_theta = np.mean(jackknife(fn, sample), axis=0)
     return (n - 1) * (mean_theta - theta)
 
 
-def bias_corrected(sample: Sequence, fn: Callable) -> np.ndarray:
+def bias_corrected(fn: Callable, sample: Sequence) -> np.ndarray:
     """
     Calculates bias-corrected estimate of the function with the jackknife.
 
@@ -106,11 +106,11 @@ def bias_corrected(sample: Sequence, fn: Callable) -> np.ndarray:
 
     Parameters
     ----------
-    sample : array-like
-        Sample. Must be one-dimensional.
     fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
+    sample : array-like
+        Sample. Must be one-dimensional.
 
     Returns
     -------
@@ -119,11 +119,11 @@ def bias_corrected(sample: Sequence, fn: Callable) -> np.ndarray:
     """
     n = len(sample)
     theta = fn(sample)
-    mean_theta = np.mean(jackknife(sample, fn), axis=0)
+    mean_theta = np.mean(jackknife(fn, sample), axis=0)
     return n * theta - (n - 1) * mean_theta
 
 
-def variance(sample: Sequence, fn: Callable) -> np.ndarray:
+def variance(fn: Callable, sample: Sequence) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 
@@ -132,11 +132,11 @@ def variance(sample: Sequence, fn: Callable) -> np.ndarray:
 
     Parameters
     ----------
-    sample : array-like
-        Sample. Must be one-dimensional.
     fn : callable
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
+    sample : array-like
+        Sample. Must be one-dimensional.
 
     Returns
     -------
@@ -145,7 +145,7 @@ def variance(sample: Sequence, fn: Callable) -> np.ndarray:
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
     #   = np.var(fj, ddof=0) * (n - 1)
-    thetas = jackknife(sample, fn)
+    thetas = jackknife(fn, sample)
     n = len(sample)
     return (n - 1) * np.var(thetas, ddof=0, axis=0)
 
