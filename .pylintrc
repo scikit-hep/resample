@@ -16,7 +16,8 @@ ignore=CVS,
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=test_*
+ignore-patterns=test_*,
+                permutation
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -223,8 +224,7 @@ spelling-store-unknown-words=no
 
 # List of note tags to take in consideration, separated by a comma.
 notes=FIXME,
-      XXX,
-      TODO
+      XXX
 
 # Regular expression of note tags to take in consideration.
 #notes-rgx=
