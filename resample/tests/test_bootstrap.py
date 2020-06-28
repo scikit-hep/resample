@@ -1,9 +1,7 @@
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 import pytest
-from pytest import approx
 from scipy import stats
-from collections import Counter
 
 from resample.bootstrap import (
     resample,
