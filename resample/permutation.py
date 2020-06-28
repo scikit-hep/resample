@@ -240,8 +240,7 @@ def corr_test(
     a2 : array-like
         Second sample
 
-    method : str, {'pearson', 'spearman'},
-            default : 'pearson'
+    method : str, {'pearson', 'spearman'}, default : 'pearson'
         Correlation method
 
     b : int, default : 100

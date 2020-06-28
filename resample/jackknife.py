@@ -14,26 +14,29 @@ def resample(sample: Sequence) -> np.ndarray:
     Parameters
     ----------
     sample: array-like
-        Sample. If the sequence is multi-dimensional, the first dimension must walk over
-        i.i.d. observations.
+        Sample. If the sequence is multi-dimensional, the first dimension must
+        walk over i.i.d. observations.
 
     Yields
     ------
     ndarray
-        array with same shape and type as input, but with the size of the first
+        Array with same shape and type as input, but with the size of the first
         dimension reduced by one.
 
     Notes
     -----
-    To increase performance we update the resampled array on each iteration *in place*.
-    To store resampled arrays somewhere (not recommended), one has to make copies
-    explicitly, e.g.:
+    To increase performance, the resampled array is updated on each iteration *in
+    place*. If resampled arrays are to be stored, copies have to be made explicitly,
+    e.g.:
 
-    ```
-    r = []
-    for x in resample(a):
-        r.append(x.copy())
-    ```
+    >>> r = []
+    >>> for x in resample(a):
+    >>>     r.append(x.copy())
+
+    See Also
+    --------
+    resample.bootstrap.resample
+    resample.jackknife.jackknife
     """
     return _resample(np.atleast_1d(sample))
 

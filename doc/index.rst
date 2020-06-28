@@ -10,5 +10,6 @@ Modules
    :maxdepth: 2
 
    bootstrap.rst
+   jackknife.rst
    permutation.rst
-   utils.rst
+   empirical.rst
