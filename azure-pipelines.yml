@@ -49,5 +49,5 @@ steps:
     python -m pip install .
   displayName: 'Install requirements'
 
-- script: python -m pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
+- script: python -m pytest --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
   displayName: 'Run tests'
