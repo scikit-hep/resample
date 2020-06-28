@@ -20,11 +20,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install black flake8 mypy
+        pip install black flake8 mypy pylint
     - name: Format
       run: black --check ./resample
-    - name: Lint
+    - name: flake8
       run: flake8 ./resample
-    # mypy does not work properly
-    # - name: Type check
-    #   run: mypy ./resample
+    # - name: pylint
+    #   run: pylint ./resample
+    - name: Type check
+      run: mypy ./resample
