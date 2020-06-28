@@ -121,15 +121,16 @@ def test_resample_1d_parametric(method):
 
 
 def test_resample_1d_parametric_poisson():
-    dist = stats.poisson(1)
+    # poisson is behaving super weird in scipy
 
     rng = np.random.Generator(np.random.PCG64(1))
 
-    x = dist.rvs(size=1000, random_state=rng)
-    par = np.mean(x)
+    x = rng.poisson(1.5, size=1000)
+    mu = np.mean(x)
 
-    xe = (0, 1, 2, np.inf)
-    wref = np.diff(dist.cdf(xe)) * len(x)
+    xe = (0, 1, 2, 3, 10)
+    # somehow location 1 is needed here...
+    wref = np.diff(stats.poisson(mu, 1).cdf(xe)) * len(x)
 
     # compute P values for replicas compared to original
     prob = []

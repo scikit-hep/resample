@@ -10,7 +10,7 @@ from resample.empirical import quantile as _quantile
 
 def resample(
     sample: Sequence,
-    size: int,
+    size: int = 1000,
     method: str = "balanced",
     strata: Optional[np.ndarray] = None,
     random_state: Optional[Union[np.random.Generator, int]] = None,
@@ -23,24 +23,23 @@ def resample(
     sample : array-like
         Original sample.
     size : int, optional
-        Number of bootstrap samples to generate. Default is 100.
+        Number of bootstrap samples to generate. Default is 1000.
     method : str or None, optional
-        How to generate bootstrap samples. Supported are 'ordinary', 'balanced', or a
-        recognized name for a statistical distribution for a parametric bootstrap.
-        Default is 'balanced'.
-        Supported distribution names: 'normal' (alternative: 'gaussian', 'norm'),
-        'student' (alternative: 't'), 'laplace', 'logistic', 'F' (alternative: 'f'),
-        'beta', 'gamma', 'log-normal' (alternative: 'lognorm', 'log-gaussian'),
-        'inverse-gaussian' (alternative: 'invgauss'), 'pareto', 'poisson'.
-    strata : array-like or None
-        Stratification labels. Default is None.
+        How to generate bootstrap samples. Supported are 'ordinary', 'balanced', or
+        a distribution name for a parametric bootstrap. Default is 'balanced'.
+        Supported distribution names: 'normal' (also: 'gaussian', 'norm'),
+        'student' (also: 't'), 'laplace', 'logistic', 'F' (also: 'f'),
+        'beta', 'gamma', 'log-normal' (also: 'lognorm', 'log-gaussian'),
+        'inverse-gaussian' (also: 'invgauss'), 'pareto', 'poisson'.
+    strata : array-like, optional
+        Stratification labels. Must have the same shape as `sample`. Default is None.
     random_state : np.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Yields
     ------
-    np.ndarray
+    ndarray
         Bootstrap sample.
     """
     # Stratification:
@@ -235,16 +234,20 @@ def _resample_parametric(
         dist = stats.multivariate_normal
         dist.fit = lambda x: (np.mean(x, axis=0), np.cov(x.T, ddof=1))
 
+    n = len(sample)
+
     # fit parameters by maximum likelihood and sample from that
     if dist == stats.poisson:
-        # poisson has no fit method
-        args = (np.mean(sample), 0, 1)
+        # - poisson has no fit method and there is no scale parameter
+        # - random number generation for poisson distribution in scipy seems to be buggy
+        mu = np.mean(sample)
+        for _ in range(size):
+            yield rng.poisson(mu, size=n)
     else:
         args = dist.fit(sample, **fit_kwd)
-
-    n = len(sample)
-    for _ in range(size):
-        yield dist.rvs(*args, size=n, random_state=rng)
+        dist = dist(*args)
+        for _ in range(size):
+            yield dist.rvs(size=n, random_state=rng)
 
 
 def _confidence_interval_percentile(
