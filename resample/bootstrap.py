@@ -155,19 +155,19 @@ def confidence_interval(
         raise ValueError("cl must be between zero and one")
 
     alpha = 1 - cl
-    thetas = bootstrap(sample, fn, **kwds)
+    thetas = bootstrap(fn, sample, **kwds)
 
     if ci_method == "percentile":
-        return _confidence_interval_percentile(thetas, alpha)
+        return _confidence_interval_percentile(thetas, alpha / 2)
 
     if ci_method == "student":
         theta = fn(sample)
-        return _confidence_interval_studentized(theta, thetas, alpha)
+        return _confidence_interval_studentized(theta, thetas, alpha / 2)
 
     if ci_method == "bca":
         theta = fn(sample)
         j_thetas = _jackknife(fn, sample)
-        return _confidence_interval_bca(theta, thetas, j_thetas, alpha)
+        return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
     raise ValueError(
         "ci_method must be 'percentile', 'student', or 'bca', but "
@@ -255,8 +255,8 @@ def _confidence_interval_studentized(
     # quantile function of studentized bootstrap estimates
     z = (thetas - theta) / theta_std
     q = _quantile_gen(z)
-    theta_std_1 = theta_std * q(1 - alpha_half)
-    theta_std_2 = theta_std * q(alpha_half)
+    theta_std_1 = theta_std * q(alpha_half)
+    theta_std_2 = theta_std * q(1 - alpha_half)
     return theta - theta_std_1, theta + theta_std_2
 
 

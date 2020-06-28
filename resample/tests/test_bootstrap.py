@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_almost_equal
 import pytest
 from pytest import approx
 from scipy import stats
@@ -29,6 +29,11 @@ PARAMETRIC_DISCRETE = {"poisson"}
 PARAMETRIC = PARAMETRIC_CONTINUOUS | PARAMETRIC_DISCRETE
 NON_PARAMETRIC = {"ordinary", "balanced"}
 ALL_METHODS = NON_PARAMETRIC | PARAMETRIC
+
+
+@pytest.fixture
+def rng():
+    return np.random.Generator(np.random.PCG64(1))
 
 
 @pytest.mark.parametrize("method", ALL_METHODS)
@@ -69,7 +74,7 @@ def test_resample_shape_4d(method):
 
 
 @pytest.mark.parametrize("method", NON_PARAMETRIC | PARAMETRIC_CONTINUOUS)
-def test_resample_1d_parametric(method):
+def test_resample_1d_parametric(method, rng):
     # distribution parameters for parametric families
     args = {
         "t": (2,),
@@ -85,8 +90,6 @@ def test_resample_1d_parametric(method):
         dist = stats.norm
     else:
         dist = getattr(stats, method)
-
-    rng = np.random.Generator(np.random.PCG64(1))
 
     x = dist.rvs(*args, size=1000, random_state=rng)
 
@@ -125,11 +128,8 @@ def test_resample_1d_parametric(method):
     assert c.pvalue > 0.01
 
 
-def test_resample_1d_parametric_poisson():
+def test_resample_1d_parametric_poisson(rng):
     # poisson is behaving super weird in scipy
-
-    rng = np.random.Generator(np.random.PCG64(1))
-
     x = rng.poisson(1.5, size=1000)
     mu = np.mean(x)
 
@@ -178,9 +178,10 @@ def test_resample_equal_along_axis():
         assert_equal(data, b)
 
 
-def test_resample_full_strata():
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
+def test_resample_full_strata(method):
     data = np.arange(3)
-    for b in resample(data, size=2, strata=data):
+    for b in resample(data, size=2, strata=data, method=method):
         assert_equal(data, b)
 
 
@@ -191,20 +192,38 @@ def test_resample_invalid_strata_raises():
             pass
 
 
-#
-#
-# def test_confidence_interval_invalid_p_raises():
-#     msg = "p must be between zero and one"
-#     with pytest.raises(ValueError, match=msg):
-#         confidence_interval(x, np.mean, cl=2)
-#
-#
-# @pytest.mark.parametrize("ci_method", ["percentile", "bca", "t"])
-# def test_confidence_interval_len(ci_method):
-#     ci = confidence_interval(x, np.mean, ci_method=ci_method)
-#     assert len(ci) == 2
-#
-#
+def test_bootstrap_2d_balanced(rng):
+    data = ((1, 2, 3), (2, 3, 4), (3, 4, 5))
+
+    def mean(x):
+        return np.mean(x, axis=0)
+
+    r = bootstrap(mean, data, method="balanced")
+
+    # arithmetic mean is linear, therefore mean over all replicas in
+    # balanced bootstrap is equal to mean of original sample
+    assert_almost_equal(mean(data), mean(r))
+
+
+@pytest.mark.parametrize("ci_method", ["percentile", "bca", "student"])
+def test_confidence_interval(ci_method, rng):
+    data = rng.normal(size=1000)
+    par = stats.norm.fit(data)
+    dist = stats.norm(
+        par[0], par[1] / len(data) ** 0.5
+    )  # accuracy of mean is sqrt(n) better
+    cl = 0.9
+    ci_ref = dist.ppf(0.05), dist.ppf(0.95)
+    ci = confidence_interval(np.mean, data, cl=cl, size=1000, ci_method=ci_method)
+    assert_almost_equal(ci_ref, ci, decimal=2)
+
+
+def test_confidence_interval_invalid_p_raises():
+    msg = "must be between zero and one"
+    with pytest.raises(ValueError, match=msg):
+        confidence_interval(np.mean, (1, 2, 3), cl=2)
+
+
 # def test_confidence_interval_invalid_boot_method_raises():
 #     msg = "must be 'ordinary', 'balanced', or 'parametric'"
 #     with pytest.raises(ValueError, match=msg):
