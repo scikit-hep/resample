@@ -63,7 +63,7 @@ def resample(
 
     if strata is not None:
         strata = np.atleast_1d(strata)
-        if strata.shape != sample.shape:
+        if strata.shape != sample.shape:  # type: ignore
             raise ValueError("a and strata must have the same shape")
         return _resample_stratified(sample, size, method, strata, rng)
 
