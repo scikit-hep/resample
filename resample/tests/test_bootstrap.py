@@ -153,21 +153,18 @@ def test_resample_1d_parametric_poisson(rng):
 def test_resample_invalid_family_raises():
     msg = "Invalid family"
     with pytest.raises(ValueError, match=msg):
-        for _ in resample((1, 2, 3), method="foobar"):
-            pass
+        next(resample((1, 2, 3), method="foobar"))
 
 
 @pytest.mark.parametrize("method", PARAMETRIC - {"norm"})
 def test_resample_2d_parametric_raises(method):
     with pytest.raises(ValueError):
-        for _ in resample(np.ones((2, 2)), method=method):
-            pass
+        next(resample(np.ones((2, 2)), method=method))
 
 
 def test_resample_3d_parametric_normal_raises():
     with pytest.raises(ValueError):
-        for _ in resample(np.ones((2, 2, 2)), method="normal"):
-            pass
+        next(resample(np.ones((2, 2, 2)), method="normal"))
 
 
 def test_resample_equal_along_axis():
@@ -186,8 +183,7 @@ def test_resample_full_strata(method):
 def test_resample_invalid_strata_raises():
     msg = "must have the same shape"
     with pytest.raises(ValueError, match=msg):
-        for _ in resample((1, 2, 3), strata=np.arange(4)):
-            pass
+        next(resample((1, 2, 3), strata=np.arange(4)))
 
 
 def test_bootstrap_2d_balanced(rng):
