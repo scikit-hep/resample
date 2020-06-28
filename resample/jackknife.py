@@ -44,7 +44,7 @@ def resample(sample: Sequence) -> np.ndarray:
     return _resample(np.atleast_1d(sample))
 
 
-def jackknife(fn: Callable, sample: np.ndarray) -> np.ndarray:
+def jackknife(fn: Callable, sample: Sequence) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
