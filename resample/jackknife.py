@@ -29,9 +29,12 @@ def resample(sample: Sequence) -> np.ndarray:
     place*. If resampled arrays are to be stored, copies have to be made explicitly,
     e.g.:
 
+    >>> from resample.jackknife import resample
     >>> r = []
-    >>> for x in resample(a):
-    >>>     r.append(x.copy())
+    >>> for x in resample((1, 2, 3)):
+    ...     r.append(x.copy())
+    >>> print(r)
+    [array([2, 3]), array([1, 3]), array([1, 2])]
 
     See Also
     --------
