@@ -91,7 +91,7 @@ def resample(
 
     if sample.ndim > 1:
         if dist != stats.norm:
-            raise ValueError("family '%s' only supports 1D samples" % method)
+            raise ValueError(f"family '{method}' only supports 1D samples")
         if sample.ndim > 2:
             raise ValueError("multivariate normal only works with 2D samples")
         dist = stats.multivariate_normal
