@@ -87,7 +87,7 @@ def resample(
         try:
             dist = getattr(stats, method.lower())
         except AttributeError:
-            raise ValueError("Invalid family: '{}'".format(method))
+            raise ValueError(f"Invalid family: '{method}'")
 
     if sample.ndim > 1:
         if dist != stats.norm:
