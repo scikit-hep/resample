@@ -174,7 +174,6 @@ def _resample(sample: np.ndarray) -> np.ndarray:
     # x1 = [0, 2, 3]
     # x2 = [0, 1, 3]
     # x3 = [0, 1, 2]
-    for i in range(1, n):
-        for j in range(i):
-            x[j] = sample[j]
+    for i in range(n - 1):
+        x[i] = sample[i]
         yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
