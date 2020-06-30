@@ -9,7 +9,7 @@ import numpy as np
 
 def resample(sample: Sequence) -> np.ndarray:
     """
-    Generator of jackknife'd samples.
+    Generator of jackknifed samples.
 
     Parameters
     ----------
