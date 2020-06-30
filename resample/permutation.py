@@ -3,7 +3,7 @@ from typing import Dict, List
 import numpy as np
 from scipy.stats import rankdata as _rankdata
 
-from resample.empirical import cdf_gen as _cdf_gen
+from resample.empirical import cdf_fn as _cdf_fn
 
 
 def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
@@ -328,8 +328,8 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
     n2 = len(a2)
     n = n1 + n2
 
-    f1 = _cdf_gen(a1)
-    f2 = _cdf_gen(a2)
+    f1 = _cdf_fn(a1)
+    f2 = _cdf_fn(a2)
     a = np.sort(np.append(a1, a2))
     d = np.max([abs(f1(v) - f2(v)) for v in a])
 
