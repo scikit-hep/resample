@@ -214,7 +214,7 @@ def _resample_balanced(
 def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tuple:
     if dist == stats.multivariate_normal:
         # has no fit method...
-        return (np.mean(sample, axis=0), np.cov(sample.T, ddof=1))
+        return np.mean(sample, axis=0), np.cov(sample.T, ddof=1)
 
     if dist == stats.t:
         fit_kwd = {"fscale": 1}  # HD: I think this should not be fixed to 1
