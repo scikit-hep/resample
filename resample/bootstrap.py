@@ -1,7 +1,7 @@
 """
 Bootstrap resampling.
 """
-from typing import Callable, Optional, Tuple, Sequence, Union
+from typing import Callable, Optional, Tuple, Sequence, Union, Generator
 import numpy as np
 from scipy import stats
 from resample.jackknife import jackknife as _jackknife
@@ -14,7 +14,7 @@ def resample(
     method: str = "balanced",
     strata: Optional[Sequence] = None,
     random_state: Optional[Union[np.random.Generator, int]] = None,
-) -> np.ndarray:
+) -> Generator[np.ndarray, None, None]:
     """
     Generator of bootstrap samples.
 
@@ -175,7 +175,13 @@ def confidence_interval(
     )
 
 
-def _resample_stratified(sample, size, method, strata, rng):
+def _resample_stratified(
+    sample: np.ndarray,
+    size: int,
+    method: str,
+    strata: np.ndarray,
+    rng: np.random.Generator,
+) -> Generator[np.ndarray, None, None]:
     # call resample on sub-samples and merge the replicas
     sub_samples = [sample[strata == x] for x in np.unique(strata)]
     for sub_replicas in zip(
@@ -186,7 +192,7 @@ def _resample_stratified(sample, size, method, strata, rng):
 
 def _resample_ordinary(
     sample: np.ndarray, size: int, rng: np.random.Generator,
-) -> np.ndarray:
+) -> Generator[np.ndarray, None, None]:
     # i.i.d. sampling from empirical cumulative distribution of sample
     n = len(sample)
     for _ in range(size):
@@ -195,7 +201,7 @@ def _resample_ordinary(
 
 def _resample_balanced(
     sample: np.ndarray, size: int, rng: np.random.Generator,
-) -> np.ndarray:
+) -> Generator[np.ndarray, None, None]:
     # effectively computes a random permutation of `size` concatenated
     # copies of `sample` and returns `size` equal chunks of that
     n = len(sample)
@@ -224,7 +230,7 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
 
 def _resample_parametric(
     sample: np.ndarray, size: int, dist, rng: np.random.Generator,
-) -> np.ndarray:
+) -> Generator[np.ndarray, None, None]:
     n = len(sample)
 
     # fit parameters by maximum likelihood and sample from that

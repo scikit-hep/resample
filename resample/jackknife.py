@@ -2,12 +2,11 @@
 Jackknife resampling.
 """
 
-from typing import Callable, Sequence
-import numba as nb
+from typing import Callable, Sequence, Generator
 import numpy as np
 
 
-def resample(sample: Sequence) -> np.ndarray:
+def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None, None]:
     """
     Generator of jackknife'd samples.
 
@@ -16,6 +15,10 @@ def resample(sample: Sequence) -> np.ndarray:
     sample: array-like
         Sample. If the sequence is multi-dimensional, the first dimension must
         walk over i.i.d. observations.
+    copy: bool, optional
+        If true, return the replicated sample as a copy, otherwise return a view into
+        the internal array buffer of the generator. Setting this to `False` avoids
+        `len(sample)` copies, which is more efficient, but see notes for caveats.
 
     Yields
     ------
@@ -25,23 +28,48 @@ def resample(sample: Sequence) -> np.ndarray:
 
     Notes
     -----
-    To increase performance, the resampled array is updated on each iteration *in
-    place*. If resampled arrays are to be stored, copies have to be made explicitly,
-    e.g.:
+    The generator interally keeps a single array to the replicas, which is updated
+    on each iteration of the generator. The safe default is to return copies of this
+    internal state. To increase performance, it also possible to return a view into the
+    generator state, by setting the `copy=False`. However, this will only produce
+    correct results if the generator is called strictly sequentially in a single-
+    threaded program and the loop body consumes the view and does not try to store it.
+    The following program shows that happens otherwise:
 
     >>> from resample.jackknife import resample
-    >>> r = []
-    >>> for x in resample((1, 2, 3)):
-    ...     r.append(x.copy())
-    >>> print(r)
+    >>> r1 = []
+    >>> for x in resample((1, 2, 3)): # works as expected
+    ...     r1.append(x)
+    >>> print(r1)
     [array([2, 3]), array([1, 3]), array([1, 2])]
+    >>>
+    >>> r2 = []
+    >>> for x in resample((1, 2, 3), copy=False):
+    ...     r2.append(x) # x is now a view into the same array in memory
+    >>> print(r2)
+    [array([1, 2]), array([1, 2]), array([1, 2])]
 
     See Also
     --------
     resample.bootstrap.resample
     resample.jackknife.jackknife
     """
-    return _resample(np.atleast_1d(sample))
+    sample = np.atleast_1d(sample)
+
+    n = len(sample)
+    x = sample[1:].copy()
+    # yield x0
+    yield x.copy() if copy else x
+
+    # update of x needs to change only value at index i
+    # for a = [0, 1, 2, 3]
+    # x0 = [1, 2, 3] (yielded above)
+    # x1 = [0, 2, 3] # override first index
+    # x2 = [0, 1, 3] # override second index
+    # x3 = [0, 1, 2] # ...
+    for i in range(n - 1):
+        x[i] = sample[i]
+        yield x.copy() if copy else x
 
 
 def jackknife(fn: Callable, sample: Sequence) -> np.ndarray:
@@ -67,7 +95,7 @@ def jackknife(fn: Callable, sample: Sequence) -> np.ndarray:
     ndarray
         Jackknife samples.
     """
-    return np.asarray([fn(x) for x in resample(sample)])
+    return np.asarray([fn(x) for x in resample(sample, copy=False)])
 
 
 def bias(fn: Callable, sample: Sequence) -> np.ndarray:
@@ -154,26 +182,3 @@ def variance(fn: Callable, sample: Sequence) -> np.ndarray:
     thetas = jackknife(fn, sample)
     n = len(sample)
     return (n - 1) * np.var(thetas, ddof=0, axis=0)
-
-
-@nb.njit
-def _resample(sample: np.ndarray) -> np.ndarray:
-    """
-    Numba implementation of jackknife resampling.
-    """
-    n = len(sample)
-    x = np.empty((n - 1, *sample.shape[1:]), dtype=sample.dtype)
-    for i in range(n - 1):
-        x[i] = sample[1 + i]
-    # yield x0
-    yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
-
-    # update of x needs to change values only up to i
-    # for a = [0, 1, 2, 3]
-    # x0 = [1, 2, 3] (yielded above)
-    # x1 = [0, 2, 3]
-    # x2 = [0, 1, 3]
-    # x3 = [0, 1, 2]
-    for i in range(n - 1):
-        x[i] = sample[i]
-        yield x.view(x.dtype)  # must return view to avoid a numba life-time bug
