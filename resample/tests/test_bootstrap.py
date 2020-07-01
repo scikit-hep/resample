@@ -72,7 +72,7 @@ def test_resample_shape_4d(method):
 
 
 @pytest.mark.parametrize("method", NON_PARAMETRIC | PARAMETRIC_CONTINUOUS)
-def test_resample_1d_parametric(method, rng):
+def test_resample_1d_statistical_test(method, rng):
     # distribution parameters for parametric families
     args = {
         "t": (2,),
@@ -126,7 +126,7 @@ def test_resample_1d_parametric(method, rng):
     assert c.pvalue > 0.01
 
 
-def test_resample_1d_parametric_poisson(rng):
+def test_resample_1d_statistical_test_poisson(rng):
     # poisson is behaving super weird in scipy
     x = rng.poisson(1.5, size=1000)
     mu = np.mean(x)
