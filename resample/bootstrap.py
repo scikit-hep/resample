@@ -217,7 +217,7 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
         return np.mean(sample, axis=0), np.cov(sample.T, ddof=1)
 
     if dist == stats.t:
-        fit_kwd = {"fscale": 1}  # HD: I think this should not be fixed to 1
+        fit_kwd = {"fscale": 1}
     elif dist in {stats.f, stats.beta}:
         fit_kwd = {"floc": 0, "fscale": 1}
     elif dist in (stats.gamma, stats.lognorm, stats.invgauss, stats.pareto):
