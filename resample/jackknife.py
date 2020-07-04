@@ -16,7 +16,7 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
         Sample. If the sequence is multi-dimensional, the first dimension must
         walk over i.i.d. observations.
     copy: bool, optional
-        If true, return the replicated sample as a copy, otherwise return a view into
+        If `True`, return the replicated sample as a copy, otherwise return a view into
         the internal array buffer of the generator. Setting this to `False` avoids
         `len(sample)` copies, which is more efficient, but see notes for caveats.
 
@@ -35,7 +35,7 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
     the generator state, by setting the `copy=False`. However, this will only produce
     correct results if the generator is called strictly sequentially in a single-
     threaded program and the loop body consumes the view and does not try to store it.
-    The following program shows that happens otherwise:
+    The following program shows what happens otherwise:
 
     >>> from resample.jackknife import resample
     >>> r1 = []
