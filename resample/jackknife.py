@@ -35,7 +35,7 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
     the generator state, by setting the `copy=False`. However, this will only produce
     correct results if the generator is called strictly sequentially in a single-
     threaded program and the loop body consumes the view and does not try to store it.
-    The following program shows that happens otherwise:
+    The following program shows what happens otherwise:
 
     >>> from resample.jackknife import resample
     >>> r1 = []
