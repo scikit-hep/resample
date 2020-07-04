@@ -22,7 +22,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
         python -m pip install black flake8 mypy
-    - name: Format
+    - name: black
       run: black --check ./resample
     - name: flake8
       run: flake8 ./resample
