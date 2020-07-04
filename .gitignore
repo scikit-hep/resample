@@ -6,6 +6,7 @@ resample.egg-info
 install_log.txt
 *__pycache__
 .pytest_cache
+.mypy_cache
 resample/.coverage
 *.sh
 html*
@@ -13,5 +14,6 @@ html*
 _build
 *coverage*
 .idea
-.mypy*
 benchmarks/.asv/
+junit
+py[0-9]*

@@ -1,4 +1,4 @@
-Utilities
+Empirical
 =========
 
 Features
@@ -6,11 +6,10 @@ Features
 
   * Empirical cumulative distribution function
   * Empirical quantile function
-  * Mean integrated squared error
-  * Kolmogorov distance
+  * Empirical influence
 
-Docstrings
-----------
+Reference
+---------
 
-.. automodule:: resample.utils
+.. automodule:: resample.empirical
     :members:

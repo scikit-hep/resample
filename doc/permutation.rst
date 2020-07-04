@@ -13,8 +13,8 @@ This module provides permutation variants of the following statistical tests:
   * Kolmogorov-Smirnov test
   * Correlation test
 
-Docstrings
-----------
+Reference
+---------
 
 .. automodule:: resample.permutation
     :members:

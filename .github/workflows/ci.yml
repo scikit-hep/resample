@@ -20,10 +20,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install black flake8 mypy
-    - name: Format
-      run: black --check ./src/resample
-    - name: Lint
-      run: flake8 ./src/resample
-    - name: Type check
-      run: mypy ./src/resample
+        python -m pip install -r requirements.txt
+        python -m pip install black flake8 mypy
+    - name: black
+      run: black --check ./resample
+    - name: flake8
+      run: flake8 ./resample
+    - name: mypy
+      run: mypy ./resample
