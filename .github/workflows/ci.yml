@@ -26,5 +26,5 @@ jobs:
       run: black --check ./resample
     - name: flake8
       run: flake8 ./resample
-    - name: Type check
+    - name: mypy
       run: mypy ./resample
