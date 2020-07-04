@@ -2,4 +2,4 @@
 resample package.
 """
 
-__version__ = "0.21"
+from .version import version as __version__  # noqa
