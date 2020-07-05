@@ -173,6 +173,87 @@ def confidence_interval(
     )
 
 
+def bias(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
+    """
+    Calculate bias of the function estimate with the bootstrap.
+
+    Parameters
+    ----------
+    fn : callable
+        Function to be bootstrapped.
+    sample : array-like
+        Original sample.
+    **kwds
+        Keyword arguments forwarded to :func:`resample`.
+
+    Notes
+    -----
+    The bootstrap method cannot correct biases of linear estimators which are exactly
+    of order 1/N, where N is the number of i.i.d. observations, the jackknife should be
+    used for those. For bias estimation, the balanced bootstrap is strongly
+    recommended. The ordinary bootstrap may requires a much larger number of replicas to
+    produce a similarly accurate result.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of bias (= expectation of estimator - true value).
+    """
+    theta = fn(sample)
+    thetas = bootstrap(fn, sample, **kwds)
+    return np.mean(thetas, axis=0) - theta
+
+
+def bias_corrected(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
+    """
+    Calculates bias-corrected estimate of the function with the bootstrap.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    **kwds
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Estimate with some bias removed.
+    """
+
+    theta = fn(sample)
+    thetas = bootstrap(fn, sample, **kwds)
+    # bias = mean(thetas) - theta
+    # bias-corrected = theta - bias = 2 theta - mean(thetas)
+    return 2 * theta - np.mean(thetas, axis=0)
+
+
+def variance(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
+    """
+    Calculate bootstrap estimate of estimator variance.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    **kwds
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of variance.
+    """
+    thetas = bootstrap(fn, sample, **kwds)
+    return np.var(thetas, ddof=1, axis=0)
+
+
 def _resample_stratified(
     sample: np.ndarray,
     size: int,
