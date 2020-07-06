@@ -99,11 +99,9 @@ def resample(
     return _resample_parametric(sample, size, dist, rng)
 
 
-def bootstrap(fn: Callable, sample: np.ndarray, size: int = 100, **kwds) -> np.ndarray:
+def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwds) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
-
-    Generator of bootstrap samples.
 
     Parameters
     ----------
@@ -112,7 +110,7 @@ def bootstrap(fn: Callable, sample: np.ndarray, size: int = 100, **kwds) -> np.n
     sample : array-like
         Original sample.
     **kwds
-        Keywords are forwarded to `resample`.
+        Keywords are forwarded to :func:`resample`.
 
     Returns
     -------
@@ -124,7 +122,7 @@ def bootstrap(fn: Callable, sample: np.ndarray, size: int = 100, **kwds) -> np.n
 
 def confidence_interval(
     fn: Callable,
-    sample: np.ndarray,
+    sample: Sequence,
     cl: float = 0.95,
     ci_method: str = "percentile",
     **kwds,
@@ -144,7 +142,7 @@ def confidence_interval(
     ci_method : str, {'percentile', 'student', 'bca'}, optional
         Confidence interval method. Default is 'percentile'.
     **kwds
-        Keyword arguments forwarded to :func:`bootstrap`.
+        Keyword arguments forwarded to :func:`resample`.
 
     Returns
     -------

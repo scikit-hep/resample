@@ -89,7 +89,7 @@ def jackknife(fn: Callable, sample: Sequence) -> np.ndarray:
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
     sample : array-like
-        Sample. Must be one-dimensional.
+        Original sample.
 
     Returns
     -------
@@ -115,12 +115,12 @@ def bias(fn: Callable, sample: Sequence) -> np.ndarray:
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
     sample : array-like
-        Sample. Must be one-dimensional.
+        Original sample.
 
     Returns
     -------
     ndarray
-        Jackknife estimate of bias.
+        Jackknife estimate of bias (= expectation of estimator - true value).
     """
     n = len(sample)
     theta = fn(sample)
@@ -145,7 +145,7 @@ def bias_corrected(fn: Callable, sample: Sequence) -> np.ndarray:
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
     sample : array-like
-        Sample. Must be one-dimensional.
+        Original sample.
 
     Returns
     -------
@@ -171,7 +171,7 @@ def variance(fn: Callable, sample: Sequence) -> np.ndarray:
         Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
         and k is the length of the output array.
     sample : array-like
-        Sample. Must be one-dimensional.
+        Original sample.
 
     Returns
     -------
