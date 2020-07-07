@@ -125,7 +125,7 @@ def confidence_interval(
     sample: Sequence,
     cl: float = 0.95,
     ci_method: str = "percentile",
-    **kwds,
+    **kwargs,
 ) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
@@ -141,7 +141,7 @@ def confidence_interval(
         contains the true value.
     ci_method : str, {'percentile', 'student', 'bca'}, optional
         Confidence interval method. Default is 'percentile'.
-    **kwds
+    **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
     Returns
@@ -153,7 +153,7 @@ def confidence_interval(
         raise ValueError("cl must be between zero and one")
 
     alpha = 1 - cl
-    thetas = bootstrap(fn, sample, **kwds)
+    thetas = bootstrap(fn, sample, **kwargs)
 
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha / 2)
