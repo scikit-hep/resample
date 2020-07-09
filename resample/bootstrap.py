@@ -225,7 +225,7 @@ def bias_corrected(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
     """
 
     theta = fn(sample)
-    thetas = bootstrap(fn, sample, **kwds)
+    thetas = bootstrap(fn, sample, **kwargs)
     # bias = mean(thetas) - theta
     # bias-corrected = theta - bias = 2 theta - mean(thetas)
     return 2 * theta - np.mean(thetas, axis=0)
