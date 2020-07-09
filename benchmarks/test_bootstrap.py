@@ -1,7 +1,6 @@
 import pytest
 import numpy as np
 from resample.bootstrap import resample, confidence_interval
-from numpy.testing import assert_equal
 
 
 def run_resample(n, method):
