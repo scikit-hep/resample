@@ -173,7 +173,7 @@ def confidence_interval(
     )
 
 
-def bias(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
+def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     """
     Calculate bias of the function estimate with the bootstrap.
 
