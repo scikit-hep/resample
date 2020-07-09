@@ -183,7 +183,7 @@ def bias(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
         Function to be bootstrapped.
     sample : array-like
         Original sample.
-    **kwds
+    **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
     Notes
