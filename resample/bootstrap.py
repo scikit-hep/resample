@@ -200,7 +200,7 @@ def bias(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
         Bootstrap estimate of bias (= expectation of estimator - true value).
     """
     theta = fn(sample)
-    thetas = bootstrap(fn, sample, **kwds)
+    thetas = bootstrap(fn, sample, **kwargs)
     return np.mean(thetas, axis=0) - theta
 
 
