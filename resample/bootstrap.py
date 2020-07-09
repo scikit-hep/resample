@@ -206,7 +206,7 @@ def bias(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
 
 def bias_corrected(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
     """
-    Calculates bias-corrected estimate of the function with the bootstrap.
+    Calculate bias-corrected estimate of the function with the bootstrap.
 
     Parameters
     ----------
