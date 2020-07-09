@@ -250,7 +250,7 @@ def variance(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
     ndarray
         Bootstrap estimate of variance.
     """
-    thetas = bootstrap(fn, sample, **kwds)
+    thetas = bootstrap(fn, sample, **kwargs)
     return np.var(thetas, ddof=1, axis=0)
 
 
