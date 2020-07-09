@@ -231,7 +231,7 @@ def bias_corrected(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
     return 2 * theta - np.mean(thetas, axis=0)
 
 
-def variance(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
+def variance(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     """
     Calculate bootstrap estimate of variance.
 
