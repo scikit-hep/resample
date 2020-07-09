@@ -204,7 +204,7 @@ def bias(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
     return np.mean(thetas, axis=0) - theta
 
 
-def bias_corrected(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
+def bias_corrected(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the bootstrap.
 
