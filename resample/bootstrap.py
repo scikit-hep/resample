@@ -214,11 +214,9 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
         # has no fit method...
         return np.mean(sample, axis=0), np.cov(sample.T, ddof=1)
 
-    if dist == stats.t:
-        fit_kwargs = {}
-    elif dist in {stats.f, stats.beta}:
+    if dist in {stats.f, stats.beta}:
         fit_kwargs = {"floc": 0, "fscale": 1}
-    elif dist in (stats.gamma, stats.lognorm, stats.invgauss, stats.pareto):
+    elif dist in {stats.gamma, stats.lognorm, stats.invgauss, stats.pareto}:
         fit_kwargs = {"floc": 0}
     else:
         fit_kwargs = {}
