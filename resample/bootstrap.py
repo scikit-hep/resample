@@ -233,7 +233,7 @@ def bias_corrected(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
 
 def variance(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
     """
-    Calculate bootstrap estimate of estimator variance.
+    Calculate bootstrap estimate of variance.
 
     Parameters
     ----------
