@@ -215,7 +215,7 @@ def bias_corrected(fn: Callable, sample: Sequence, **kwds) -> np.ndarray:
         and k is the length of the output array.
     sample : array-like
         Original sample.
-    **kwds
+    **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
     Returns
