@@ -99,7 +99,7 @@ def resample(
     return _resample_parametric(sample, size, dist, rng)
 
 
-def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwds) -> np.ndarray:
+def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwargs) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
 
@@ -109,7 +109,7 @@ def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwds) -> np.nda
         Bootstrap samples are passed to this function.
     sample : array-like
         Original sample.
-    **kwds
+    **kwargs
         Keywords are forwarded to :func:`resample`.
 
     Returns
@@ -117,7 +117,7 @@ def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwds) -> np.nda
     np.array
         Results of `fn` applied to each bootstrap sample.
     """
-    return np.asarray([fn(x) for x in resample(sample, size, **kwds)])
+    return np.asarray([fn(x) for x in resample(sample, size, **kwargs)])
 
 
 def confidence_interval(
@@ -125,7 +125,7 @@ def confidence_interval(
     sample: Sequence,
     cl: float = 0.95,
     ci_method: str = "percentile",
-    **kwds,
+    **kwargs,
 ) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
@@ -141,7 +141,7 @@ def confidence_interval(
         contains the true value.
     ci_method : str, {'percentile', 'student', 'bca'}, optional
         Confidence interval method. Default is 'percentile'.
-    **kwds
+    **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
     Returns
@@ -153,7 +153,7 @@ def confidence_interval(
         raise ValueError("cl must be between zero and one")
 
     alpha = 1 - cl
-    thetas = bootstrap(fn, sample, **kwds)
+    thetas = bootstrap(fn, sample, **kwargs)
 
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha / 2)
