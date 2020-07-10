@@ -188,20 +188,22 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
 
     Notes
     -----
-    The bootstrap method cannot correct biases of linear estimators which are exactly
-    of order 1/N, where N is the number of i.i.d. observations, the jackknife should be
-    used for those. For bias estimation, the balanced bootstrap is strongly
-    recommended. The ordinary bootstrap may requires a much larger number of replicas to
-    produce a similarly accurate result.
+    This function has special space requirements, it needs to hold `size` replicas of
+    the original sample in memory at once. The balanced bootstrap is recommended over
+    the ordinary bootstrap for bias estimation, it tends to converge faster.
 
     Returns
     -------
     ndarray
         Bootstrap estimate of bias (= expectation of estimator - true value).
     """
-    theta = fn(sample)
-    thetas = bootstrap(fn, sample, **kwargs)
-    return np.mean(thetas, axis=0) - theta
+    replicas = []
+    thetas = []
+    for b in resample(sample, **kwargs):
+        replicas.append(b)
+        thetas.append(fn(b))
+    population_theta = fn(np.concatenate(replicas))
+    return np.mean(thetas, axis=0) - population_theta
 
 
 def bias_corrected(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:

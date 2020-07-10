@@ -251,6 +251,21 @@ def test_bias_on_biased(method, rng):
 
     r = bias(biased, data, method=method, size=10000, random_state=rng)
     true_bias = bad - correct
+    assert r == pytest.approx(true_bias, rel=0.05)
+
+
+@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+def test_bias_on_biased_2(method, rng):
+    def biased(x):
+        n = len(x)
+        return (np.sum(x) + 2) / n
+
+    data = np.arange(100)
+    bad = biased(data)
+    correct = np.mean(data)
+
+    r = bias(biased, data, method=method, size=10000, random_state=rng)
+    true_bias = bad - correct
     assert r == pytest.approx(true_bias, rel=0.1)
 
 
