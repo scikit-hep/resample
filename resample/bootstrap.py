@@ -225,12 +225,7 @@ def bias_corrected(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     ndarray
         Estimate with some bias removed.
     """
-
-    theta = fn(sample)
-    thetas = bootstrap(fn, sample, **kwargs)
-    # bias = mean(thetas) - theta
-    # bias-corrected = theta - bias = 2 theta - mean(thetas)
-    return 2 * theta - np.mean(thetas, axis=0)
+    return fn(sample) - bias(fn, sample, **kwargs)
 
 
 def variance(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
