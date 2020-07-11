@@ -4,13 +4,15 @@ Various empirical functions.
 Empirical means they are based on the original data sample instead of a parameteric
 density function.
 """
+from math import ceil
 from typing import Callable, Sequence
+
 import numpy as np
-from scipy.interpolate import interp1d as _interp1d
+
 from resample.jackknife import jackknife as _jackknife
 
 
-def cdf_fn(sample: np.ndarray) -> Callable:
+def cdf_fn(sample: Sequence) -> Callable:
     """
     Return the empirical distribution function for the given sample.
 
@@ -29,7 +31,7 @@ def cdf_fn(sample: np.ndarray) -> Callable:
     return lambda x: np.searchsorted(sample, x, side="right", sorter=None) / n
 
 
-def quantile_fn(sample: np.ndarray) -> Callable:
+def quantile_fn(sample: Sequence) -> Callable:
     """
     Return an empirical quantile function for the given sample.
 
@@ -45,15 +47,12 @@ def quantile_fn(sample: np.ndarray) -> Callable:
     """
     sample = np.sort(sample)
     n = len(sample)
-    prob = np.arange(1, n + 1, dtype=float) / n
 
     def quant(p):
         if not 0 <= p <= 1:
             raise ValueError("Argument must be between zero and one")
-        if p < 1 / n:
-            # TODO: How to handle this case?
-            return sample[0]
-        return _interp1d(prob, sample)(p)
+        idx = max(ceil(p * n) - 1, 0)
+        return sample[idx]
 
     return quant
 
