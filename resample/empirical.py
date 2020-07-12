@@ -4,7 +4,6 @@ Various empirical functions.
 Empirical means they are based on the original data sample instead of a parameteric
 density function.
 """
-from math import ceil
 from typing import Callable, Sequence
 
 import numpy as np
@@ -49,10 +48,16 @@ def quantile_fn(sample: Sequence) -> Callable:
     n = len(sample)
 
     def quant(p):
-        if not 0 <= p <= 1:
-            raise ValueError("Argument must be between zero and one")
-        idx = max(ceil(p * n) - 1, 0)
-        return sample[idx]
+        ndim = np.ndim(p)
+        p = np.atleast_1d(p)
+        result = np.empty(len(p))
+        valid = (0 <= p) & (p <= 1)
+        idx = np.maximum(np.ceil(p[valid] * n).astype(np.int) - 1, 0)
+        result[valid] = sample[idx]
+        result[~valid] = np.nan
+        if ndim == 0:
+            return result.reshape(())
+        return result
 
     return quant
 

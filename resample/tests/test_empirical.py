@@ -32,6 +32,14 @@ def test_cdf_simple_cases():
     assert cdf(3) == 1.0
 
 
+def test_cdf_on_array():
+    x = np.arange(4)
+    cdf = cdf_fn(x)
+    assert_equal(cdf(x), (x + 1) / len(x))
+    assert_equal(cdf(x + 1e-10), (x + 1) / len(x))
+    assert_equal(cdf(x - 1e-10), x / len(x))
+
+
 def test_quantile_simple_cases():
     q = quantile_fn([0, 1, 2, 3])
     assert q(0.25) == 0
@@ -40,22 +48,23 @@ def test_quantile_simple_cases():
     assert q(1.0) == 3
 
 
+def test_quantile_on_array():
+    x = np.arange(4)
+    q = quantile_fn(x)
+    prob = (x + 1) / len(x)
+    assert_equal(q(prob), x)
+
+
 def test_quantile_is_inverse_of_cdf(rng):
-    data = rng.normal(size=100)
-    cdf = cdf_fn(data)
-
-    y = cdf(data)
-
-    quant = quantile_fn(data)
-    assert_equal([quant(yi) for yi in y], data)  # TODO: quant should be vectorized
+    x = rng.normal(size=30)
+    y = cdf_fn(x)(x)
+    assert_equal(quantile_fn(x)(y), x)
 
 
 @pytest.mark.parametrize("arg", [-1, 1.5])
-def test_quantile_out_of_bounds_raises(arg):
+def test_quantile_out_of_bounds_is_nan(arg):
     q = quantile_fn(np.array([0, 1, 2, 3]))
-    msg = "Argument must be between zero and one"
-    with pytest.raises(ValueError, match=msg):
-        q(arg)
+    assert np.isnan(q(arg))
 
 
 def test_influence_shape():
