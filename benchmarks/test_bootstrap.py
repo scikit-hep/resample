@@ -6,8 +6,8 @@ from resample.bootstrap import resample, confidence_interval
 def run_resample(n, method):
     x = np.arange(n)
     r = []
-    for _ in resample(x, method=method):
-        r.append(x)
+    for b in resample(x, method=method):
+        r.append(b)
     return r
 
 
