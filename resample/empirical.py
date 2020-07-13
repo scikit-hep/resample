@@ -5,12 +5,14 @@ Empirical means they are based on the original data sample instead of a paramete
 density function.
 """
 from typing import Callable, Sequence
+
 import numpy as np
-from scipy.interpolate import interp1d as _interp1d
-from resample.jackknife import jackknife as _jackknife
+from scipy.interpolate import interp1d
+
+from resample.jackknife import jackknife
 
 
-def cdf_fn(sample: np.ndarray) -> Callable:
+def cdf_gen(sample: np.ndarray) -> Callable:
     """
     Return the empirical distribution function for the given sample.
 
@@ -29,9 +31,9 @@ def cdf_fn(sample: np.ndarray) -> Callable:
     return lambda x: np.searchsorted(sample, x, side="right", sorter=None) / n
 
 
-def quantile_fn(sample: np.ndarray) -> Callable:
+def quantile_function_gen(sample: np.ndarray) -> Callable:
     """
-    Return an empirical quantile function for the given sample.
+    Return the empirical quantile function for the given sample.
 
     Parameters
     ----------
@@ -53,7 +55,7 @@ def quantile_fn(sample: np.ndarray) -> Callable:
         if p < 1 / n:
             # TODO: How to handle this case?
             return sample[0]
-        return _interp1d(prob, sample)(p)
+        return interp1d(prob, sample)(p)
 
     return quant
 
@@ -77,4 +79,4 @@ def influence(fn: Callable, sample: Sequence) -> np.ndarray:
         Empirical influence values.
     """
     n = len(sample)
-    return (n - 1) * (fn(sample) - _jackknife(fn, sample))
+    return (n - 1) * (fn(sample) - jackknife(fn, sample))

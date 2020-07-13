@@ -1,9 +1,9 @@
 from typing import Dict, List
 
 import numpy as np
-from scipy.stats import rankdata as _rankdata
+from scipy.stats import rankdata
 
-from resample.empirical import cdf_fn as _cdf_fn
+from resample.empirical import cdf_gen
 
 
 def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
@@ -152,7 +152,7 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
     n2 = len(a2)
 
     a = np.append(a1, a2)
-    a = _rankdata(a)
+    a = rankdata(a)
 
     X = np.apply_along_axis(
         func1d=np.random.permutation,
@@ -197,7 +197,7 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
     ns = [len(a) for a in args]
     n = np.sum(ns)
     pos = np.append(0, np.cumsum(ns))
-    r_arr = _rankdata(np.concatenate(args))
+    r_arr = rankdata(np.concatenate(args))
     ri_means = [np.mean(r_arr[pos[i] : pos[i + 1]]) for i in range(t)]  # noqa: E203
     r_mean = np.mean(r_arr)
 
@@ -273,7 +273,7 @@ def corr_test(
     if method in ["pearson", "distance"]:
         X = np.asarray([a] * b)
     elif method == "spearman":
-        a = np.apply_along_axis(func1d=_rankdata, arr=a, axis=0)
+        a = np.apply_along_axis(func1d=rankdata, arr=a, axis=0)
         X = np.asarray([a] * b)
     else:
         raise ValueError(
@@ -328,8 +328,8 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
     n2 = len(a2)
     n = n1 + n2
 
-    f1 = _cdf_fn(a1)
-    f2 = _cdf_fn(a2)
+    f1 = cdf_gen(a1)
+    f2 = cdf_gen(a2)
     a = np.sort(np.append(a1, a2))
     d = np.max([abs(f1(v) - f2(v)) for v in a])
 

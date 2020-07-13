@@ -1,8 +1,8 @@
 """
 Jackknife resampling.
 """
+from typing import Callable, Generator, Sequence
 
-from typing import Callable, Sequence, Generator
 import numpy as np
 
 
