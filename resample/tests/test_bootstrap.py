@@ -251,7 +251,7 @@ def test_bias_on_biased(method, rng):
 
     r = bias(biased, data, method=method, size=10000, random_state=rng)
     sample_bias = bad - correct
-    assert r == pytest.approx(true_bias, rel=0.05)
+    assert r == pytest.approx(sample_bias, rel=0.05)
 
 
 @pytest.mark.parametrize("method", ("ordinary", "balanced"))
