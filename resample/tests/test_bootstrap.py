@@ -250,7 +250,7 @@ def test_bias_on_biased(method, rng):
     correct = np.var(data, ddof=1)
 
     r = bias(biased, data, method=method, size=10000, random_state=rng)
-    true_bias = bad - correct
+    sample_bias = bad - correct
     assert r == pytest.approx(true_bias, rel=0.05)
 
 
