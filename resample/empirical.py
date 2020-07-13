@@ -12,7 +12,7 @@ from scipy.interpolate import interp1d
 from resample.jackknife import jackknife
 
 
-def cdf_gen(sample: np.ndarray) -> Callable:
+def cdf_gen(sample: Sequence) -> Callable:
     """
     Return the empirical distribution function for the given sample.
 
@@ -31,7 +31,7 @@ def cdf_gen(sample: np.ndarray) -> Callable:
     return lambda x: np.searchsorted(sample, x, side="right", sorter=None) / n
 
 
-def quantile_function_gen(sample: np.ndarray) -> Callable:
+def quantile_function_gen(sample: Sequence) -> Callable:
     """
     Return the empirical quantile function for the given sample.
 
