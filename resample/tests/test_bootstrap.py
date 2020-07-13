@@ -265,7 +265,7 @@ def test_bias_on_biased_2(method, rng):
     correct = np.mean(data)
 
     r = bias(biased, data, method=method, size=10000, random_state=rng)
-    true_bias = bad - correct
+    sample_bias = bad - correct
     assert r == pytest.approx(true_bias, rel=0.1)
 
 
