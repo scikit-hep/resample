@@ -56,7 +56,7 @@ def quantile_fn(sample: Sequence) -> Callable:
         result[valid] = sample[idx]
         result[~valid] = np.nan
         if ndim == 0:
-            return result.reshape(())
+            return result[0]
         return result
 
     return quant
