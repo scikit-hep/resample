@@ -1,15 +1,15 @@
 import numpy as np
-from numpy.testing import assert_equal, assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 import pytest
 from scipy import stats
 
 from resample.bootstrap import (
-    resample,
-    bootstrap,
-    confidence_interval,
     _fit_parametric_family,
     bias,
     bias_corrected,
+    bootstrap,
+    confidence_interval,
+    resample,
     variance,
 )
 

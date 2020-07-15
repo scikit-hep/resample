@@ -1,11 +1,13 @@
 """
 Bootstrap resampling.
 """
-from typing import Callable, Optional, Tuple, Sequence, Union, Generator
+from typing import Callable, Generator, Optional, Sequence, Tuple, Union
+
 import numpy as np
 from scipy import stats
-from resample.jackknife import jackknife as _jackknife
-from resample.empirical import quantile_fn as _quantile_fn
+
+from resample.empirical import quantile_function_gen
+from resample.jackknife import jackknife
 
 
 def resample(
@@ -164,7 +166,7 @@ def confidence_interval(
         return _confidence_interval_studentized(theta, thetas, alpha / 2)
 
     if ci_method == "bca":
-        j_thetas = _jackknife(fn, sample)
+        j_thetas = jackknife(fn, sample)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
     raise ValueError(
@@ -324,8 +326,8 @@ def _resample_parametric(
 def _confidence_interval_percentile(
     thetas: np.ndarray, alpha_half: float,
 ) -> Tuple[float, float]:
-    q = _quantile_fn(thetas)
-    return q(alpha_half), q(1 - alpha_half)
+    quant = quantile_function_gen(thetas)
+    return quant(alpha_half), quant(1 - alpha_half)
 
 
 def _confidence_interval_studentized(
@@ -334,9 +336,9 @@ def _confidence_interval_studentized(
     theta_std = np.std(thetas)
     # quantile function of studentized bootstrap estimates
     z = (thetas - theta) / theta_std
-    q = _quantile_fn(z)
-    theta_std_1 = theta_std * q(alpha_half)
-    theta_std_2 = theta_std * q(1 - alpha_half)
+    quant = quantile_function_gen(z)
+    theta_std_1 = theta_std * quant(alpha_half)
+    theta_std_2 = theta_std * quant(1 - alpha_half)
     return theta + theta_std_1, theta + theta_std_2
 
 
@@ -361,5 +363,5 @@ def _confidence_interval_bca(
     p_low = norm.cdf(z_naught + z_low / (1 - acc * z_low))
     p_high = norm.cdf(z_naught + z_high / (1 - acc * z_high))
 
-    q = _quantile_fn(thetas)
-    return q(p_low), q(p_high)
+    quant = quantile_function_gen(thetas)
+    return quant(p_low), quant(p_high)

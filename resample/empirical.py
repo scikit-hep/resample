@@ -8,10 +8,10 @@ from typing import Callable, Sequence
 
 import numpy as np
 
-from resample.jackknife import jackknife as _jackknife
+from resample.jackknife import jackknife
 
 
-def cdf_fn(sample: Sequence) -> Callable:
+def cdf_gen(sample: Sequence) -> Callable:
     """
     Return the empirical distribution function for the given sample.
 
@@ -30,9 +30,9 @@ def cdf_fn(sample: Sequence) -> Callable:
     return lambda x: np.searchsorted(sample, x, side="right", sorter=None) / n
 
 
-def quantile_fn(sample: Sequence) -> Callable:
+def quantile_function_gen(sample: Sequence) -> Callable:
     """
-    Return an empirical quantile function for the given sample.
+    Return the empirical quantile function for the given sample.
 
     Parameters
     ----------
@@ -81,4 +81,4 @@ def influence(fn: Callable, sample: Sequence) -> np.ndarray:
         Empirical influence values.
     """
     n = len(sample)
-    return (n - 1) * (fn(sample) - _jackknife(fn, sample))
+    return (n - 1) * (fn(sample) - jackknife(fn, sample))
