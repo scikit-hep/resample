@@ -1,11 +1,18 @@
 import pytest
 import numpy as np
+from numpy.testing import assert_equal
 
 from resample.empirical import quantile_fn, cdf_fn, influence
 
 
-def test_cdf_increasing():
-    x = np.random.randn(100)
+# high-quality platform-independent reproducible sequence of pseudo-random numbers
+@pytest.fixture
+def rng():
+    return np.random.Generator(np.random.PCG64(1))
+
+
+def test_cdf_increasing(rng):
+    x = rng.normal(size=100)
     cdf = cdf_fn(x)
     result = [cdf(s) for s in np.linspace(x.min(), x.max(), 100)]
     assert np.all(np.diff(result) >= 0)
@@ -25,6 +32,14 @@ def test_cdf_simple_cases():
     assert cdf(3) == 1.0
 
 
+def test_cdf_on_array():
+    x = np.arange(4)
+    cdf = cdf_fn(x)
+    assert_equal(cdf(x), (x + 1) / len(x))
+    assert_equal(cdf(x + 1e-10), (x + 1) / len(x))
+    assert_equal(cdf(x - 1e-10), x / len(x))
+
+
 def test_quantile_simple_cases():
     q = quantile_fn([0, 1, 2, 3])
     assert q(0.25) == 0
@@ -33,12 +48,23 @@ def test_quantile_simple_cases():
     assert q(1.0) == 3
 
 
+def test_quantile_on_array():
+    x = np.arange(4)
+    q = quantile_fn(x)
+    prob = (x + 1) / len(x)
+    assert_equal(q(prob), x)
+
+
+def test_quantile_is_inverse_of_cdf(rng):
+    x = rng.normal(size=30)
+    y = cdf_fn(x)(x)
+    assert_equal(quantile_fn(x)(y), x)
+
+
 @pytest.mark.parametrize("arg", [-1, 1.5])
-def test_quantile_out_of_bounds_raises(arg):
+def test_quantile_out_of_bounds_is_nan(arg):
     q = quantile_fn(np.array([0, 1, 2, 3]))
-    msg = "Argument must be between zero and one"
-    with pytest.raises(ValueError, match=msg):
-        q(arg)
+    assert np.isnan(q(arg))
 
 
 def test_influence_shape():
