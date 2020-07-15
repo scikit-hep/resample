@@ -99,11 +99,9 @@ def resample(
     return _resample_parametric(sample, size, dist, rng)
 
 
-def bootstrap(fn: Callable, sample: np.ndarray, size: int = 100, **kwds) -> np.ndarray:
+def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwargs) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
-
-    Generator of bootstrap samples.
 
     Parameters
     ----------
@@ -111,23 +109,23 @@ def bootstrap(fn: Callable, sample: np.ndarray, size: int = 100, **kwds) -> np.n
         Bootstrap samples are passed to this function.
     sample : array-like
         Original sample.
-    **kwds
-        Keywords are forwarded to `resample`.
+    **kwargs
+        Keywords are forwarded to :func:`resample`.
 
     Returns
     -------
     np.array
         Results of `fn` applied to each bootstrap sample.
     """
-    return np.asarray([fn(x) for x in resample(sample, size, **kwds)])
+    return np.asarray([fn(x) for x in resample(sample, size, **kwargs)])
 
 
 def confidence_interval(
     fn: Callable,
-    sample: np.ndarray,
+    sample: Sequence,
     cl: float = 0.95,
     ci_method: str = "percentile",
-    **kwds,
+    **kwargs,
 ) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
@@ -143,8 +141,8 @@ def confidence_interval(
         contains the true value.
     ci_method : str, {'percentile', 'student', 'bca'}, optional
         Confidence interval method. Default is 'percentile'.
-    **kwds
-        Keyword arguments forwarded to :func:`bootstrap`.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
 
     Returns
     -------
@@ -155,7 +153,7 @@ def confidence_interval(
         raise ValueError("cl must be between zero and one")
 
     alpha = 1 - cl
-    thetas = bootstrap(fn, sample, **kwds)
+    thetas = bootstrap(fn, sample, **kwargs)
 
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha / 2)
@@ -173,6 +171,84 @@ def confidence_interval(
         "ci_method must be 'percentile', 'student', or 'bca', but "
         f"'{ci_method}' was supplied"
     )
+
+
+def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+    """
+    Calculate bias of the function estimate with the bootstrap.
+
+    Parameters
+    ----------
+    fn : callable
+        Function to be bootstrapped.
+    sample : array-like
+        Original sample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Notes
+    -----
+    This function has special space requirements, it needs to hold `size` replicas of
+    the original sample in memory at once. The balanced bootstrap is recommended over
+    the ordinary bootstrap for bias estimation, it tends to converge faster.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of bias (= expectation of estimator - true value).
+    """
+    replicas = []
+    thetas = []
+    for b in resample(sample, **kwargs):
+        replicas.append(b)
+        thetas.append(fn(b))
+    population_theta = fn(np.concatenate(replicas))
+    return np.mean(thetas, axis=0) - population_theta
+
+
+def bias_corrected(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+    """
+    Calculate bias-corrected estimate of the function with the bootstrap.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Estimate with some bias removed.
+    """
+    return fn(sample) - bias(fn, sample, **kwargs)
+
+
+def variance(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+    """
+    Calculate bootstrap estimate of variance.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of variance.
+    """
+    thetas = bootstrap(fn, sample, **kwargs)
+    return np.var(thetas, ddof=1, axis=0)
 
 
 def _resample_stratified(
@@ -216,16 +292,14 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
         # has no fit method...
         return np.mean(sample, axis=0), np.cov(sample.T, ddof=1)
 
-    if dist == stats.t:
-        fit_kwd = {"fscale": 1}
-    elif dist in {stats.f, stats.beta}:
-        fit_kwd = {"floc": 0, "fscale": 1}
-    elif dist in (stats.gamma, stats.lognorm, stats.invgauss, stats.pareto):
-        fit_kwd = {"floc": 0}
+    if dist in {stats.f, stats.beta}:
+        fit_kwargs = {"floc": 0, "fscale": 1}
+    elif dist in {stats.gamma, stats.lognorm, stats.invgauss, stats.pareto}:
+        fit_kwargs = {"floc": 0}
     else:
-        fit_kwd = {}
+        fit_kwargs = {}
 
-    return dist.fit(sample, **fit_kwd)
+    return dist.fit(sample, **fit_kwargs)
 
 
 def _resample_parametric(
