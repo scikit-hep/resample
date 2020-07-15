@@ -8,6 +8,9 @@ from resample.bootstrap import (
     bootstrap,
     confidence_interval,
     _fit_parametric_family,
+    bias,
+    bias_corrected,
+    variance,
 )
 
 PARAMETRIC_CONTINUOUS = {
@@ -222,3 +225,66 @@ def test_confidence_interval_invalid_ci_method_raises():
     msg = "method must be 'percentile', 'student', or 'bca'"
     with pytest.raises(ValueError, match=msg):
         confidence_interval(np.mean, (1, 2, 3), ci_method="foobar")
+
+
+@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+def test_bias_on_unbiased(method, rng):
+    data = (0, 1, 2, 3)
+    r = bias(np.mean, data, method="balanced", random_state=rng)
+
+    if method == "balanced":
+        # bias is exactly zero for linear functions with the balanced bootstrap
+        assert r == 0
+    else:
+        # bias is not exactly zero for ordinary bootstrap
+        assert r == pytest.approx(0)
+
+
+@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+def test_bias_on_biased(method, rng):
+    def biased(x):
+        return np.var(x, ddof=0)
+
+    data = np.arange(100)
+    bad = biased(data)
+    correct = np.var(data, ddof=1)
+
+    r = bias(biased, data, method=method, size=10000, random_state=rng)
+    sample_bias = bad - correct
+    assert r == pytest.approx(sample_bias, rel=0.05)
+
+
+@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+def test_bias_on_biased_2(method, rng):
+    def biased(x):
+        n = len(x)
+        return (np.sum(x) + 2) / n
+
+    data = np.arange(100)
+    bad = biased(data)
+    correct = np.mean(data)
+
+    r = bias(biased, data, method=method, size=10000, random_state=rng)
+    sample_bias = bad - correct
+    assert r == pytest.approx(sample_bias, rel=0.1)
+
+
+@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+def test_bias_corrected(method, rng):
+    def fn(x):
+        return np.var(x, ddof=0)
+
+    data = np.arange(100)
+    correct = np.var(data, ddof=1)
+
+    r = bias_corrected(fn, data, size=10000, method=method, random_state=rng)
+    assert r == pytest.approx(correct, rel=0.001)
+
+
+@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+def test_variance(method, rng):
+    data = np.arange(100)
+    v = np.var(data) / len(data)
+
+    r = variance(np.mean, data, size=1000, method=method, random_state=rng)
+    assert r == pytest.approx(v, rel=0.05)

@@ -173,6 +173,84 @@ def confidence_interval(
     )
 
 
+def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+    """
+    Calculate bias of the function estimate with the bootstrap.
+
+    Parameters
+    ----------
+    fn : callable
+        Function to be bootstrapped.
+    sample : array-like
+        Original sample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Notes
+    -----
+    This function has special space requirements, it needs to hold `size` replicas of
+    the original sample in memory at once. The balanced bootstrap is recommended over
+    the ordinary bootstrap for bias estimation, it tends to converge faster.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of bias (= expectation of estimator - true value).
+    """
+    replicas = []
+    thetas = []
+    for b in resample(sample, **kwargs):
+        replicas.append(b)
+        thetas.append(fn(b))
+    population_theta = fn(np.concatenate(replicas))
+    return np.mean(thetas, axis=0) - population_theta
+
+
+def bias_corrected(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+    """
+    Calculate bias-corrected estimate of the function with the bootstrap.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Estimate with some bias removed.
+    """
+    return fn(sample) - bias(fn, sample, **kwargs)
+
+
+def variance(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+    """
+    Calculate bootstrap estimate of variance.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of variance.
+    """
+    thetas = bootstrap(fn, sample, **kwargs)
+    return np.var(thetas, ddof=1, axis=0)
+
+
 def _resample_stratified(
     sample: np.ndarray,
     size: int,
