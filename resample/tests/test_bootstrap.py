@@ -202,7 +202,7 @@ def test_bootstrap_2d_balanced(rng):
     assert_almost_equal(mean(data), mean(r))
 
 
-@pytest.mark.parametrize("ci_method", ["percentile", "bca", "student"])
+@pytest.mark.parametrize("ci_method", ["percentile", "bca"])
 def test_confidence_interval(ci_method, rng):
     data = rng.normal(size=1000)
     par = stats.norm.fit(data)
@@ -222,7 +222,7 @@ def test_confidence_interval_invalid_p_raises():
 
 
 def test_confidence_interval_invalid_ci_method_raises():
-    msg = "method must be 'percentile', 'student', or 'bca'"
+    msg = "method must be 'percentile' or 'bca'"
     with pytest.raises(ValueError, match=msg):
         confidence_interval(np.mean, (1, 2, 3), ci_method="foobar")
 

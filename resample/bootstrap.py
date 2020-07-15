@@ -141,8 +141,9 @@ def confidence_interval(
     cl : float, default : 0.95
         Confidence level. Asymptotically, this is the probability that the interval
         contains the true value.
-    ci_method : str, {'percentile', 'student', 'bca'}, optional
-        Confidence interval method. Default is 'percentile'.
+    ci_method : str, {'percentile', 'bca'}, optional
+        Confidence interval method. Default is 'percentile'. The 'bca' method should be
+        more accurate (2nd order accurate) for the same number of function evaluations.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
@@ -160,18 +161,13 @@ def confidence_interval(
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha / 2)
 
-    theta = fn(sample)
-
-    if ci_method == "student":
-        return _confidence_interval_studentized(theta, thetas, alpha / 2)
-
     if ci_method == "bca":
+        theta = fn(sample)
         j_thetas = jackknife(fn, sample)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
     raise ValueError(
-        "ci_method must be 'percentile', 'student', or 'bca', but "
-        f"'{ci_method}' was supplied"
+        "ci_method must be 'percentile' or 'bca', but " f"'{ci_method}' was supplied"
     )
 
 
@@ -328,18 +324,6 @@ def _confidence_interval_percentile(
 ) -> Tuple[float, float]:
     quant = quantile_function_gen(thetas)
     return quant(alpha_half), quant(1 - alpha_half)
-
-
-def _confidence_interval_studentized(
-    theta: float, thetas: np.ndarray, alpha_half: float,
-) -> Tuple[float, float]:
-    theta_std = np.std(thetas)
-    # quantile function of studentized bootstrap estimates
-    z = (thetas - theta) / theta_std
-    quant = quantile_function_gen(z)
-    theta_std_1 = theta_std * quant(alpha_half)
-    theta_std_2 = theta_std * quant(1 - alpha_half)
-    return theta + theta_std_1, theta + theta_std_2
 
 
 def _confidence_interval_bca(
