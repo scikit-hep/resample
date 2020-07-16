@@ -6,7 +6,7 @@ Features
 
   * Ordinary, balanced and parametric bootstrapping
   * Stratification
-  * Bootstrap confidence intervals (percentile, BCa, Studentized)
+  * Bootstrap confidence intervals (percentile or BCa)
   * Jackknife samples and jackknife estimates of bias and variance
   * Empirical influence functions
 

@@ -35,18 +35,18 @@ def run_confidence_interval(n, ci_method):
 
 
 @pytest.mark.benchmark(group="confidence-interval-100")
-@pytest.mark.parametrize("ci_method", ("percentile", "student", "bca"))
+@pytest.mark.parametrize("ci_method", ("percentile", "bca"))
 def test_bootstrap_confidence_interval_100(benchmark, ci_method):
     benchmark(run_confidence_interval, 100, ci_method)
 
 
 @pytest.mark.benchmark(group="confidence-interval-1000")
-@pytest.mark.parametrize("ci_method", ("percentile", "student", "bca"))
+@pytest.mark.parametrize("ci_method", ("percentile", "bca"))
 def test_bootstrap_confidence_interval_1000(benchmark, ci_method):
     benchmark(run_confidence_interval, 1000, ci_method)
 
 
 @pytest.mark.benchmark(group="confidence-interval-10000")
-@pytest.mark.parametrize("ci_method", ("percentile", "student", "bca"))
+@pytest.mark.parametrize("ci_method", ("percentile", "bca"))
 def test_bootstrap_confidence_interval_10000(benchmark, ci_method):
     benchmark(run_confidence_interval, 10000, ci_method)

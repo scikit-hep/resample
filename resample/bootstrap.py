@@ -123,11 +123,7 @@ def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwargs) -> np.n
 
 
 def confidence_interval(
-    fn: Callable,
-    sample: Sequence,
-    cl: float = 0.95,
-    ci_method: str = "percentile",
-    **kwargs,
+    fn: Callable, sample: Sequence, cl: float = 0.95, ci_method: str = "bca", **kwargs,
 ) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
@@ -141,10 +137,22 @@ def confidence_interval(
     cl : float, default : 0.95
         Confidence level. Asymptotically, this is the probability that the interval
         contains the true value.
-    ci_method : str, {'percentile', 'student', 'bca'}, optional
-        Confidence interval method. Default is 'percentile'.
+    ci_method : str, {'bca', 'percentile'}, optional
+        Confidence interval method. Default is 'bca'. See notes for details.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
+
+    Notes
+    -----
+    Both the 'percentile' and 'bca' methods produce intervals that are invariant to
+    monotonic transformations of the data values, a desirable and consistent property.
+
+    The 'percentile' method is straight-forward and useful as a fallback. The 'bca'
+    method is 2nd order accurate (to O(1/n) where n is the sample size) and generally
+    perferred. It computes a jackknife estimate in addition to the bootstrap, which
+    increases the number of function evaluations in a direct comparison to
+    'percentile', but in the increase in accuracy should over-compensate this, with the
+    result that less bootstrap replicas are needed overall to achieve the same accuracy.
 
     Returns
     -------
@@ -160,18 +168,13 @@ def confidence_interval(
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha / 2)
 
-    theta = fn(sample)
-
-    if ci_method == "student":
-        return _confidence_interval_studentized(theta, thetas, alpha / 2)
-
     if ci_method == "bca":
+        theta = fn(sample)
         j_thetas = jackknife(fn, sample)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
     raise ValueError(
-        "ci_method must be 'percentile', 'student', or 'bca', but "
-        f"'{ci_method}' was supplied"
+        "ci_method must be 'percentile' or 'bca', but " f"'{ci_method}' was supplied"
     )
 
 
@@ -328,18 +331,6 @@ def _confidence_interval_percentile(
 ) -> Tuple[float, float]:
     quant = quantile_function_gen(thetas)
     return quant(alpha_half), quant(1 - alpha_half)
-
-
-def _confidence_interval_studentized(
-    theta: float, thetas: np.ndarray, alpha_half: float,
-) -> Tuple[float, float]:
-    theta_std = np.std(thetas)
-    # quantile function of studentized bootstrap estimates
-    z = (thetas - theta) / theta_std
-    quant = quantile_function_gen(z)
-    theta_std_1 = theta_std * quant(alpha_half)
-    theta_std_2 = theta_std * quant(1 - alpha_half)
-    return theta + theta_std_1, theta + theta_std_2
 
 
 def _confidence_interval_bca(
