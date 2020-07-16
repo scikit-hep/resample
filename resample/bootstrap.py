@@ -12,7 +12,7 @@ from resample.jackknife import jackknife
 
 def resample(
     sample: Sequence,
-    size: int = 1000,
+    size: int = 100,
     method: str = "balanced",
     strata: Optional[Sequence] = None,
     random_state: Optional[Union[np.random.Generator, int]] = None,
@@ -101,7 +101,7 @@ def resample(
     return _resample_parametric(sample, size, dist, rng)
 
 
-def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwargs) -> np.ndarray:
+def bootstrap(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
 
@@ -111,8 +111,6 @@ def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwargs) -> np.n
         Bootstrap samples are passed to this function.
     sample : array-like
         Original sample.
-    size : int
-        Number of bootstrap replicates.
     **kwargs
         Keywords are forwarded to :func:`resample`.
 
