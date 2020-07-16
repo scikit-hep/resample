@@ -123,11 +123,7 @@ def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwargs) -> np.n
 
 
 def confidence_interval(
-    fn: Callable,
-    sample: Sequence,
-    cl: float = 0.95,
-    ci_method: str = "percentile",
-    **kwargs,
+    fn: Callable, sample: Sequence, cl: float = 0.95, ci_method: str = "bca", **kwargs,
 ) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
@@ -141,11 +137,22 @@ def confidence_interval(
     cl : float, default : 0.95
         Confidence level. Asymptotically, this is the probability that the interval
         contains the true value.
-    ci_method : str, {'percentile', 'bca'}, optional
-        Confidence interval method. Default is 'percentile'. The 'bca' method should be
-        more accurate (2nd order accurate) for the same number of function evaluations.
+    ci_method : str, {'bca', 'percentile'}, optional
+        Confidence interval method. Default is 'bca'. See notes for details.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
+
+    Notes
+    -----
+    Both the 'percentile' and 'bca' methods produce intervals that are invariant to
+    monotonic transformations of the data values, a desirable and consistent property.
+
+    The 'percentile' method is straight-forward and useful as a fallback. The 'bca'
+    method is 2nd order accurate (to O(1/n) where n is the sample size) and generally
+    perferred. It computes a jackknife estimate in addition to the bootstrap, which
+    increases the number of function evaluations in a direct comparison to
+    'percentile', but in the increase in accuracy should over-compensate this, with the
+    result that less bootstrap replicas are needed overall to achieve the same accuracy.
 
     Returns
     -------
