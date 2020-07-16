@@ -119,7 +119,7 @@ def bootstrap(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     np.array
         Results of `fn` applied to each bootstrap sample.
     """
-    return np.asarray([fn(x) for x in resample(sample, size, **kwargs)])
+    return np.asarray([fn(x) for x in resample(sample, **kwargs)])
 
 
 def confidence_interval(
