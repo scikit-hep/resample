@@ -111,6 +111,8 @@ def bootstrap(fn: Callable, sample: Sequence, size: int = 100, **kwargs) -> np.n
         Bootstrap samples are passed to this function.
     sample : array-like
         Original sample.
+    size : int
+        Number of bootstrap replicates.
     **kwargs
         Keywords are forwarded to :func:`resample`.
 
