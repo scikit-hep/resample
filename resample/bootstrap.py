@@ -137,7 +137,7 @@ def confidence_interval(
     cl : float, default : 0.95
         Confidence level. Asymptotically, this is the probability that the interval
         contains the true value.
-    ci_method : str, {'bca', 'percentile'}, optional
+    ci_method : str, {'bca', 'percentile'}, default 'bca'
         Confidence interval method. Default is 'bca'. See notes for details.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
@@ -147,11 +147,11 @@ def confidence_interval(
     Both the 'percentile' and 'bca' methods produce intervals that are invariant to
     monotonic transformations of the data values, a desirable and consistent property.
 
-    The 'percentile' method is straight-forward and useful as a fallback. The 'bca'
+    The 'percentile' method is straightforward and useful as a fallback. The 'bca'
     method is 2nd order accurate (to O(1/n) where n is the sample size) and generally
-    perferred. It computes a jackknife estimate in addition to the bootstrap, which
+    preferred. It computes a jackknife estimate in addition to the bootstrap, which
     increases the number of function evaluations in a direct comparison to
-    'percentile', but in the increase in accuracy should over-compensate this, with the
+    'percentile'. However the increase in accuracy should compensate for this, with the
     result that less bootstrap replicas are needed overall to achieve the same accuracy.
 
     Returns
