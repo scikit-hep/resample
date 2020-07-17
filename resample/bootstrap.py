@@ -144,6 +144,12 @@ def confidence_interval(
 
     Notes
     -----
+    Bootstrap interval estimates are valid for a broad range of common applications,
+    such as when estimating means, variances, correlations, or regression coefficients.
+    However, keep in mind that there are situations where the bootstrap will give
+    misleading results; for instance, when making inferences about the extremes of
+    distributions.
+
     Both the 'percentile' and 'bca' methods produce intervals that are invariant to
     monotonic transformations of the data values, a desirable and consistent property.
 
