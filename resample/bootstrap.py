@@ -217,7 +217,7 @@ def bias(fn: Callable, sample: Sequence, error: bool = False, **kwargs) -> np.nd
         return np.mean(thetas, axis=0) - population_theta
 
     if error:
-        return _jackknife_after_bootstrap(bias, thetas, resampled, sample)
+        return _jackknife_after_bootstrap(bias, np.array(thetas), resampled, sample)
     return bias(thetas)
 
 
@@ -375,11 +375,9 @@ def _jackknife_after_bootstrap(
     # Tibshirani, An introduction to the bootstrap.
     n = len(sample)
     jack = [[] for i in range(n)]
-    thetas = []
     for i, b in enumerate(resampled):
-        thetas.append(fn(resampled))
         for j, s in enumerate(sample):
-            if s not in resampled:
+            if np.any(s == b):
                 jack[j].append(i)
     result = fn(thetas)
     jack = [fn(thetas[indices]) if indices else result for indices in jack]

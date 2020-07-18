@@ -228,15 +228,15 @@ def test_confidence_interval_invalid_ci_method_raises():
 
 
 @pytest.mark.parametrize("method", ("ordinary", "balanced"))
-def test_bias_on_unbiased(method, rng):
-    data = (0, 1, 2, 3)
-    r = bias(np.mean, data, method="balanced", random_state=rng)
+@pytest.mark.parametrize("error", (False, True))
+def test_bias_on_unbiased(method, error, rng):
+    data = (0, 1, 2, 3, 4, 5)
+    r = bias(np.mean, data, method=method, error=error, random_state=rng)
 
-    if method == "balanced":
-        # bias is exactly zero for linear functions with the balanced bootstrap
-        assert r == 0
+    if error:
+        assert r[0] == pytest.approx(0)
+        assert r[1] == pytest.approx(0.38, abs=0.01)
     else:
-        # bias is not exactly zero for ordinary bootstrap
         assert r == pytest.approx(0)
 
 
