@@ -18,7 +18,7 @@ def resample(
     random_state: Optional[Union[np.random.Generator, int]] = None,
 ) -> Generator[np.ndarray, None, None]:
     """
-    Generator of bootstrap samples.
+    Return generator of bootstrap samples.
 
     Parameters
     ----------
@@ -197,9 +197,10 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
 
     Notes
     -----
-    This function has special space requirements, it needs to hold `size` replicas of
-    the original sample in memory at once. The balanced bootstrap is recommended over
-    the ordinary bootstrap for bias estimation, it tends to converge faster.
+    This function has special space requirements in that it needs to hold `size`
+    replicas of the original sample in memory at once. The balanced bootstrap is
+    recommended over the ordinary bootstrap for bias estimation as it tends to
+    converge faster.
 
     Returns
     -------
