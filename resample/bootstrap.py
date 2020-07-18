@@ -24,8 +24,8 @@ def resample(
     ----------
     sample : array-like
         Original sample.
-    size : int, optional
-        Number of bootstrap samples to generate. Default is 1000.
+    size : int, default 100
+        Number of bootstrap samples to generate.
     method : str or None, optional
         How to generate bootstrap samples. Supported are 'ordinary', 'balanced', or
         a distribution name for a parametric bootstrap. Default is 'balanced'.
