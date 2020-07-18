@@ -152,7 +152,8 @@ def confidence_interval(
     perferred. It computes a jackknife estimate in addition to the bootstrap, which
     increases the number of function evaluations in a direct comparison to
     'percentile', but in the increase in accuracy should over-compensate this, with the
-    result that less bootstrap replicates are needed overall to achieve the same accuracy.
+    result that less bootstrap replicates are needed overall to achieve the same
+    accuracy.
 
     Returns
     -------
