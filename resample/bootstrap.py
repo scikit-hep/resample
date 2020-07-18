@@ -24,8 +24,8 @@ def resample(
     ----------
     sample : array-like
         Original sample.
-    size : int, default 100
-        Number of bootstrap samples to generate.
+    size : int, optional
+        Number of bootstrap samples to generate. Default is 100.
     method : str or None, optional
         How to generate bootstrap samples. Supported are 'ordinary', 'balanced', or
         a distribution name for a parametric bootstrap. Default is 'balanced'.
@@ -135,7 +135,7 @@ def confidence_interval(
     cl : float, default : 0.95
         Confidence level. Asymptotically, this is the probability that the interval
         contains the true value.
-    ci_method : str, {'bca', 'percentile'}, default 'bca'
+    ci_method : str, {'bca', 'percentile'}, optional
         Confidence interval method. Default is 'bca'. See notes for details.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
