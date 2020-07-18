@@ -47,7 +47,7 @@ def resample(
     ensures that the relative proportions of each class are maintained in each
     replicated sample. This is a stricter constraint than that offered by the
     balanced bootstrap, which only guarantees that classes have the original
-    proportions over all replicas.
+    proportions over all replicates.
 
     Yields
     ------
@@ -152,7 +152,7 @@ def confidence_interval(
     perferred. It computes a jackknife estimate in addition to the bootstrap, which
     increases the number of function evaluations in a direct comparison to
     'percentile', but in the increase in accuracy should over-compensate this, with the
-    result that less bootstrap replicas are needed overall to achieve the same accuracy.
+    result that less bootstrap replicates are needed overall to achieve the same accuracy.
 
     Returns
     -------
@@ -193,7 +193,7 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
 
     Notes
     -----
-    This function has special space requirements, it needs to hold `size` replicas of
+    This function has special space requirements, it needs to hold `size` replicates of
     the original sample in memory at once. The balanced bootstrap is recommended over
     the ordinary bootstrap for bias estimation, it tends to converge faster.
 
@@ -202,12 +202,12 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     ndarray
         Bootstrap estimate of bias (= expectation of estimator - true value).
     """
-    replicas = []
+    replicates = []
     thetas = []
     for b in resample(sample, **kwargs):
-        replicas.append(b)
+        replicates.append(b)
         thetas.append(fn(b))
-    population_theta = fn(np.concatenate(replicas))
+    population_theta = fn(np.concatenate(replicates))
     return np.mean(thetas, axis=0) - population_theta
 
 
@@ -263,12 +263,12 @@ def _resample_stratified(
     strata: np.ndarray,
     rng: np.random.Generator,
 ) -> Generator[np.ndarray, None, None]:
-    # call resample on sub-samples and merge the replicas
+    # call resample on sub-samples and merge the replicates
     sub_samples = [sample[strata == x] for x in np.unique(strata)]
-    for sub_replicas in zip(
+    for sub_replicates in zip(
         *[resample(s, size, method=method, random_state=rng) for s in sub_samples]
     ):
-        yield np.concatenate(sub_replicas, axis=0)
+        yield np.concatenate(sub_replicates, axis=0)
 
 
 def _resample_ordinary(
@@ -339,7 +339,7 @@ def _confidence_interval_bca(
     norm = stats.norm
 
     # bias correction
-    prop_less = np.mean(thetas < theta)  # proportion of replicas less than obs
+    prop_less = np.mean(thetas < theta)  # proportion of replicates less than obs
     z_naught = norm.ppf(prop_less)
 
     # acceleration

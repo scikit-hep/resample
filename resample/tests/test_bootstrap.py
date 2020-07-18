@@ -107,7 +107,7 @@ def test_resample_1d_statistical_test(method, rng):
     else:
         wref = len(x) / (len(xe) - 1)
 
-    # compute P values for replicas compared to original
+    # compute P values for replicates compared to original
     prob = []
     wsum = 0
     with np.errstate(invalid="ignore"):
@@ -138,7 +138,7 @@ def test_resample_1d_statistical_test_poisson(rng):
     # somehow location 1 is needed here...
     wref = np.diff(stats.poisson(mu, 1).cdf(xe)) * len(x)
 
-    # compute P values for replicas compared to original
+    # compute P values for replicates compared to original
     prob = []
     for bx in resample(x, 100, method="poisson", random_state=rng):
         w = np.histogram(bx, bins=xe)[0]
@@ -197,7 +197,7 @@ def test_bootstrap_2d_balanced(rng):
 
     r = bootstrap(mean, data, method="balanced")
 
-    # arithmetic mean is linear, therefore mean over all replicas in
+    # arithmetic mean is linear, therefore mean over all replicates in
     # balanced bootstrap is equal to mean of original sample
     assert_almost_equal(mean(data), mean(r))
 
