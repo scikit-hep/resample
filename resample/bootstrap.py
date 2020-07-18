@@ -41,8 +41,6 @@ def resample(
 
     Notes
     -----
-    Stratification:
-
     If data is not iid, but consists of several distinct classes, stratification
     ensures that the relative proportions of each class are maintained in each
     replicated sample. This is a stricter constraint than that offered by the
