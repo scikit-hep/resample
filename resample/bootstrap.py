@@ -160,7 +160,7 @@ def confidence_interval(
 
     Returns
     -------
-    (l, u) : tuple
+    (float, float)
         Upper and lower confidence limits
     """
     if not 0 < cl < 1:
