@@ -1,7 +1,7 @@
 """
 Jackknife resampling.
 """
-from typing import Callable, Generator, Sequence
+from typing import Callable, Generator, Sequence, Union
 
 import numpy as np
 
@@ -112,8 +112,8 @@ def bias(fn: Callable, sample: Sequence) -> np.ndarray:
     Parameters
     ----------
     fn : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
-        and k is the length of the output array.
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size and k is the
+        length of the output array.
     sample : array-like
         Original sample.
 
@@ -122,9 +122,31 @@ def bias(fn: Callable, sample: Sequence) -> np.ndarray:
     ndarray
         Jackknife estimate of bias (= expectation of estimator - true value).
     """
-    n = len(sample)
     theta = fn(sample)
-    mean_theta = np.mean(jackknife(fn, sample), axis=0)
+    resampled_thetas = jackknife(fn, sample)
+    return bias_from_precalculated(theta, resampled_thetas)
+
+
+def bias_from_precalculated(
+    theta: Union[float, np.ndarray], resampled_thetas: Sequence
+) -> np.ndarray:
+    """
+    Calculate jackknife estimate of bias from pre-calculated replicates.
+
+    Parameters
+    ----------
+    theta: float or array-like
+        Estimator applied to original sample.
+    resampled_thetas: Sequence
+        Estimator applied to jackknife replicates of original sample.
+
+    Returns
+    -------
+    ndarray
+        Jackknife estimate of bias (= expectation of estimator - true value).
+    """
+    n = len(resampled_thetas)
+    mean_theta = np.mean(resampled_thetas, axis=0)
     return (n - 1) * (mean_theta - theta)
 
 
