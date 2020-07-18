@@ -1,7 +1,7 @@
 """
 Bootstrap resampling.
 """
-from typing import Callable, Generator, Optional, Sequence, Tuple, Union
+from typing import Callable, Generator, Optional, Sequence, Tuple, Union, List
 
 import numpy as np
 from scipy import stats
@@ -369,12 +369,12 @@ def _confidence_interval_bca(
 
 
 def _jackknife_after_bootstrap(
-    fn: Callable, thetas: Sequence, resampled: Sequence, sample: Sequence
+    fn: Callable, thetas: np.ndarray, resampled: np.ndarray, sample: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     # computes the jackknife-after-bootstrap, as described in the book Efron &
     # Tibshirani, An introduction to the bootstrap.
     n = len(sample)
-    jack = [[] for i in range(n)]
+    jack: List[List[int]] = [[] for i in range(n)]
     for i, b in enumerate(resampled):
         for j, s in enumerate(sample):
             if np.any(s == b):
