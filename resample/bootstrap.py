@@ -178,7 +178,7 @@ def confidence_interval(
     )
 
 
-def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+def bias(fn: Callable, sample: Sequence, error: bool = False, **kwargs) -> np.ndarray:
     """
     Calculate bias of the function estimate with the bootstrap.
 
@@ -188,6 +188,9 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
         Function to be bootstrapped.
     sample : array-like
         Original sample.
+    error : bool, optional
+        If `True`, compute an uncertainty estimate for the bias with the
+        jackknife-after-bootstrap method. Default is `False`.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
@@ -199,16 +202,23 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
 
     Returns
     -------
-    ndarray
-        Bootstrap estimate of bias (= expectation of estimator - true value).
+    ndarray or (ndarray, ndarray)
+        Bootstrap estimate of bias (= expectation of estimator - true value). If
+        `error=True`, also return the estimated uncertainty as a second array.
     """
-    replicas = []
+    resampled = []
     thetas = []
     for b in resample(sample, **kwargs):
-        replicas.append(b)
+        resampled.append(b)
         thetas.append(fn(b))
-    population_theta = fn(np.concatenate(replicas))
-    return np.mean(thetas, axis=0) - population_theta
+    population_theta = fn(np.concatenate(resampled))
+
+    def bias(thetas):
+        return np.mean(thetas, axis=0) - population_theta
+
+    if error:
+        return _jackknife_after_bootstrap(bias, thetas, resampled, sample)
+    return bias(thetas)
 
 
 def bias_corrected(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
@@ -356,3 +366,22 @@ def _confidence_interval_bca(
 
     quant = quantile_function_gen(thetas)
     return quant(p_low), quant(p_high)
+
+
+def _jackknife_after_bootstrap(
+    fn: Callable, thetas: Sequence, resampled: Sequence, sample: Sequence
+) -> Tuple[np.ndarray, np.ndarray]:
+    # computes the jackknife-after-bootstrap, as described in the book Efron &
+    # Tibshirani, An introduction to the bootstrap.
+    n = len(sample)
+    jack = [[] for i in range(n)]
+    thetas = []
+    for i, b in enumerate(resampled):
+        thetas.append(fn(resampled))
+        for j, s in enumerate(sample):
+            if s not in resampled:
+                jack[j].append(i)
+    result = fn(thetas)
+    jack = [fn(thetas[indices]) if indices else result for indices in jack]
+    var_jack = (n - 1) * np.var(jack, ddof=0)
+    return (result, var_jack ** 0.5)
