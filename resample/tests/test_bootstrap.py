@@ -87,7 +87,7 @@ def test_resample_1d_statistical_test(method, rng):
         "pareto": (1,),
     }.get(method, ())
 
-    if method in ("ordinary", "balanced"):
+    if method in NON_PARAMETRIC:
         dist = stats.norm
     else:
         dist = getattr(stats, method)
@@ -102,7 +102,7 @@ def test_resample_1d_statistical_test(method, rng):
 
     # - in case of parametric bootstrap, wref is exactly uniform
     # - in case of ordinary and balanced, it needs to be computed from original sample
-    if method in ("ordinary", "balanced"):
+    if method in NON_PARAMETRIC:
         wref = np.histogram(x, bins=xe)[0]
     else:
         wref = len(x) / (len(xe) - 1)
@@ -227,10 +227,10 @@ def test_confidence_interval_invalid_ci_method_raises():
         confidence_interval(np.mean, (1, 2, 3), ci_method="foobar")
 
 
-@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
 def test_bias_on_unbiased(method, rng):
     data = (0, 1, 2, 3)
-    r = bias(np.mean, data, method="balanced", random_state=rng)
+    r = bias(np.mean, data, method=method, random_state=rng)
 
     if method == "balanced":
         # bias is exactly zero for linear functions with the balanced bootstrap
@@ -240,7 +240,7 @@ def test_bias_on_unbiased(method, rng):
         assert r == pytest.approx(0)
 
 
-@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
 def test_bias_on_biased(method, rng):
     def biased(x):
         return np.var(x, ddof=0)
@@ -254,7 +254,7 @@ def test_bias_on_biased(method, rng):
     assert r == pytest.approx(sample_bias, rel=0.05)
 
 
-@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
 def test_bias_on_biased_2(method, rng):
     def biased(x):
         n = len(x)
@@ -269,7 +269,7 @@ def test_bias_on_biased_2(method, rng):
     assert r == pytest.approx(sample_bias, rel=0.1)
 
 
-@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
 def test_bias_corrected(method, rng):
     def fn(x):
         return np.var(x, ddof=0)
@@ -281,7 +281,7 @@ def test_bias_corrected(method, rng):
     assert r == pytest.approx(correct, rel=0.001)
 
 
-@pytest.mark.parametrize("method", ("ordinary", "balanced"))
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
 def test_variance(method, rng):
     data = np.arange(100)
     v = np.var(data) / len(data)
