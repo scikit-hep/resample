@@ -41,7 +41,7 @@ def resample(
 
     Notes
     -----
-    If data is not iid, but consists of several distinct classes, stratification
+    If data is not i.i.d. but consists of several distinct classes, stratification
     ensures that the relative proportions of each class are maintained in each
     replicated sample. This is a stricter constraint than that offered by the
     balanced bootstrap, which only guarantees that classes have the original
