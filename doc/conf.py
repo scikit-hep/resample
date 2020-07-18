@@ -20,7 +20,7 @@
 import sys
 
 sys.path.append("..")
-from resample.version import version
+from resample.version import version  # noqa
 
 project = "resample"
 copyright = "2018, Daniel Saxton"
@@ -37,7 +37,7 @@ author = "Daniel Saxton"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "numpydoc",
+    "sphinx.ext.napoleon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
