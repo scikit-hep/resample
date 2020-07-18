@@ -24,12 +24,12 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
     ------
     ndarray
         Array with same shape and type as input, but with the size of the first
-        dimension reduced by one. Replicas are missing one value of the original in
+        dimension reduced by one. Replicates are missing one value of the original in
         ascending order, e.g. for a sample (1, 2, 3), one gets (2, 3), (1, 3), (1, 2).
 
     Notes
     -----
-    The generator interally keeps a single array to the replicas, which is updated
+    The generator interally keeps a single array to the replicates, which is updated
     on each iteration of the generator. The safe default is to return copies of this
     internal state. To increase performance, it also possible to return a view into
     the generator state, by setting the `copy=False`. However, this will only produce
