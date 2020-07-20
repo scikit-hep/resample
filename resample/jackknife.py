@@ -30,7 +30,7 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
     See Also
     --------
     resample.bootstrap.resample : Generate bootstrap samples.
-    resample.jackknife.jackknife : Generate jackknife samples.
+    resample.jackknife.jackknife : Generate jackknife estimates.
 
     Notes
     -----
