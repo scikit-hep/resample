@@ -8,28 +8,25 @@ from resample.empirical import cdf_gen
 
 def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation two sample t-test (the mean of a2 is subtracted from that of
-    a1).
+    Perform permutation two sample t-test.
 
     Parameters
     ----------
     a1 : array-like
-        First sample
-
+        First sample.
     a2 : array-like
-        Second sample
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Second sample.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'t', 'prop'} : {float, float}
-        T statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'t': float, 'prop': float}
+        T statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
     np.random.seed(random_state)
 
@@ -67,19 +64,18 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     Parameters
     ----------
     args : sequence of array-like
-        Samples
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Samples.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'f', 'prop'} : {float, float}
-        F statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'f': float, 'prop': float}
+        F statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
     np.random.seed(random_state)
 
@@ -123,22 +119,20 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
     Parameters
     ----------
     a1 : array-like
-        First sample
-
+        First sample.
     a2 : array-like
-        Second sample
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Second sample.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'w', 'prop'} : {int, float}
-        W statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'w': float, 'prop': float}
+        W statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
     np.random.seed(random_state)
 
@@ -174,19 +168,18 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
     Parameters
     ----------
     args : sequence of array-like
-        Samples
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Samples.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'h', 'prop'} : {float, float}
-        H statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'h': float, 'prop': flaot}
+        H statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
     np.random.seed(random_state)
 
@@ -235,25 +228,22 @@ def corr_test(
     Parameters
     ----------
     a1 : array-like
-        First sample
-
+        First sample.
     a2 : array-like
-        Second sample
-
-    method : str, {'pearson', 'spearman'}, default : 'pearson'
-        Correlation method
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Second sample.
+    method : str, {'pearson', 'spearman'}, optional
+        Correlation method. Default 'pearson'.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'corr', 'prop'} : {float, float}
-        Correlation as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'corr': float, 'prop': float}
+        Correlation as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
     np.random.seed(random_state)
 
@@ -299,22 +289,20 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
     Parameters
     ----------
     a1 : array-like
-        First sample
-
+        First sample.
     a2 : array-like
-        Second sample
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Second sample.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'d', 'prop'} : {float, float}
-        D statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'d': float, 'prop': float}
+        D statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
     np.random.seed(random_state)
 
