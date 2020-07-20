@@ -15,7 +15,7 @@ Features
 * Bootstrap confidence intervals (percentile or BCa) for any well-defined parameter
 * Jackknife estimates of bias and variance
 * Randomization-based variants of traditional statistical tests (t-test, ANOVA F-test, K-S test, etc.)
-* Tools for working with empirical distributions (empirical cumulative distribution and quantile functions, empirical influence functions, distance metrics for comparing distributions)
+* Tools for working with empirical distributions (cumulative distribution, quantile, and influence functions)
 
 Dependencies
 ------------
