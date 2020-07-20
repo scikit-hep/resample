@@ -12,10 +12,10 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
 
     Parameters
     ----------
-    sample: array-like
+    sample : array-like
         Sample. If the sequence is multi-dimensional, the first dimension must
         walk over i.i.d. observations.
-    copy: bool, optional
+    copy : bool, optional
         If `True`, return the replicated sample as a copy, otherwise return a view into
         the internal array buffer of the generator. Setting this to `False` avoids
         `len(sample)` copies, which is more efficient, but see notes for caveats.
@@ -26,6 +26,11 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
         Array with same shape and type as input, but with the size of the first
         dimension reduced by one. Replicates are missing one value of the original in
         ascending order, e.g. for a sample (1, 2, 3), one gets (2, 3), (1, 3), (1, 2).
+
+    See Also
+    --------
+    resample.bootstrap.resample : Generate bootstrap samples.
+    resample.jackknife.jackknife : Generate jackknife samples.
 
     Notes
     -----
@@ -49,11 +54,6 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
     ...     r2.append(x) # x is now a view into the same array in memory
     >>> print(r2)
     [array([1, 2]), array([1, 2]), array([1, 2])]
-
-    See Also
-    --------
-    resample.bootstrap.resample
-    resample.jackknife.jackknife
     """
     sample = np.atleast_1d(sample)
 
@@ -130,7 +130,7 @@ def bias(fn: Callable, sample: Sequence) -> np.ndarray:
 
 def bias_corrected(fn: Callable, sample: Sequence) -> np.ndarray:
     """
-    Calculates bias-corrected estimate of the function with the jackknife.
+    Calculate bias-corrected estimate of the function with the jackknife.
 
     Removes a bias of O(1/n), where n is the sample size, leaving bias of
     order O(1/n²). If the original function has a bias of exactly O(1/n),
