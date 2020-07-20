@@ -18,14 +18,14 @@ def resample(
     random_state: Optional[Union[np.random.Generator, int]] = None,
 ) -> Generator[np.ndarray, None, None]:
     """
-    Generator of bootstrap samples.
+    Return generator of bootstrap samples.
 
     Parameters
     ----------
     sample : array-like
         Original sample.
     size : int, optional
-        Number of bootstrap samples to generate. Default is 1000.
+        Number of bootstrap samples to generate. Default is 100.
     method : str or None, optional
         How to generate bootstrap samples. Supported are 'ordinary', 'balanced', or
         a distribution name for a parametric bootstrap. Default is 'balanced'.
@@ -41,9 +41,7 @@ def resample(
 
     Notes
     -----
-    Stratification:
-
-    If data is not iid, but consists of several distinct classes, stratification
+    If data is not i.i.d. but consists of several distinct classes, stratification
     ensures that the relative proportions of each class are maintained in each
     replicated sample. This is a stricter constraint than that offered by the
     balanced bootstrap, which only guarantees that classes have the original
@@ -147,17 +145,16 @@ def confidence_interval(
     Both the 'percentile' and 'bca' methods produce intervals that are invariant to
     monotonic transformations of the data values, a desirable and consistent property.
 
-    The 'percentile' method is straight-forward and useful as a fallback. The 'bca'
+    The 'percentile' method is straightforward and useful as a fallback. The 'bca'
     method is 2nd order accurate (to O(1/n) where n is the sample size) and generally
-    perferred. It computes a jackknife estimate in addition to the bootstrap, which
+    preferred. It computes a jackknife estimate in addition to the bootstrap, which
     increases the number of function evaluations in a direct comparison to
-    'percentile', but in the increase in accuracy should over-compensate this, with the
-    result that less bootstrap replicates are needed overall to achieve the same
-    accuracy.
+    'percentile'. However the increase in accuracy should compensate for this, with the
+    result that less bootstrap replicas are needed overall to achieve the same accuracy.
 
     Returns
     -------
-    (l, u) : tuple
+    (float, float)
         Upper and lower confidence limits
     """
     if not 0 < cl < 1:
