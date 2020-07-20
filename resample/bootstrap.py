@@ -191,16 +191,9 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
 
     Notes
     -----
-<<<<<<< HEAD
-    This function has special space requirements in that it needs to hold `size`
-    replicas of the original sample in memory at once. The balanced bootstrap is
-    recommended over the ordinary bootstrap for bias estimation as it tends to
-    converge faster.
-=======
     This function has special space requirements, it needs to hold `size` replicates of
     the original sample in memory at once. The balanced bootstrap is recommended over
     the ordinary bootstrap for bias estimation, it tends to converge faster.
->>>>>>> origin/master
 
     Returns
     -------
