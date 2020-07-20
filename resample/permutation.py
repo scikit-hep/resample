@@ -28,7 +28,12 @@ def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Di
         T statistic as well as proportion of permutation distribution less than or
         equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
@@ -47,7 +52,7 @@ def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Di
     n2 = len(a2)
 
     X = np.apply_along_axis(
-        func1d=np.random.permutation,
+        func1d=rng.permutation,
         arr=np.reshape(np.tile(np.append(a1, a2), b), newshape=(b, n1 + n2)),
         axis=1,
     )
@@ -77,7 +82,12 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
         F statistic as well as proportion of permutation distribution less than or
         equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     args = [np.asarray(a) for a in args]
     args = [a[~np.isnan(a)] for a in args]
@@ -106,7 +116,7 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     f = g(arr)
 
     permute_f = np.apply_along_axis(
-        func1d=(lambda x: g(np.random.permutation(x))), arr=X, axis=1
+        func1d=(lambda x: g(rng.permutation(x))), arr=X, axis=1
     )
 
     return {"f": f, "prop": np.mean(permute_f <= f)}
@@ -134,7 +144,12 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
         W statistic as well as proportion of permutation distribution less than or
         equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
@@ -149,7 +164,7 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
     a = rankdata(a)
 
     X = np.apply_along_axis(
-        func1d=np.random.permutation,
+        func1d=rng.permutation,
         arr=np.reshape(np.tile(a, b), newshape=(b, n1 + n2)),
         axis=1,
     )
@@ -181,7 +196,12 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
         H statistic as well as proportion of permutation distribution less than or
         equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     args = [np.asarray(a) for a in args]
     args = [a[~np.isnan(a)] for a in args]
@@ -209,7 +229,7 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
     h = g(r_arr)
 
     permute_h = np.apply_along_axis(
-        func1d=(lambda s: g(np.random.permutation(s))), arr=x, axis=1
+        func1d=(lambda s: g(rng.permutation(s))), arr=x, axis=1
     )
 
     return {"h": h, "prop": np.mean(permute_h > h)}
@@ -245,7 +265,12 @@ def corr_test(
         Correlation as well as proportion of permutation distribution less than or
         equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
@@ -277,7 +302,7 @@ def corr_test(
 
     c = corr(a[:, 0], a[:, 1])
 
-    permute_c = np.asarray([corr(np.random.permutation(x[:, 0]), x[:, 1]) for x in X])
+    permute_c = np.asarray([corr(rng.permutation(x[:, 0]), x[:, 1]) for x in X])
 
     return {"c": c, "prop": np.mean(permute_c <= c)}
 
@@ -304,7 +329,12 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
         D statistic as well as proportion of permutation distribution less than or
         equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
@@ -326,7 +356,7 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
 
     def g(s):
         mask = np.ones(n, dtype=np.bool)
-        mask[np.random.choice(range(n), size=n2, replace=False)] = False
+        mask[rng.choice(range(n), size=n2, replace=False)] = False
 
         return np.max([abs(h(s[mask], i, n1) - h(s[~mask], i, n2)) for i in s])
 
