@@ -8,30 +8,32 @@ from resample.empirical import cdf_gen
 
 def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation two sample t-test (the mean of a2 is subtracted from that of
-    a1).
+    Perform permutation two sample t-test.
 
     Parameters
     ----------
     a1 : array-like
-        First sample
-
+        First sample.
     a2 : array-like
-        Second sample
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Second sample.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'t', 'prop'} : {float, float}
-        T statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'t': float, 'prop': float}
+        T statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
@@ -50,7 +52,7 @@ def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Di
     n2 = len(a2)
 
     X = np.apply_along_axis(
-        func1d=np.random.permutation,
+        func1d=rng.permutation,
         arr=np.reshape(np.tile(np.append(a1, a2), b), newshape=(b, n1 + n2)),
         axis=1,
     )
@@ -67,21 +69,25 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     Parameters
     ----------
     args : sequence of array-like
-        Samples
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Samples.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'f', 'prop'} : {float, float}
-        F statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'f': float, 'prop': float}
+        F statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     args = [np.asarray(a) for a in args]
     args = [a[~np.isnan(a)] for a in args]
@@ -110,7 +116,7 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     f = g(arr)
 
     permute_f = np.apply_along_axis(
-        func1d=(lambda x: g(np.random.permutation(x))), arr=X, axis=1
+        func1d=(lambda x: g(rng.permutation(x))), arr=X, axis=1
     )
 
     return {"f": f, "prop": np.mean(permute_f <= f)}
@@ -123,24 +129,27 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
     Parameters
     ----------
     a1 : array-like
-        First sample
-
+        First sample.
     a2 : array-like
-        Second sample
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Second sample.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'w', 'prop'} : {int, float}
-        W statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'w': float, 'prop': float}
+        W statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
@@ -155,7 +164,7 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
     a = rankdata(a)
 
     X = np.apply_along_axis(
-        func1d=np.random.permutation,
+        func1d=rng.permutation,
         arr=np.reshape(np.tile(a, b), newshape=(b, n1 + n2)),
         axis=1,
     )
@@ -174,21 +183,25 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
     Parameters
     ----------
     args : sequence of array-like
-        Samples
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Samples.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'h', 'prop'} : {float, float}
-        H statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'h': float, 'prop': flaot}
+        H statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     args = [np.asarray(a) for a in args]
     args = [a[~np.isnan(a)] for a in args]
@@ -216,7 +229,7 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
     h = g(r_arr)
 
     permute_h = np.apply_along_axis(
-        func1d=(lambda s: g(np.random.permutation(s))), arr=x, axis=1
+        func1d=(lambda s: g(rng.permutation(s))), arr=x, axis=1
     )
 
     return {"h": h, "prop": np.mean(permute_h > h)}
@@ -235,27 +248,29 @@ def corr_test(
     Parameters
     ----------
     a1 : array-like
-        First sample
-
+        First sample.
     a2 : array-like
-        Second sample
-
-    method : str, {'pearson', 'spearman'}, default : 'pearson'
-        Correlation method
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Second sample.
+    method : str, {'pearson', 'spearman'}, optional
+        Correlation method. Default 'pearson'.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'corr', 'prop'} : {float, float}
-        Correlation as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'corr': float, 'prop': float}
+        Correlation as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
@@ -287,7 +302,7 @@ def corr_test(
 
     c = corr(a[:, 0], a[:, 1])
 
-    permute_c = np.asarray([corr(np.random.permutation(x[:, 0]), x[:, 1]) for x in X])
+    permute_c = np.asarray([corr(rng.permutation(x[:, 0]), x[:, 1]) for x in X])
 
     return {"c": c, "prop": np.mean(permute_c <= c)}
 
@@ -299,24 +314,27 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
     Parameters
     ----------
     a1 : array-like
-        First sample
-
+        First sample.
     a2 : array-like
-        Second sample
-
-    b : int, default : 100
-        Number of permutations
-
-    random_state : int or None, default : None
-        random number seed
+        Second sample.
+    b : int, optional
+        Number of permutations. Default 100.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'d', 'prop'} : {float, float}
-        D statistic as well as proportion of permutation
-        distribution less than or equal to that statistic
+    {'d': float, 'prop': float}
+        D statistic as well as proportion of permutation distribution less than or
+        equal to that statistic.
     """
-    np.random.seed(random_state)
+    if random_state is None:
+        rng = np.random.default_rng()
+    elif isinstance(random_state, int):
+        rng = np.random.default_rng(random_state)
+    else:
+        rng = random_state
 
     a1 = np.asarray(a1)
     a2 = np.asarray(a2)
@@ -338,7 +356,7 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
 
     def g(s):
         mask = np.ones(n, dtype=np.bool)
-        mask[np.random.choice(range(n), size=n2, replace=False)] = False
+        mask[rng.choice(range(n), size=n2, replace=False)] = False
 
         return np.max([abs(h(s[mask], i, n1) - h(s[~mask], i, n2)) for i in s])
 

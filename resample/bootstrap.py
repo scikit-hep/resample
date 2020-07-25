@@ -39,6 +39,11 @@ def resample(
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
 
+    Yields
+    ------
+    ndarray
+        Bootstrap sample.
+
     Notes
     -----
     If data is not i.i.d. but consists of several distinct classes, stratification
@@ -46,11 +51,6 @@ def resample(
     replicated sample. This is a stricter constraint than that offered by the
     balanced bootstrap, which only guarantees that classes have the original
     proportions over all replicates.
-
-    Yields
-    ------
-    ndarray
-        Bootstrap sample.
     """
     if random_state is None:
         rng = np.random.default_rng()
@@ -140,6 +140,11 @@ def confidence_interval(
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
+    Returns
+    -------
+    (float, float)
+        Upper and lower confidence limits.
+
     Notes
     -----
     Both the 'percentile' and 'bca' methods produce intervals that are invariant to
@@ -151,11 +156,6 @@ def confidence_interval(
     increases the number of function evaluations in a direct comparison to
     'percentile'. However the increase in accuracy should compensate for this, with the
     result that less bootstrap replicas are needed overall to achieve the same accuracy.
-
-    Returns
-    -------
-    (float, float)
-        Upper and lower confidence limits
     """
     if not 0 < cl < 1:
         raise ValueError("cl must be between zero and one")
@@ -189,16 +189,16 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of bias (= expectation of estimator - true value).
+
     Notes
     -----
     This function has special space requirements, it needs to hold `size` replicates of
     the original sample in memory at once. The balanced bootstrap is recommended over
     the ordinary bootstrap for bias estimation, it tends to converge faster.
-
-    Returns
-    -------
-    ndarray
-        Bootstrap estimate of bias (= expectation of estimator - true value).
     """
     replicates = []
     thetas = []

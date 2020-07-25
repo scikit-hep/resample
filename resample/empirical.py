@@ -64,8 +64,7 @@ def quantile_function_gen(sample: Sequence) -> Callable:
 
 def influence(fn: Callable, sample: Sequence) -> np.ndarray:
     """
-    Calculate the empirical influence function for a given sample and estimator
-    using the jackknife method.
+    Calculate the empirical influence function for a given sample and estimator.
 
     Parameters
     ----------
