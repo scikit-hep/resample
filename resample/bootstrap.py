@@ -172,7 +172,7 @@ def confidence_interval(
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
     raise ValueError(
-        "ci_method must be 'percentile' or 'bca', but " f"'{ci_method}' was supplied"
+        f"ci_method must be 'percentile' or 'bca', but '{ci_method}' was supplied"
     )
 
 
