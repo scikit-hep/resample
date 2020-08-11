@@ -10,6 +10,8 @@ Features
 - Added bootstrap estimate of bias (:issue:`6`).
 - Parametric bootstrap no longer fixes both parameters of the t distribution (:issue:`35`).
 - Default confidence interval method changed from ``percentile`` to ``bca`` (:issue:`52`).
+- Empirical quantile function no longer performs interpolation between quantiles (:issue:`44`).
+- Supremum norm and MISE functionals removed (:issue:`30`).
 
 Bug fixes
 ---------
