@@ -8,6 +8,8 @@ API Changes
 -----------
 
 - Bootstrap and jackknife generators ``resample.bootstrap.resample`` and ``resample.jackknife.resample`` are now exposed to compute replicates lazily (issue 27).
+- Jackknife functions have been split into their own namespace ``resample.jackknife`` (issue 22).
+- Random number seeding is now done through using ``numpy`` generators rather than a global random state, which means the minimum ``numpy`` version is now 1.17 (issue 5).
 - Parametric bootstrap no longer fixes both parameters of the t distribution (issue 35).
 - Default confidence interval method changed from ``"percentile"`` to ``"bca"`` (issue 52).
 - Empirical quantile function no longer performs interpolation between quantiles (issue 44).
