@@ -18,6 +18,8 @@ Enhancements
 ------------
 
 - Added bootstrap estimate of bias (issue 6).
+- Added `bias_corrected` function for jackknife and bootstrap, which computes the bias corrected estimates
+- Performance of Jackknife computation was increased 
 
 Bug fixes
 ---------
@@ -29,3 +31,9 @@ Deprecations
 
 - Smoothing of bootstrap samples is no longer supported (issue 7).
 - Supremum norm and MISE functionals removed (issue 30).
+
+Other
+-----
+
+- Benchmarks were added to track and compare performance of bootstrap and jackknife methods
+
