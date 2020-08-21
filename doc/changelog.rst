@@ -19,7 +19,7 @@ Enhancements
 
 - Added bootstrap estimate of bias (issue 6).
 - Added ``bias_corrected`` function for jackknife and bootstrap, which computes the bias corrected estimates.
-- Performance of Jackknife computation was increased 
+- Performance of jackknife computation was increased.
 
 Bug fixes
 ---------
