@@ -35,4 +35,4 @@ Deprecations
 Other
 -----
 
-- Benchmarks were added to track and compare performance of bootstrap and jackknife methods
+- Benchmarks were added to track and compare performance of bootstrap and jackknife methods.
