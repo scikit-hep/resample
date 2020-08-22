@@ -7,30 +7,31 @@ Changelog
 API Changes
 -----------
 
-- Bootstrap and jackknife generators ``resample.bootstrap.resample`` and ``resample.jackknife.resample`` are now exposed to compute replicates lazily (issue 27).
-- Jackknife functions have been split into their own namespace ``resample.jackknife`` (issue 22).
-- Random number seeding is now done through using ``numpy`` generators rather than a global random state, which means the minimum ``numpy`` version is now 1.17 (issue 5).
-- Parametric bootstrap no longer fixes both parameters of the t distribution (issue 35).
-- Default confidence interval method changed from ``"percentile"`` to ``"bca"`` (issue 52).
-- Empirical quantile function no longer performs interpolation between quantiles (issue 44).
+- Bootstrap and jackknife generators ``resample.bootstrap.resample`` and ``resample.jackknife.resample`` are now exposed to compute replicates lazily.
+- Jackknife functions have been split into their own namespace ``resample.jackknife``.
+- Empirical distribution helper functions moved to a ``resample.empirical`` namespace.
+- Random number seeding is now done through using ``numpy`` generators rather than a global random state. As a result the minimum ``numpy`` version is now 1.17.
+- Parametric bootstrap now estimates both parameters of the t distribution.
+- Default confidence interval method changed from ``"percentile"`` to ``"bca"``.
+- Empirical quantile function no longer performs interpolation between quantiles.
 
 Enhancements
 ------------
 
-- Added bootstrap estimate of bias (issue 6).
+- Added bootstrap estimate of bias.
 - Added ``bias_corrected`` function for jackknife and bootstrap, which computes the bias corrected estimates.
 - Performance of jackknife computation was increased.
 
 Bug fixes
 ---------
 
-- Removed incorrect implementation of Studentized bootstrap (issue 49).
+- Removed incorrect implementation of Studentized bootstrap.
 
 Deprecations
 ------------
 
-- Smoothing of bootstrap samples is no longer supported (issue 7).
-- Supremum norm and MISE functionals removed (issue 30).
+- Smoothing of bootstrap samples is no longer supported.
+- Supremum norm and MISE functionals removed.
 
 Other
 -----
