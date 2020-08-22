@@ -1,4 +1,4 @@
-name: Publish Test PyPI
+name: Publish to Test PyPI
 
 on:
   push:
