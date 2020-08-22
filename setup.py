@@ -6,6 +6,7 @@ def open_local(fn):
     this_directory = path.abspath(path.dirname(__file__))
     return open(path.join(this_directory, fn), encoding="utf-8")
 
+
 with open_local("README.md") as f:
     long_description = f.read()
 
