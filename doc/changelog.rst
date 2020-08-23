@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0 (August xx, 2020)
+1.0.0 (August 23, 2020)
 =======================
 
 API Changes
