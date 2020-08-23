@@ -1,11 +1,6 @@
 Changelog
 =========
 
-1.0.1 (August 23, 2020)
-=======================
-
-- Minor fix to allow building from source.
-
 1.0.0 (August 22, 2020)
 =======================
 
