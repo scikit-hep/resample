@@ -26,3 +26,8 @@ Installation
 The latest release can be installed from PyPI:
 
     pip install resample
+
+or using conda:
+
+    conda config --add channels conda-forge
+    conda install resample
