@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
-from resample.bootstrap import resample, confidence_interval
+import pytest
+
+from resample.bootstrap import confidence_interval, resample
 
 
 def run_resample(n, method):
