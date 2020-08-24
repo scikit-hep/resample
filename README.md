@@ -1,5 +1,3 @@
-[![Build Status](https://dev.azure.com/dsaxton/dsaxton/_apis/build/status/dsaxton.resample?branchName=master)](https://dev.azure.com/dsaxton/dsaxton/_build/latest?definitionId=1&branchName=master)
-
 # resample
 
 Description

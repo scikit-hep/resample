@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
-from resample.jackknife import resample
 from numpy.testing import assert_equal
+import pytest
+
+from resample.jackknife import resample
 
 
 def run_resample(n, copy):
