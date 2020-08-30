@@ -104,7 +104,9 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
             [ns[i] * np.var(a[pos[i] : pos[i + 1]]) for i in range(t)]  # noqa: E203
         )
         ssb = np.sum(
-            [ns[i] * (np.mean(a[pos[i] : pos[i + 1]]) - a_bar) ** 2 for i in range(t)]  # noqa: E203
+            [
+                ns[i] * (np.mean(a[pos[i] : pos[i + 1]]) - a_bar) ** 2 for i in range(t)  # noqa: E203
+            ]
         )
         return (ssb / (t - 1)) / (sse / (n - t))
 
@@ -214,7 +216,9 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
     def g(a):
         num = np.sum([ns[i] * (ri_means[i] - r_mean) ** 2 for i in range(t)])
         den = np.sum(
-            [np.sum((a[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)]  # noqa: E203
+            [
+                np.sum((a[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)  # noqa: E203
+            ]
         )
         return (n - 1) * num / den
 
