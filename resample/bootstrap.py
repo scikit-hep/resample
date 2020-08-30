@@ -175,7 +175,9 @@ def confidence_interval(
         j_thetas = jackknife(fn, sample)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
-    raise ValueError(f"ci_method must be 'percentile' or 'bca', but '{ci_method}' was supplied")
+    raise ValueError(
+        f"ci_method must be 'percentile' or 'bca', but '{ci_method}' was supplied"
+    )
 
 
 def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
@@ -265,7 +267,9 @@ def _resample_stratified(
 ) -> Generator[np.ndarray, None, None]:
     # call resample on sub-samples and merge the replicates
     sub_samples = [sample[strata == x] for x in np.unique(strata)]
-    for sub_replicates in zip(*[resample(s, size, method=method, random_state=rng) for s in sub_samples]):
+    for sub_replicates in zip(
+        *[resample(s, size, method=method, random_state=rng) for s in sub_samples]
+    ):
         yield np.concatenate(sub_replicates, axis=0)
 
 

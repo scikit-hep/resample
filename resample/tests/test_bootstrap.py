@@ -206,7 +206,9 @@ def test_bootstrap_2d_balanced(rng):
 def test_confidence_interval(ci_method, rng):
     data = rng.normal(size=1000)
     par = stats.norm.fit(data)
-    dist = stats.norm(par[0], par[1] / len(data) ** 0.5)  # accuracy of mean is sqrt(n) better
+    dist = stats.norm(
+        par[0], par[1] / len(data) ** 0.5
+    )  # accuracy of mean is sqrt(n) better
     cl = 0.9
     ci_ref = dist.ppf(0.05), dist.ppf(0.95)
     ci = confidence_interval(np.mean, data, cl=cl, size=1000, ci_method=ci_method)
