@@ -3,3 +3,7 @@ scipy>=1.5
 pytest
 pytest-cov
 pytest-benchmark
+black
+mypy
+isort
+flake8
