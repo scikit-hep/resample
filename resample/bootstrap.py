@@ -121,7 +121,11 @@ def bootstrap(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
 
 
 def confidence_interval(
-    fn: Callable, sample: Sequence, cl: float = 0.95, ci_method: str = "bca", **kwargs,
+    fn: Callable,
+    sample: Sequence,
+    cl: float = 0.95,
+    ci_method: str = "bca",
+    **kwargs,
 ) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
@@ -171,9 +175,7 @@ def confidence_interval(
         j_thetas = jackknife(fn, sample)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
-    raise ValueError(
-        f"ci_method must be 'percentile' or 'bca', but '{ci_method}' was supplied"
-    )
+    raise ValueError(f"ci_method must be 'percentile' or 'bca', but '{ci_method}' was supplied")
 
 
 def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
@@ -263,14 +265,14 @@ def _resample_stratified(
 ) -> Generator[np.ndarray, None, None]:
     # call resample on sub-samples and merge the replicates
     sub_samples = [sample[strata == x] for x in np.unique(strata)]
-    for sub_replicates in zip(
-        *[resample(s, size, method=method, random_state=rng) for s in sub_samples]
-    ):
+    for sub_replicates in zip(*[resample(s, size, method=method, random_state=rng) for s in sub_samples]):
         yield np.concatenate(sub_replicates, axis=0)
 
 
 def _resample_ordinary(
-    sample: np.ndarray, size: int, rng: np.random.Generator,
+    sample: np.ndarray,
+    size: int,
+    rng: np.random.Generator,
 ) -> Generator[np.ndarray, None, None]:
     # i.i.d. sampling from empirical cumulative distribution of sample
     n = len(sample)
@@ -279,7 +281,9 @@ def _resample_ordinary(
 
 
 def _resample_balanced(
-    sample: np.ndarray, size: int, rng: np.random.Generator,
+    sample: np.ndarray,
+    size: int,
+    rng: np.random.Generator,
 ) -> Generator[np.ndarray, None, None]:
     # effectively computes a random permutation of `size` concatenated
     # copies of `sample` and returns `size` equal chunks of that
@@ -306,7 +310,10 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
 
 
 def _resample_parametric(
-    sample: np.ndarray, size: int, dist, rng: np.random.Generator,
+    sample: np.ndarray,
+    size: int,
+    dist,
+    rng: np.random.Generator,
 ) -> Generator[np.ndarray, None, None]:
     n = len(sample)
 
@@ -325,7 +332,8 @@ def _resample_parametric(
 
 
 def _confidence_interval_percentile(
-    thetas: np.ndarray, alpha_half: float,
+    thetas: np.ndarray,
+    alpha_half: float,
 ) -> Tuple[float, float]:
     quant = quantile_function_gen(thetas)
     return quant(alpha_half), quant(1 - alpha_half)

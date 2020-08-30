@@ -42,9 +42,7 @@ def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Di
     a2 = a2[~np.isnan(a2)]
 
     def g(x, y):
-        return (np.mean(x) - np.mean(y)) / np.sqrt(
-            np.var(x, ddof=1) / len(x) + np.var(y, ddof=1) / len(y)
-        )
+        return (np.mean(x) - np.mean(y)) / np.sqrt(np.var(x, ddof=1) / len(x) + np.var(y, ddof=1) / len(y))
 
     t = g(a1, a2)
 
@@ -100,24 +98,15 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     a_bar = np.mean(arr)
 
     def g(a):
-        sse = np.sum(
-            [ns[i] * np.var(a[pos[i] : pos[i + 1]]) for i in range(t)]  # noqa: E203
-        )
-        ssb = np.sum(
-            [
-                ns[i] * (np.mean(a[pos[i] : pos[i + 1]]) - a_bar) ** 2  # noqa: E203
-                for i in range(t)
-            ]
-        )
+        sse = np.sum([ns[i] * np.var(a[pos[i] : pos[i + 1]]) for i in range(t)])  # noqa: E203
+        ssb = np.sum([ns[i] * (np.mean(a[pos[i] : pos[i + 1]]) - a_bar) ** 2 for i in range(t)])  # noqa: E203
         return (ssb / (t - 1)) / (sse / (n - t))
 
     X = np.reshape(np.tile(arr, b), newshape=(b, n))
 
     f = g(arr)
 
-    permute_f = np.apply_along_axis(
-        func1d=(lambda x: g(rng.permutation(x))), arr=X, axis=1
-    )
+    permute_f = np.apply_along_axis(func1d=(lambda x: g(rng.permutation(x))), arr=X, axis=1)
 
     return {"f": f, "prop": np.mean(permute_f <= f)}
 
@@ -216,21 +205,14 @@ def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> D
 
     def g(a):
         num = np.sum([ns[i] * (ri_means[i] - r_mean) ** 2 for i in range(t)])
-        den = np.sum(
-            [
-                np.sum((a[pos[i] : pos[i + 1]] - r_mean) ** 2)  # noqa: E203
-                for i in range(t)
-            ]
-        )
+        den = np.sum([np.sum((a[pos[i] : pos[i + 1]] - r_mean) ** 2) for i in range(t)])  # noqa: E203
         return (n - 1) * num / den
 
     x = np.reshape(np.tile(r_arr, b), newshape=(b, n))
 
     h = g(r_arr)
 
-    permute_h = np.apply_along_axis(
-        func1d=(lambda s: g(rng.permutation(s))), arr=x, axis=1
-    )
+    permute_h = np.apply_along_axis(func1d=(lambda s: g(rng.permutation(s))), arr=x, axis=1)
 
     return {"h": h, "prop": np.mean(permute_h > h)}
 
@@ -291,11 +273,7 @@ def corr_test(
         a = np.apply_along_axis(func1d=rankdata, arr=a, axis=0)
         X = np.asarray([a] * b)
     else:
-        raise ValueError(
-            "method must be either 'pearson', "
-            "'spearman', or 'distance', "
-            f"'{method}' was supplied"
-        )
+        raise ValueError("method must be either 'pearson', " "'spearman', or 'distance', " f"'{method}' was supplied")
 
     def corr(x, y):
         return np.corrcoef(x, y)[0, 1]
