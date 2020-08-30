@@ -29,5 +29,4 @@ The latest release can be installed from PyPI:
 
 or using conda:
 
-    conda config --add channels conda-forge
-    conda install resample
+    conda install resample -c conda-forge
