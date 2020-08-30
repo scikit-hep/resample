@@ -21,7 +21,7 @@ jobs:
         python -m pip install -r requirements.txt
         python -m pip install black flake8 mypy isort
     - name: black
-      run: black -l 120 --check ./resample
+      run: black -l 88 --check ./resample
     - name: flake8
       run: flake8 ./resample
     - name: isort
