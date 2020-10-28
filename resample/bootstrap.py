@@ -353,6 +353,7 @@ def _confidence_interval_bca(
     z_naught = norm.ppf(prop_less)
 
     # acceleration
+    j_thetas = j_thetas.astype('float64')
     j_thetas -= np.mean(j_thetas)
     num = np.sum((-j_thetas) ** 3)
     den = np.sum(j_thetas ** 2)

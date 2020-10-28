@@ -18,3 +18,5 @@ _build
 benchmarks/.asv/
 junit
 py[0-9]*
+.env
+.vscode
