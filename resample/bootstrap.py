@@ -348,15 +348,23 @@ def _confidence_interval_bca(
 ) -> Tuple[float, float]:
     norm = stats.norm
 
-    # bias correction
+    # bias correction; implementation notes:
+    # - if prop_less is zero, z_naught would become -inf;
+    #   we set z_naught to zero then (no bias)
     prop_less = np.mean(thetas < theta)  # proportion of replicates less than obs
-    z_naught = norm.ppf(prop_less)
+    z_naught = norm.ppf(prop_less) if prop_less > 0 else 0.0
 
-    # acceleration
-    j_thetas -= np.mean(j_thetas)
+    # acceleration; implementation notes:
+    # - np.mean returns float even if j_thetas are int,
+    #   must convert type explicity to make -= operator work
+    # - it is possible that all j_thetas are zero, it then follows
+    #   that den and num are zero; we set acc to zero then (no acceleration)
+    j_mean = np.mean(j_thetas)
+    j_thetas = j_thetas.astype(j_mean.dtype, copy=False)
+    j_thetas -= j_mean
     num = np.sum((-j_thetas) ** 3)
     den = np.sum(j_thetas ** 2)
-    acc = num / (6 * den ** 1.5)
+    acc = num / (6 * den ** 1.5) if den > 0 else 0.0
 
     z_low = z_naught + norm.ppf(alpha_half)
     z_high = z_naught + norm.ppf(1 - alpha_half)

@@ -227,6 +227,25 @@ def test_confidence_interval_invalid_ci_method_raises():
         confidence_interval(np.mean, (1, 2, 3), ci_method="foobar")
 
 
+def test_bca_confidence_interval_estimator_returns_int(rng):
+    def fn(data):
+        return int(np.mean(data))
+
+    data = (1, 2, 3)
+    ci = confidence_interval(fn, data, ci_method="bca", size=5, random_state=rng)
+    assert_almost_equal((1.0, 2.0), ci, decimal=2)
+
+
+@pytest.mark.parametrize("ci_method", ["percentile", "bca"])
+def test_bca_confidence_interval_bounded_estimator(ci_method, rng):
+    def fn(data):
+        return max(np.mean(data), 0)
+
+    data = (-3, -2, -1)
+    ci = confidence_interval(fn, data, ci_method=ci_method, size=5, random_state=rng)
+    assert_almost_equal((0.0, 0.0), ci, decimal=2)
+
+
 @pytest.mark.parametrize("method", NON_PARAMETRIC)
 def test_bias_on_unbiased(method, rng):
     data = (0, 1, 2, 3)
