@@ -11,8 +11,7 @@ def test_local_against_pypi_version():
     payload = r.read()
     releases = json.loads(payload)["releases"]
 
-    # make sure version is up-to-date
     latest_pypi_version = max(parse_version(v) for v in releases)
     assert (
         parse_version(__version__) > latest_pypi_version
-    ), "PyPI release found, version needs to be incremented"
+    ), "PyPI release with same version number found, version needs to be incremented"
