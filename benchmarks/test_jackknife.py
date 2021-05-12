@@ -1,6 +1,6 @@
 import numpy as np
-from numpy.testing import assert_equal
 import pytest
+from numpy.testing import assert_equal
 
 from resample.jackknife import resample
 

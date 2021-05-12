@@ -5,8 +5,8 @@ The final logo was further edited in Inkscape. The chosen version uses the Genti
 Regular font from https://fontlibrary.org/en/font/gentium-plus#Gentium%20Plus-Regular.
 """
 
-from matplotlib import pyplot as plt
 import numpy as np
+from matplotlib import pyplot as plt
 
 for font, x0 in (("ubuntu", 0.2), ("gentium", 0.17)):
 

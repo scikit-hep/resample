@@ -1,6 +1,6 @@
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal
 import pytest
+from numpy.testing import assert_almost_equal, assert_equal
 
 from resample.jackknife import bias, bias_corrected, jackknife, resample, variance
 
