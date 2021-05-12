@@ -69,18 +69,18 @@ def resample(
     else:
         rng = random_state
 
-    sample = np.atleast_1d(sample)
+    sample_np = np.atleast_1d(sample)
 
     if strata is not None:
-        strata = np.atleast_1d(strata)
-        if strata.shape != sample.shape:  # type: ignore
+        strata_np = np.atleast_1d(strata)
+        if strata_np.shape != sample_np.shape:
             raise ValueError("a and strata must have the same shape")
-        return _resample_stratified(sample, size, method, strata, rng)
+        return _resample_stratified(sample_np, size, method, strata_np, rng)
 
     if method == "balanced":
-        return _resample_balanced(sample, size, rng)
+        return _resample_balanced(sample_np, size, rng)
     if method == "ordinary":
-        return _resample_ordinary(sample, size, rng)
+        return _resample_ordinary(sample_np, size, rng)
 
     dist = {
         # put aliases here
@@ -99,14 +99,14 @@ def resample(
         except AttributeError:
             raise ValueError(f"Invalid family: '{method}'")
 
-    if sample.ndim > 1:
+    if sample_np.ndim > 1:
         if dist != stats.norm:
             raise ValueError(f"family '{method}' only supports 1D samples")
-        if sample.ndim > 2:
+        if sample_np.ndim > 2:
             raise ValueError("multivariate normal only works with 2D samples")
         dist = stats.multivariate_normal
 
-    return _resample_parametric(sample, size, dist, rng)
+    return _resample_parametric(sample_np, size, dist, rng)
 
 
 def bootstrap(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:

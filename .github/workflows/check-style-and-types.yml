@@ -26,4 +26,4 @@ jobs:
     - name: isort
       run: isort . --check-only
     - name: mypy
-      run: mypy ./resample
+      run: mypy
