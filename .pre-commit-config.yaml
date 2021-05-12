@@ -33,6 +33,7 @@ repos:
   rev: 'v0.812'
   hooks:
   - id: mypy
+    args: ["--files 'resample/*.py'"]
 
 - repo: https://github.com/pycqa/isort
   rev: 5.8.0
