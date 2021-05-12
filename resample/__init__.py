@@ -1,5 +1,18 @@
 """
-resample package.
+resample
+========
+
+Randomisation-based inference in Python based on data resampling and permutation.
+
+Features
+--------
+
+- Bootstrap samples (ordinary or balanced with optional stratification) from N-D arrays
+- Apply parametric bootstrap (Gaussian, Poisson, gamma, etc.) on samples
+- Compute bootstrap confidence intervals (percentile or BCa) for any estimator
+- Jackknife estimates of bias and variance of any estimator
+- Permutation-based variants of traditional statistical tests (t-test, K-S test, etc.)
+- Tools for working with empirical distributions (CDF, quantile, etc.)
 """
 
-from .version import version as __version__  # noqa
+__version__ = "1.1.0"

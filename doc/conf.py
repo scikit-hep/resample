@@ -20,7 +20,7 @@
 import sys
 
 sys.path.append("..")
-from resample.version import version  # noqa
+from resample import __version__ as version  # noqa
 
 project = "resample"
 copyright = "2018, Daniel Saxton"

@@ -12,12 +12,12 @@ Randomisation-based inference in Python based on data resampling and permutation
 Features
 --------
 
-- Bootstrap samples (ordinary or balanced, both with optional stratification) of arrays with arbitrary  dimension
-- Parametric bootstrap samples (Gaussian, Poisson, gamma, etc.) of one-dimensional arrays
-- Bootstrap confidence intervals (percentile or BCa) for any well-defined parameter
-- Jackknife estimates of bias and variance
-- Randomization-based variants of traditional statistical tests (t-test, ANOVA F-test, K-S test, etc.)
-- Tools for working with empirical distributions (cumulative distribution, quantile, and influence functions)
+- Bootstrap samples (ordinary or balanced with optional stratification) from N-D arrays
+- Apply parametric bootstrap (Gaussian, Poisson, gamma, etc.) on samples
+- Compute bootstrap confidence intervals (percentile or BCa) for any estimator
+- Jackknife estimates of bias and variance of any estimator
+- Permutation-based variants of traditional statistical tests (t-test, K-S test, etc.)
+- Tools for working with empirical distributions (CDF, quantile, etc.)
 
 Dependencies
 ------------
