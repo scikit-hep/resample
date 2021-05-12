@@ -1,5 +1,6 @@
 import site
 import sys
+
 import setuptools  # type: ignore
 
 # workaround to allow editable install as user
