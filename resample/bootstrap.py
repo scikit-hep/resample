@@ -21,7 +21,7 @@ from resample.jackknife import jackknife
 
 
 def resample(
-    sample: Sequence,
+    sample: int,
     size: int = 100,
     method: str = "balanced",
     strata: Optional[Sequence] = None,
