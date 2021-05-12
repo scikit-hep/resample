@@ -7,7 +7,7 @@
 
 .. skip-marker-do-not-remove
 
-Perform randomisation-based inference in Python through the use of data resampling and Monte Carlo permutation tests.
+Randomisation-based inference in Python based on data resampling and permutation.
 
 Features
 --------
