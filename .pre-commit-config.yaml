@@ -33,10 +33,10 @@ repos:
   rev: 'v0.812'
   hooks:
   - id: mypy
-    args: ["--files 'resample/*.py'"]
+    args: [--allow-redefinition, --ignore-missing-imports, resample]
 
 - repo: https://github.com/pycqa/isort
   rev: 5.8.0
   hooks:
   - id: isort
-    args: ["--profile", "black", "--filter-files"]
+    args: [--profile, black, --filter-files]
