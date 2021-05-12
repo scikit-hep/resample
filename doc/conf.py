@@ -24,7 +24,7 @@ from resample.version import version  # noqa
 
 project = "resample"
 copyright = "2018, Daniel Saxton"
-author = "Daniel Saxton"
+author = "Daniel Saxton and Hans Dembinski"
 
 # -- General configuration ---------------------------------------------------
 
@@ -78,13 +78,18 @@ html_theme = "alabaster"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
-# html_theme_options = {}
+
+html_theme_options = {
+    "logo": "logo.svg",
+    "description": "Version " + version,
+    "github_user": "resample-project",
+    "github_repo": "resample",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []
+html_static_path = ["_static"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -95,7 +100,6 @@ html_static_path = []
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-
 
 # -- Options for HTMLHelp output ---------------------------------------------
 

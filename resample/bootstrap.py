@@ -1,5 +1,15 @@
 """
-Bootstrap resampling.
+Bootstrap resampling
+====================
+
+Compute estimator bias, variance, confidence intervals with bootstrap resampling.
+Several forms of bootstrapping on N-dimensional data are supported: ordinary, balanced,
+parametric, and stratified sampling. Parametric bootstrapping fits a user-specified
+distribution to the data and samples from the parametric distribution. The distributions
+are taken from scipy.stats.
+
+Confidence intervals can be computed with the ordinary percentile method and with the
+more efficient BCa method.
 """
 from typing import Callable, Generator, Optional, Sequence, Tuple, Union
 

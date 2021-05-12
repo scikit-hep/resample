@@ -1,3 +1,15 @@
+"""
+Permutation-based equivalence tests
+===================================
+
+A collection of statistical tests of the null hypothesis that two or more samples are
+compatible. More precisely, the tests check either whether the samples have compatible
+means or are drawn from the same population. Permutations are used to compute the
+distribution of each test statistic under the null hypothesis, which gives accurate
+Type I error rates without relying on approximate formulas which are only exact in the
+asymptotic limit of large samples.
+"""
+
 from typing import Dict, List
 
 import numpy as np
@@ -8,7 +20,12 @@ from resample.empirical import cdf_gen
 
 def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation two sample t-test.
+    Test whether the means of two samples are compatible with Welch's t-test.
+
+    See https://en.wikipedia.org/wiki/Welch%27s_t-test for details on this test. This
+    implementation does not require the sample sizes to be equal and it does not require
+    the samples to have the same variance. NaN values are filtered out by this
+    implementation.
 
     Parameters
     ----------
@@ -64,7 +81,12 @@ def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Di
 
 def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation one way analysis of variance.
+    Test whether the means of two or more samples are compatible.
+
+    This test uses one-way analysis of variance (one-way ANOVA), see
+    https://en.wikipedia.org/wiki/One-way_analysis_of_variance for details. This test is
+    typically used when one has three groups or more. For two groups, the test is
+    equivalent to the t-test. NaN values are filtered out by this implementation.
 
     Parameters
     ----------
@@ -124,7 +146,11 @@ def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
 
 def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation Wilcoxon rank sum test.
+    Test whether two samples are drawn from the same population.
+
+    This performs the permutation-based Wilcoxon rank sum test, also known as
+    Mann-Whitney U test, see https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
+    for details.
 
     Parameters
     ----------
@@ -178,7 +204,11 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
 
 def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation Kruskal-Wallis test.
+    Test whether two or more samples are drawn from the same population.
+
+    This performs the permutation-based Kruskal-Wallis test, see
+    https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
+    for details.
 
     Parameters
     ----------
@@ -309,7 +339,9 @@ def corr_test(
 
 def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
     """
-    Perform permutation two sample Kolmogorov-Smirnov test.
+    Test whether two samples are drawn from the same population.
+
+    This performs the permutation-based Kolmogorov-Smirnov test.
 
     Parameters
     ----------

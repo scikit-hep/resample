@@ -1,16 +1,21 @@
 Changelog
 =========
 
+1.0.2
+-----
+
+- Added logo and improved doc everywhere
+
 1.0.1 (August 23, 2020)
-=======================
+-----------------------
 
 - Minor fix to allow building from source.
 
 1.0.0 (August 22, 2020)
-=======================
+-----------------------
 
 API Changes
------------
+~~~~~~~~~~~
 
 - Bootstrap and jackknife generators ``resample.bootstrap.resample`` and ``resample.jackknife.resample`` are now exposed to compute replicates lazily.
 - Jackknife functions have been split into their own namespace ``resample.jackknife``.
@@ -21,24 +26,24 @@ API Changes
 - Empirical quantile function no longer performs interpolation between quantiles.
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 - Added bootstrap estimate of bias.
 - Added ``bias_corrected`` function for jackknife and bootstrap, which computes the bias corrected estimates.
 - Performance of jackknife computation was increased.
 
 Bug fixes
----------
+~~~~~~~~~
 
 - Removed incorrect implementation of Studentized bootstrap.
 
 Deprecations
-------------
+~~~~~~~~~~~~
 
 - Smoothing of bootstrap samples is no longer supported.
 - Supremum norm and MISE functionals removed.
 
 Other
------
+~~~~~
 
 - Benchmarks were added to track and compare performance of bootstrap and jackknife methods.

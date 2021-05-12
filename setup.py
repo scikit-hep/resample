@@ -8,7 +8,7 @@ def open_local(fn):
     return open(path.join(this_directory, fn), encoding="utf-8")
 
 
-with open_local("README.md") as f:
+with open_local("README.rst") as f:
     long_description = f.read()
 
 with open_local("requirements.txt") as f:
@@ -22,11 +22,11 @@ setup(
     version=version,
     description="Tools for randomization-based inference in Python",
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url="http://github.com/resample-project/resample",
     author="Daniel Saxton and Hans Dembinski",
     license="BSD-3-Clause",
     install_requires=requirements,
     zip_safe=False,
-    packages=["resample"]
+    packages=["resample"],
 )

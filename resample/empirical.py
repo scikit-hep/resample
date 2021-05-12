@@ -1,8 +1,9 @@
 """
-Various empirical functions.
+Empirical functions
+===================
 
-Empirical means they are based on the original data sample instead of a parameteric
-density function.
+Empirical functions based on a data sample instead of a parameteric density function,
+like the empirical CDF. Implemented here are mostly tools used internally.
 """
 from typing import Callable, Sequence
 

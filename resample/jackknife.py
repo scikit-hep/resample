@@ -1,5 +1,16 @@
 """
-Jackknife resampling.
+Jackknife resampling
+====================
+
+Compute estimator bias and variance with jackknife resampling. The implementation
+supports resampling of N-dimensional data. The interface of this module mimics that of
+the bootstrap module, so that you can easily switch between bootstrapping and
+jackknifing bias and variance of an estimator.
+
+The jackknife is an approximation to the bootstrap, so in general bootstrapping is
+preferred. The computational cost also increases quadratically with the sample size,
+but only linearly for the bootstrap. An advantage of the jackknife can be the
+deterministic outcome, since no random sampling is involved.
 """
 from typing import Callable, Generator, Sequence
 

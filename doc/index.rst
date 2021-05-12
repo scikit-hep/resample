@@ -1,15 +1,17 @@
-Welcome to resample's documentation!
-====================================
+.. |resample| image:: _static/logo.svg
 
-``resample`` provides a set of tools for performing randomization-based inference in Python, primarily through the use of bootstrapping methods and Monte Carlo permutation tests.
+|resample|
+==========
 
-Modules
--------
+.. include:: ../README.rst
+  :start-after: skip-marker-do-not-remove
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
+   :maxdepth: 1
 
    bootstrap.rst
    jackknife.rst
    permutation.rst
    empirical.rst
+   changelog.rst
