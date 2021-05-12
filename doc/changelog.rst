@@ -1,10 +1,13 @@
 Changelog
 =========
 
-1.0.2
+1.1.0
 -----
 
-- Added logo and improved doc everywhere
+- Added logo and improved docstrings everywhere, removed redundancy in documentation
+- Modernised CI, use pre-commit CI to run black, mypy, flake8, isort
+- Modernise setup.cfg and setup.py, remove now obsolete requirements files
+- Moved tests out of package to standard place in repository
 
 1.0.1 (August 23, 2020)
 -----------------------
