@@ -387,7 +387,7 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
         return np.searchsorted(arr, i, side="right", sorter=None) / m
 
     def g(s):
-        mask = np.ones(n, dtype=np.bool)
+        mask = np.ones(n, dtype=bool)
         mask[rng.choice(range(n), size=n2, replace=False)] = False
 
         return np.max([abs(h(s[mask], i, n1) - h(s[~mask], i, n2)) for i in s])

@@ -53,7 +53,7 @@ def quantile_function_gen(sample: Sequence) -> Callable:
         p = np.atleast_1d(p)
         result = np.empty(len(p))
         valid = (0 <= p) & (p <= 1)
-        idx = np.maximum(np.ceil(p[valid] * n).astype(np.int) - 1, 0)
+        idx = np.maximum(np.ceil(p[valid] * n).astype(int) - 1, 0)
         result[valid] = sample[idx]
         result[~valid] = np.nan
         if ndim == 0:
