@@ -1,3 +1,4 @@
+.DS_Store
 *.swp
 *checkpoints*
 build
@@ -18,3 +19,4 @@ _build
 benchmarks/.asv/
 junit
 py[0-9]*
+venv

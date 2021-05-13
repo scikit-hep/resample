@@ -1,6 +1,6 @@
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal
 import pytest
+from numpy.testing import assert_almost_equal, assert_equal
 from scipy import stats
 
 from resample.bootstrap import (
@@ -42,7 +42,7 @@ def test_resample_shape_1d(method):
     if method == "beta":
         x = (0.1, 0.2, 0.3)
     else:
-        x = (1, 2, 3)
+        x = (1.0, 2.0, 3.0)
     n_rep = 5
     count = 0
     with np.errstate(invalid="ignore"):
@@ -54,7 +54,7 @@ def test_resample_shape_1d(method):
 
 @pytest.mark.parametrize("method", NON_PARAMETRIC | {"norm"})
 def test_resample_shape_2d(method):
-    x = [(1, 2), (4, 3), (6, 5)]
+    x = [(1.0, 2.0), (4.0, 3.0), (6.0, 5.0)]
     n_rep = 5
     count = 0
     for bx in resample(x, n_rep, method=method):

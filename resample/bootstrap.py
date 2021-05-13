@@ -1,5 +1,15 @@
 """
-Bootstrap resampling.
+Bootstrap resampling
+====================
+
+Compute estimator bias, variance, confidence intervals with bootstrap resampling.
+Several forms of bootstrapping on N-dimensional data are supported: ordinary, balanced,
+parametric, and stratified sampling. Parametric bootstrapping fits a user-specified
+distribution to the data and samples from the parametric distribution. The distributions
+are taken from scipy.stats.
+
+Confidence intervals can be computed with the ordinary percentile method and with the
+more efficient BCa method.
 """
 from typing import Callable, Generator, Optional, Sequence, Tuple, Union
 
@@ -59,18 +69,18 @@ def resample(
     else:
         rng = random_state
 
-    sample = np.atleast_1d(sample)
+    sample_np = np.atleast_1d(sample)
 
     if strata is not None:
-        strata = np.atleast_1d(strata)
-        if strata.shape != sample.shape:  # type: ignore
+        strata_np = np.atleast_1d(strata)
+        if strata_np.shape != sample_np.shape:
             raise ValueError("a and strata must have the same shape")
-        return _resample_stratified(sample, size, method, strata, rng)
+        return _resample_stratified(sample_np, size, method, strata_np, rng)
 
     if method == "balanced":
-        return _resample_balanced(sample, size, rng)
+        return _resample_balanced(sample_np, size, rng)
     if method == "ordinary":
-        return _resample_ordinary(sample, size, rng)
+        return _resample_ordinary(sample_np, size, rng)
 
     dist = {
         # put aliases here
@@ -89,14 +99,14 @@ def resample(
         except AttributeError:
             raise ValueError(f"Invalid family: '{method}'")
 
-    if sample.ndim > 1:
+    if sample_np.ndim > 1:
         if dist != stats.norm:
             raise ValueError(f"family '{method}' only supports 1D samples")
-        if sample.ndim > 2:
+        if sample_np.ndim > 2:
             raise ValueError("multivariate normal only works with 2D samples")
         dist = stats.multivariate_normal
 
-    return _resample_parametric(sample, size, dist, rng)
+    return _resample_parametric(sample_np, size, dist, rng)
 
 
 def bootstrap(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
@@ -121,11 +131,7 @@ def bootstrap(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
 
 
 def confidence_interval(
-    fn: Callable,
-    sample: Sequence,
-    cl: float = 0.95,
-    ci_method: str = "bca",
-    **kwargs,
+    fn: Callable, sample: Sequence, cl: float = 0.95, ci_method: str = "bca", **kwargs
 ) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
@@ -274,9 +280,7 @@ def _resample_stratified(
 
 
 def _resample_ordinary(
-    sample: np.ndarray,
-    size: int,
-    rng: np.random.Generator,
+    sample: np.ndarray, size: int, rng: np.random.Generator
 ) -> Generator[np.ndarray, None, None]:
     # i.i.d. sampling from empirical cumulative distribution of sample
     n = len(sample)
@@ -285,9 +289,7 @@ def _resample_ordinary(
 
 
 def _resample_balanced(
-    sample: np.ndarray,
-    size: int,
-    rng: np.random.Generator,
+    sample: np.ndarray, size: int, rng: np.random.Generator
 ) -> Generator[np.ndarray, None, None]:
     # effectively computes a random permutation of `size` concatenated
     # copies of `sample` and returns `size` equal chunks of that
@@ -314,10 +316,7 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
 
 
 def _resample_parametric(
-    sample: np.ndarray,
-    size: int,
-    dist,
-    rng: np.random.Generator,
+    sample: np.ndarray, size: int, dist, rng: np.random.Generator
 ) -> Generator[np.ndarray, None, None]:
     n = len(sample)
 
@@ -336,8 +335,7 @@ def _resample_parametric(
 
 
 def _confidence_interval_percentile(
-    thetas: np.ndarray,
-    alpha_half: float,
+    thetas: np.ndarray, alpha_half: float
 ) -> Tuple[float, float]:
     quant = quantile_function_gen(thetas)
     return quant(alpha_half), quant(1 - alpha_half)

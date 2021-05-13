@@ -1,6 +1,6 @@
 import numpy as np
-from numpy.testing import assert_equal
 import pytest
+from numpy.testing import assert_equal
 
 from resample.empirical import cdf_gen, influence, quantile_function_gen
 
