@@ -98,7 +98,7 @@ class PermutationResult(Sized, Iterable):
 def ttest(
     a1: Iterable,
     a2: Iterable,
-    b: int = 1000,
+    size: int = 1000,
     random_state: Optional[Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
@@ -116,7 +116,7 @@ def ttest(
         First sample.
     a2 : array-like
         Second sample.
-    b : int, optional
+    size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
@@ -126,13 +126,13 @@ def ttest(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_ttest, (a1, a2), b, random_state)
+    t, ts = _compute_statistics(_ttest, (a1, a2), size, random_state)
     return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
 
 
 def anova(
     *args: Iterable,
-    b: int = 1000,
+    size: int = 1000,
     random_state: Optional[Union[int, np.random.Generator]] = None
 ) -> PermutationResult:
     """
@@ -148,7 +148,7 @@ def anova(
     ----------
     args : sequence of array-like
         Samples.
-    b : int, optional
+    size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
@@ -158,14 +158,14 @@ def anova(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_ANOVA(), args, b, random_state)
+    t, ts = _compute_statistics(_ANOVA(), args, size, random_state)
     return PermutationResult(t, np.mean(ts > t), ts)
 
 
 def mannwhitneyu(
     a1: Iterable,
     a2: Iterable,
-    b: int = 1000,
+    size: int = 1000,
     random_state: Optional[Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
@@ -189,7 +189,7 @@ def mannwhitneyu(
         First sample.
     a2 : array-like
         Second sample.
-    b : int, optional
+    size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
@@ -199,13 +199,13 @@ def mannwhitneyu(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_mannwhitneyu, (a1, a2), b, random_state)
+    t, ts = _compute_statistics(_mannwhitneyu, (a1, a2), size, random_state)
     return PermutationResult(t, np.mean(ts < t), ts)
 
 
 def kruskal(
     *args: Iterable,
-    b: int = 1000,
+    size: int = 1000,
     random_state: Optional[Union[int, np.random.Generator]] = None
 ) -> PermutationResult:
     """
@@ -219,7 +219,7 @@ def kruskal(
     ----------
     args : sequence of array-like
         Samples.
-    b : int, optional
+    size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
@@ -229,14 +229,14 @@ def kruskal(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_kruskal, args, b, random_state)
+    t, ts = _compute_statistics(_kruskal, args, size, random_state)
     return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
 
 
 def pearson(
     a1: Iterable,
     a2: Iterable,
-    b: int = 1000,
+    size: int = 1000,
     random_state: Optional[Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
@@ -248,7 +248,7 @@ def pearson(
         First sample.
     a2 : array-like
         Second sample.
-    b : int, optional
+    size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
@@ -267,14 +267,14 @@ def pearson(
     if len(args[0]) < 2:
         raise ValueError("length of a1 and a2 must be at least 2.")
     t = _pearson(args)
-    ts = _compute_permutations(rng, _pearson, b, args)
+    ts = _compute_permutations(rng, _pearson, size, args)
     return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
 
 
 def spearman(
     a1: Iterable,
     a2: Iterable,
-    b: int = 1000,
+    size: int = 1000,
     random_state: Optional[Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
@@ -286,7 +286,7 @@ def spearman(
         First sample.
     a2 : array-like
         Second sample.
-    b : int, optional
+    size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
@@ -305,14 +305,14 @@ def spearman(
     if len(args[0]) < 2:
         raise ValueError("length of a1 and a2 must be at least 2.")
     t = _spearman(args)
-    ts = _compute_permutations(rng, _spearman, b, args)
+    ts = _compute_permutations(rng, _spearman, size, args)
     return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
 
 
 def ks(
     a1: Iterable,
     a2: Iterable,
-    b: int = 1000,
+    size: int = 1000,
     random_state: Optional[Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
@@ -326,7 +326,7 @@ def ks(
         First sample.
     a2 : array-like
         Second sample.
-    b : int, optional
+    size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
@@ -336,14 +336,14 @@ def ks(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_KS(), (a1, a2), b, random_state)
+    t, ts = _compute_statistics(_KS(), (a1, a2), size, random_state)
     return PermutationResult(t, np.mean(ts) > t, ts)
 
 
 def _compute_statistics(
     fn: Callable,
     args: Iterable[Iterable],
-    b: int,
+    size: int,
     random_state: Optional[Union[int, np.random.Generator]],
 ) -> Tuple[float, np.ndarray]:
     rng = _normalize_rng(random_state)
@@ -351,7 +351,7 @@ def _compute_statistics(
     if args is None:
         raise ValueError("input contains NaN")
     t = fn(args)
-    ts = _compute_permutations(rng, fn, b, args)
+    ts = _compute_permutations(rng, fn, size, args)
     return t, ts
 
 
@@ -376,24 +376,21 @@ def _process(args: Iterable[Iterable]) -> Optional[List[np.ndarray]]:
 
 
 def _compute_permutations(
-    rng: np.random.Generator, fn: Callable, b: int, args: List[np.ndarray]
+    rng: np.random.Generator, fn: Callable, size: int, args: List[np.ndarray]
 ) -> np.ndarray:
 
-    arr = np.empty(0, args[0].dtype)
+    arr = np.concatenate(args)
     slices = []
     start = 0
     for a in args:
-        arr = np.append(arr, a)
         stop = start + len(a)
         slices.append(slice(start, stop))
         start = stop
 
-    ts = np.empty(b)
-    arri = arr.copy()
-    for ib in range(b):
-        rng.shuffle(arri)
-        ti = fn([arri[sl] for sl in slices])
-        ts[ib] = ti
+    ts = np.empty(size)
+    for i in range(size):
+        rng.shuffle(arr)
+        ts[i] = fn([arr[sl] for sl in slices])
 
     return ts
 
