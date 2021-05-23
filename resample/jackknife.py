@@ -12,12 +12,12 @@ preferred. The computational cost also increases quadratically with the sample s
 but only linearly for the bootstrap. An advantage of the jackknife can be the
 deterministic outcome, since no random sampling is involved.
 """
-from typing import Callable, Generator, Sequence
+from typing import Callable, Generator, Iterable
 
 import numpy as np
 
 
-def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None, None]:
+def resample(sample: Iterable, copy: bool = True) -> Generator[np.ndarray, None, None]:
     """
     Generator of jackknifed samples.
 
@@ -84,7 +84,7 @@ def resample(sample: Sequence, copy: bool = True) -> Generator[np.ndarray, None,
         yield x.copy() if copy else x
 
 
-def jackknife(fn: Callable, sample: Sequence) -> np.ndarray:
+def jackknife(fn: Callable, sample: Iterable) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
@@ -110,7 +110,7 @@ def jackknife(fn: Callable, sample: Sequence) -> np.ndarray:
     return np.asarray([fn(x) for x in resample(sample, copy=False)])
 
 
-def bias(fn: Callable, sample: Sequence) -> np.ndarray:
+def bias(fn: Callable, sample: Iterable) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -133,13 +133,14 @@ def bias(fn: Callable, sample: Sequence) -> np.ndarray:
     ndarray
         Jackknife estimate of bias (= expectation of estimator - true value).
     """
+    sample = np.atleast_1d(sample)
     n = len(sample)
     theta = fn(sample)
     mean_theta = np.mean(jackknife(fn, sample), axis=0)
     return (n - 1) * (mean_theta - theta)
 
 
-def bias_corrected(fn: Callable, sample: Sequence) -> np.ndarray:
+def bias_corrected(fn: Callable, sample: Iterable) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the jackknife.
 
@@ -163,13 +164,14 @@ def bias_corrected(fn: Callable, sample: Sequence) -> np.ndarray:
     ndarray
         Estimate with O(1/n) bias removed.
     """
+    sample = np.atleast_1d(sample)
     n = len(sample)
     theta = fn(sample)
     mean_theta = np.mean(jackknife(fn, sample), axis=0)
     return n * theta - (n - 1) * mean_theta
 
 
-def variance(fn: Callable, sample: Sequence) -> np.ndarray:
+def variance(fn: Callable, sample: Iterable) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 
@@ -191,6 +193,7 @@ def variance(fn: Callable, sample: Sequence) -> np.ndarray:
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
     #   = np.var(fj, ddof=0) * (n - 1)
+    sample = np.atleast_1d(sample)
     thetas = jackknife(fn, sample)
     n = len(sample)
     return (n - 1) * np.var(thetas, ddof=0, axis=0)
