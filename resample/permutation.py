@@ -45,8 +45,8 @@ class PermutationResult(Sized, Iterable):
     def pvalue(self) -> float:
         """Chance probability (aka Type I error) for rejecting the null hypothesis.
 
-        This calculates the chance probability to get a value of the test statistic
-        at least as extreme as the actual value if the null hpyothesis is true. See
+        This calculates the probability to get a value of the test statistic
+        at least as extreme as the actual value if the null hypothesis is true. See
         https://en.wikipedia.org/wiki/P-value for details.
 
         Notes
