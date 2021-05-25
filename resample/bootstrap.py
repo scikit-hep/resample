@@ -316,7 +316,7 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
 
 
 def _resample_parametric(
-    sample: np.ndarray, size: int, dist, rng: np.random.Generator
+    sample: np.ndarray, size: int, dist: stats.rv_continuous, rng: np.random.Generator
 ) -> Generator[np.ndarray, None, None]:
     n = len(sample)
 
@@ -372,3 +372,11 @@ def _confidence_interval_bca(
 
     quant = quantile_function_gen(thetas)
     return quant(p_low), quant(p_high)
+
+
+del Callable
+del Generator
+del Optional
+del Tuple
+del Union
+del Sequence

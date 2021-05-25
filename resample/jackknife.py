@@ -194,3 +194,8 @@ def variance(fn: Callable, sample: Sequence) -> np.ndarray:
     thetas = jackknife(fn, sample)
     n = len(sample)
     return (n - 1) * np.var(thetas, ddof=0, axis=0)
+
+
+del Callable
+del Generator
+del Sequence

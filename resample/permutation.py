@@ -26,7 +26,7 @@ from scipy.stats import rankdata, tiecorrect
 from resample.empirical import cdf_gen
 
 
-class PermutationResult(Tuple[float, float, np.ndarray]):
+class PermutationResult(tuple):
     """Holder of the result of the permutation test."""
 
     __slots__ = ()
@@ -41,7 +41,7 @@ class PermutationResult(Tuple[float, float, np.ndarray]):
     @property
     def statistic(self) -> float:
         """Value of the test statistic computed on the original data."""
-        return self[0]
+        return self[0]  # type:ignore
 
     @property
     def pvalue(self) -> float:
@@ -61,7 +61,7 @@ class PermutationResult(Tuple[float, float, np.ndarray]):
         Then, if the p-value is computed correctly, the test has a type I error rate of
         at most alpha.
         """
-        return self[1]
+        return self[1]  # type:ignore
 
     @property
     def samples(self) -> np.ndarray:
@@ -479,3 +479,11 @@ class _KS:
 
     def _init(self, args: Tuple[np.ndarray, ...]) -> None:
         self.all = np.concatenate(args)
+
+
+del Callable
+del Iterable
+del List
+del Optional
+del Tuple
+del Union

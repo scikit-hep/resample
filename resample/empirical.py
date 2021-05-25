@@ -45,10 +45,12 @@ def quantile_function_gen(sample: Union[Sequence, np.ndarray]) -> Callable:
     callable
         Empirical quantile function.
     """
+    from typing import Sequence
+
     sample_np = np.sort(sample)
     n = len(sample_np)
 
-    def quant(p: Sequence):
+    def quant(p: Sequence) -> np.ndarray:
         ndim = np.ndim(p)  # must come before atleast_1d
         p_np = np.atleast_1d(p)
         result = np.empty(len(p_np))
@@ -82,3 +84,8 @@ def influence(fn: Callable, sample: Sequence) -> np.ndarray:
     """
     n = len(sample)
     return (n - 1) * (fn(sample) - jackknife(fn, sample))
+
+
+del Callable
+del Sequence
+del Union
