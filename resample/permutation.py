@@ -18,7 +18,7 @@ https://en.wikipedia.org/wiki/Test_statistic
 https://en.wikipedia.org/wiki/Paired_difference_test
 """
 
-from typing import Callable, Generator, Iterable, List, Optional, Sized, Tuple, Union
+from typing import Callable, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 from scipy.stats import rankdata, tiecorrect
@@ -26,20 +26,22 @@ from scipy.stats import rankdata, tiecorrect
 from resample.empirical import cdf_gen
 
 
-class PermutationResult(Sized, Iterable):
+class PermutationResult(Tuple[float, float, np.ndarray]):
     """Holder of the result of the permutation test."""
 
-    __slots__ = ("_statistic", "_pvalue", "_samples")
+    __slots__ = ()
 
-    def __init__(self, statistic: float, pvalue: float, samples: np.ndarray):
-        self._statistic = statistic
-        self._pvalue = pvalue
-        self._samples = samples
+    def __new__(
+        cls, statistic: float, pvalue: float, samples: np.ndarray
+    ) -> "PermutationResult":
+        return super(PermutationResult, cls).__new__(
+            cls, (statistic, pvalue, samples)  # type:ignore
+        )
 
     @property
     def statistic(self) -> float:
         """Value of the test statistic computed on the original data."""
-        return self._statistic
+        return self[0]
 
     @property
     def pvalue(self) -> float:
@@ -59,12 +61,12 @@ class PermutationResult(Sized, Iterable):
         Then, if the p-value is computed correctly, the test has a type I error rate of
         at most alpha.
         """
-        return self._pvalue
+        return self[1]
 
     @property
     def samples(self) -> np.ndarray:
         """Values of the test statistic from the permutated samples."""
-        return self._samples
+        return self[2]
 
     def __repr__(self) -> str:
         s = None
@@ -77,22 +79,6 @@ class PermutationResult(Sized, Iterable):
         return "<PermutationResult statistic={0} pvalue={1} samples={2}>".format(
             self.statistic, self.pvalue, s
         )
-
-    def __iter__(self) -> Generator:
-        for i in range(3):
-            yield self[i]
-
-    def __len__(self) -> int:
-        return 3
-
-    def __getitem__(self, i: int) -> Union[float, np.ndarray]:
-        if i == 0:
-            return self.statistic
-        elif i == 1:
-            return self.pvalue
-        elif i == 2:
-            return self.samples
-        raise IndexError
 
 
 def ttest(
