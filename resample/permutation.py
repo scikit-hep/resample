@@ -51,7 +51,7 @@ class PermutationResult(Sized, Iterable):
 
         Notes
         -----
-        The p-value is computed like the type I error rate, but the two are conceputally
+        The p-value is computed like the type I error rate, but the two are conceptually
         distinct. The p-value is a random number obtained from a sample, while the type
         I error rate is a property of the test based on the p-value. Part of the test
         description is to reject the null hypothesis if the p-value is smaller than a
