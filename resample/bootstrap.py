@@ -385,4 +385,5 @@ del Generator
 del Optional
 del Tuple
 del Union
-del Sequence
+del Any
+del Iterable

@@ -201,4 +201,3 @@ def variance(fn: Callable, sample: Iterable) -> np.ndarray:
 
 del Callable
 del Generator
-del Sequence
