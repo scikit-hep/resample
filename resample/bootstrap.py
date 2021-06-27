@@ -11,7 +11,7 @@ are taken from scipy.stats.
 Confidence intervals can be computed with the ordinary percentile method and with the
 more efficient BCa method.
 """
-from typing import Callable, Generator, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Generator, Iterable, Optional, Tuple, Union
 
 import numpy as np
 from scipy import stats
@@ -21,10 +21,10 @@ from resample.jackknife import jackknife
 
 
 def resample(
-    sample: Sequence,
+    sample: Iterable,
     size: int = 100,
     method: str = "balanced",
-    strata: Optional[Sequence] = None,
+    strata: Optional[Iterable] = None,
     random_state: Optional[Union[np.random.Generator, int]] = None,
 ) -> Generator[np.ndarray, None, None]:
     """
@@ -109,7 +109,7 @@ def resample(
     return _resample_parametric(sample_np, size, dist, rng)
 
 
-def bootstrap(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+def bootstrap(fn: Callable, sample: Iterable, **kwargs: Any) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
 
@@ -131,7 +131,11 @@ def bootstrap(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
 
 
 def confidence_interval(
-    fn: Callable, sample: Sequence, cl: float = 0.95, ci_method: str = "bca", **kwargs
+    fn: Callable,
+    sample: Iterable,
+    cl: float = 0.95,
+    ci_method: str = "bca",
+    **kwargs: Any,
 ) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
@@ -186,7 +190,7 @@ def confidence_interval(
     )
 
 
-def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+def bias(fn: Callable, sample: Iterable, **kwargs: Any) -> np.ndarray:
     """
     Calculate bias of the function estimate with the bootstrap.
 
@@ -219,7 +223,7 @@ def bias(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     return np.mean(thetas, axis=0) - population_theta
 
 
-def bias_corrected(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+def bias_corrected(fn: Callable, sample: Iterable, **kwargs: Any) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the bootstrap.
 
@@ -241,7 +245,7 @@ def bias_corrected(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
     return fn(sample) - bias(fn, sample, **kwargs)
 
 
-def variance(fn: Callable, sample: Sequence, **kwargs) -> np.ndarray:
+def variance(fn: Callable, sample: Iterable, **kwargs: Any) -> np.ndarray:
     """
     Calculate bootstrap estimate of variance.
 
@@ -300,7 +304,9 @@ def _resample_balanced(
         yield sample[sel]
 
 
-def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tuple:
+def _fit_parametric_family(
+    dist: stats.rv_continuous, sample: np.ndarray
+) -> Tuple[float, ...]:
     if dist == stats.multivariate_normal:
         # has no fit method...
         return np.mean(sample, axis=0), np.cov(sample.T, ddof=1)
@@ -312,7 +318,7 @@ def _fit_parametric_family(dist: stats.rv_continuous, sample: np.ndarray) -> Tup
     else:
         fit_kwargs = {}
 
-    return dist.fit(sample, **fit_kwargs)
+    return dist.fit(sample, **fit_kwargs)  # type: ignore
 
 
 def _resample_parametric(

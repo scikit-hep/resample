@@ -5,6 +5,17 @@
 |resample|
 ==========
 
+.. image:: https://img.shields.io/pypi/v/resample.svg
+   :target: https://pypi.org/project/resample
+
+.. image:: https://github.com/resample-project/resample/actions/workflows/run-tests.yml/badge.svg
+   :target: https://github.com/resample-project/resample/actions/workflows/run-tests.yml
+
+.. image:: https://readthedocs.org/projects/resample/badge/?version=stable
+   :target: https://resample.readthedocs.io/en/stable
+
+.. image:: https://img.shields.io/badge/coverage-87%25-yellowgreen
+
 .. skip-marker-do-not-remove
 
 Randomisation-based inference in Python based on data resampling and permutation.
