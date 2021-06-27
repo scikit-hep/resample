@@ -378,3 +378,12 @@ def _confidence_interval_bca(
 
     quant = quantile_function_gen(thetas)
     return quant(p_low), quant(p_high)
+
+
+del Callable
+del Generator
+del Optional
+del Tuple
+del Union
+del Any
+del Iterable

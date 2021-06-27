@@ -45,6 +45,7 @@ def quantile_function_gen(sample: Iterable) -> Callable:
     callable
         Empirical quantile function.
     """
+    from typing import Iterable, Union
 
     class QuantileFn:
         def __init__(self, sample: Iterable):
@@ -86,3 +87,8 @@ def influence(fn: Callable, sample: Iterable) -> np.ndarray:
     sample = np.atleast_1d(sample)
     n = len(sample)
     return (n - 1) * (fn(sample) - jackknife(fn, sample))
+
+
+del Callable
+del Iterable
+del Union

@@ -3,29 +3,98 @@ Permutation-based equivalence tests
 ===================================
 
 A collection of statistical tests of the null hypothesis that two or more samples are
-compatible. More precisely, the tests check either whether the samples have compatible
-means or are drawn from the same population. Permutations are used to compute the
-distribution of each test statistic under the null hypothesis, which gives accurate
-Type I error rates without relying on approximate formulas which are only exact in the
-asymptotic limit of large samples.
+compatible. The tests check either whether the samples have compatible means or are
+drawn from the same population. Permutations are used to compute the distribution of
+each test statistic under the null hypothesis, which gives accurate p-values without
+relying on approximate formulas which are only exact in the asymptotic limit of large
+samples.
+
+The tests return a PermutationResult object, which mimics the interface of the result
+objects returned by tests in scipy.stats.
+
+Further reading:
+https://en.wikipedia.org/wiki/P-value
+https://en.wikipedia.org/wiki/Test_statistic
+https://en.wikipedia.org/wiki/Paired_difference_test
 """
 
-from typing import Dict, List
+from typing import Callable, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
-from scipy.stats import rankdata
+from scipy.stats import rankdata, tiecorrect
 
 from resample.empirical import cdf_gen
 
 
-def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
+class PermutationResult(tuple):
+    """Holder of the result of the permutation test."""
+
+    __slots__ = ()
+
+    def __new__(
+        cls, statistic: float, pvalue: float, samples: np.ndarray
+    ) -> "PermutationResult":
+        return super(PermutationResult, cls).__new__(
+            cls, (statistic, pvalue, samples)  # type:ignore
+        )
+
+    @property
+    def statistic(self) -> float:
+        """Value of the test statistic computed on the original data."""
+        return self[0]  # type:ignore
+
+    @property
+    def pvalue(self) -> float:
+        """Chance probability (aka Type I error) for rejecting the null hypothesis.
+
+        This calculates the probability to get a value of the test statistic
+        at least as extreme as the actual value if the null hypothesis is true. See
+        https://en.wikipedia.org/wiki/P-value for details.
+
+        Notes
+        -----
+        The p-value is computed like the type I error rate, but the two are conceptually
+        distinct. The p-value is a random number obtained from a sample, while the type
+        I error rate is a property of the test based on the p-value. Part of the test
+        description is to reject the null hypothesis if the p-value is smaller than a
+        probability alpha. This alpha has to be fixed before the test is carried out.
+        Then, if the p-value is computed correctly, the test has a type I error rate of
+        at most alpha.
+        """
+        return self[1]  # type:ignore
+
+    @property
+    def samples(self) -> np.ndarray:
+        """Values of the test statistic from the permutated samples."""
+        return self[2]
+
+    def __repr__(self) -> str:
+        s = None
+        if len(self.samples) < 7:
+            s = str(self.samples)
+        else:
+            s = "[{0} {1} {2} ... {3} {4} {5}]".format(
+                *self.samples[:3], *self.samples[3:]
+            )
+        return "<PermutationResult statistic={0} pvalue={1} samples={2}>".format(
+            self.statistic, self.pvalue, s
+        )
+
+
+def ttest(
+    a1: Iterable,
+    a2: Iterable,
+    size: int = 1000,
+    random_state: Optional[Union[int, np.random.Generator]] = None,
+) -> PermutationResult:
     """
     Test whether the means of two samples are compatible with Welch's t-test.
 
-    See https://en.wikipedia.org/wiki/Welch%27s_t-test for details on this test. This
-    implementation does not require the sample sizes to be equal and it does not require
-    the samples to have the same variance. NaN values are filtered out by this
-    implementation.
+    See https://en.wikipedia.org/wiki/Welch%27s_t-test for details on this test. The
+    p-value computed is for the null hypothesis that the two population means are equal.
+    The test is two-sided, which means that swapping a1 and a2 gives the same pvalue.
+    Welch's t-test does not require the sample sizes to be equal and it does not require
+    the samples to have the same variance.
 
     Parameters
     ----------
@@ -33,124 +102,72 @@ def ttest(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Di
         First sample.
     a2 : array-like
         Second sample.
-    b : int, optional
-        Number of permutations. Default 100.
+    size : int, optional
+        Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'t': float, 'prop': float}
-        T statistic as well as proportion of permutation distribution less than or
-        equal to that statistic.
+    PermutationResult
     """
-    if random_state is None:
-        rng = np.random.default_rng()
-    elif isinstance(random_state, int):
-        rng = np.random.default_rng(random_state)
-    else:
-        rng = random_state
-
-    a1 = np.asarray(a1)
-    a2 = np.asarray(a2)
-
-    a1 = a1[~np.isnan(a1)]
-    a2 = a2[~np.isnan(a2)]
-
-    def g(x, y):
-        return (np.mean(x) - np.mean(y)) / np.sqrt(
-            np.var(x, ddof=1) / len(x) + np.var(y, ddof=1) / len(y)
-        )
-
-    t = g(a1, a2)
-
-    n1 = len(a1)
-    n2 = len(a2)
-
-    X = np.apply_along_axis(
-        func1d=rng.permutation,
-        arr=np.reshape(np.tile(np.append(a1, a2), b), newshape=(b, n1 + n2)),
-        axis=1,
-    )
-
-    permute_t = np.apply_along_axis(func1d=lambda s: g(s[:n1], s[n1:]), arr=X, axis=1)
-
-    return {"t": t, "prop": np.mean(permute_t <= t)}
+    t, ts = _compute_statistics(_ttest, (a1, a2), size, random_state)
+    return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
 
 
-def anova(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
+def anova(
+    *args: Iterable,
+    size: int = 1000,
+    random_state: Optional[Union[int, np.random.Generator]] = None
+) -> PermutationResult:
     """
     Test whether the means of two or more samples are compatible.
 
     This test uses one-way analysis of variance (one-way ANOVA), see
-    https://en.wikipedia.org/wiki/One-way_analysis_of_variance for details. This test is
-    typically used when one has three groups or more. For two groups, the test is
-    equivalent to the t-test. NaN values are filtered out by this implementation.
+    https://en.wikipedia.org/wiki/One-way_analysis_of_variance and
+    https://en.wikipedia.org/wiki/F-test for details. This test is typically used when
+    one has three groups or more. For two groups, Welch's ttest is preferred, because
+    ANOVA assumes equal variances for the samples.
 
     Parameters
     ----------
     args : sequence of array-like
         Samples.
-    b : int, optional
-        Number of permutations. Default 100.
+    size : int, optional
+        Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'f': float, 'prop': float}
-        F statistic as well as proportion of permutation distribution less than or
-        equal to that statistic.
+    PermutationResult
     """
-    if random_state is None:
-        rng = np.random.default_rng()
-    elif isinstance(random_state, int):
-        rng = np.random.default_rng(random_state)
-    else:
-        rng = random_state
-
-    args = [np.asarray(a) for a in args]
-    args = [a[~np.isnan(a)] for a in args]
-
-    t = len(args)
-    ns = [len(a) for a in args]
-    n = np.sum(ns)
-    pos = np.append(0, np.cumsum(ns))
-    arr = np.concatenate(args)
-    a_bar = np.mean(arr)
-
-    def g(a):
-        sse = np.sum(
-            [ns[i] * np.var(a[pos[i] : pos[i + 1]]) for i in range(t)]  # noqa: E203
-        )
-        ssb = np.sum(
-            [
-                ns[i] * (np.mean(a[pos[i] : pos[i + 1]]) - a_bar) ** 2  # noqa: E203
-                for i in range(t)
-            ]
-        )
-        return (ssb / (t - 1)) / (sse / (n - t))
-
-    X = np.reshape(np.tile(arr, b), newshape=(b, n))
-
-    f = g(arr)
-
-    permute_f = np.apply_along_axis(
-        func1d=(lambda x: g(rng.permutation(x))), arr=X, axis=1
-    )
-
-    return {"f": f, "prop": np.mean(permute_f <= f)}
+    t, ts = _compute_statistics(_ANOVA(), args, size, random_state)
+    return PermutationResult(t, np.mean(ts > t), ts)
 
 
-def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
+def mannwhitneyu(
+    a1: Iterable,
+    a2: Iterable,
+    size: int = 1000,
+    random_state: Optional[Union[int, np.random.Generator]] = None,
+) -> PermutationResult:
     """
-    Test whether two samples are drawn from the same population.
+    Test whether two samples are drawn from the same population based on ranking.
 
-    This performs the permutation-based Wilcoxon rank sum test, also known as
-    Mann-Whitney U test, see https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
-    for details.
+    This performs the permutation-based Mann-Whitney U test, see
+    https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test for details. The test
+    works for any population of samples that are ordinal, so also for integers. This is
+    the two-sided version of the test, meaning that the test gives the same pvalue if
+    a1 and a2 are swapped.
+
+    For normally distributed data, the test is almost as powerful as the t-test and
+    considerably more powerful for non-normal populations. It should be kept in mind,
+    however, that the two tests are not equivalent. The t-test tests whether
+    two samples have the same mean and ignores differences in variance, while the
+    Mann-Whitney U test would detect differences in variance.
 
     Parameters
     ----------
@@ -158,122 +175,58 @@ def wilcoxon(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) ->
         First sample.
     a2 : array-like
         Second sample.
-    b : int, optional
-        Number of permutations. Default 100.
+    size : int, optional
+        Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'w': float, 'prop': float}
-        W statistic as well as proportion of permutation distribution less than or
-        equal to that statistic.
+    PermutationResult
     """
-    if random_state is None:
-        rng = np.random.default_rng()
-    elif isinstance(random_state, int):
-        rng = np.random.default_rng(random_state)
-    else:
-        rng = random_state
-
-    a1 = np.asarray(a1)
-    a2 = np.asarray(a2)
-
-    a1 = a1[~np.isnan(a1)]
-    a2 = a2[~np.isnan(a2)]
-
-    n1 = len(a1)
-    n2 = len(a2)
-
-    a = np.append(a1, a2)
-    a = rankdata(a)
-
-    X = np.apply_along_axis(
-        func1d=rng.permutation,
-        arr=np.reshape(np.tile(a, b), newshape=(b, n1 + n2)),
-        axis=1,
-    )
-
-    w = np.sum(a[:n1])
-
-    permute_w = np.apply_along_axis(func1d=lambda s: np.sum(s[:n1]), arr=X, axis=1)
-
-    return {"w": w, "prop": np.mean(permute_w <= w)}
+    t, ts = _compute_statistics(_mannwhitneyu, (a1, a2), size, random_state)
+    return PermutationResult(t, np.mean(ts < t), ts)
 
 
-def kruskal_wallis(args: List[np.ndarray], b: int = 100, random_state=None) -> Dict:
+def kruskal(
+    *args: Iterable,
+    size: int = 1000,
+    random_state: Optional[Union[int, np.random.Generator]] = None
+) -> PermutationResult:
     """
     Test whether two or more samples are drawn from the same population.
 
-    This performs the permutation-based Kruskal-Wallis test, see
+    This performs a permutation-based Kruskal-Wallis test, see
     https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
-    for details.
+    for details. It extends the Mann-Whitney U test to more than two groups.
 
     Parameters
     ----------
     args : sequence of array-like
         Samples.
-    b : int, optional
-        Number of permutations. Default 100.
+    size : int, optional
+        Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'h': float, 'prop': flaot}
-        H statistic as well as proportion of permutation distribution less than or
-        equal to that statistic.
+    PermutationResult
     """
-    if random_state is None:
-        rng = np.random.default_rng()
-    elif isinstance(random_state, int):
-        rng = np.random.default_rng(random_state)
-    else:
-        rng = random_state
-
-    args = [np.asarray(a) for a in args]
-    args = [a[~np.isnan(a)] for a in args]
-
-    t = len(args)
-    ns = [len(a) for a in args]
-    n = np.sum(ns)
-    pos = np.append(0, np.cumsum(ns))
-    r_arr = rankdata(np.concatenate(args))
-    ri_means = [np.mean(r_arr[pos[i] : pos[i + 1]]) for i in range(t)]  # noqa: E203
-    r_mean = np.mean(r_arr)
-
-    def g(a):
-        num = np.sum([ns[i] * (ri_means[i] - r_mean) ** 2 for i in range(t)])
-        den = np.sum(
-            [
-                np.sum((a[pos[i] : pos[i + 1]] - r_mean) ** 2)  # noqa: E203
-                for i in range(t)
-            ]
-        )
-        return (n - 1) * num / den
-
-    x = np.reshape(np.tile(r_arr, b), newshape=(b, n))
-
-    h = g(r_arr)
-
-    permute_h = np.apply_along_axis(
-        func1d=(lambda s: g(rng.permutation(s))), arr=x, axis=1
-    )
-
-    return {"h": h, "prop": np.mean(permute_h > h)}
+    t, ts = _compute_statistics(_kruskal, args, size, random_state)
+    return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
 
 
-def corr_test(
-    a1: np.ndarray,
-    a2: np.ndarray,
-    method: str = "pearson",
-    b: int = 100,
-    random_state=None,
-) -> Dict:
+def pearson(
+    a1: Iterable,
+    a2: Iterable,
+    size: int = 1000,
+    random_state: Optional[Union[int, np.random.Generator]] = None,
+) -> PermutationResult:
     """
-    Perform permutation correlation test.
+    Perform permutation-based correlation test.
 
     Parameters
     ----------
@@ -281,67 +234,77 @@ def corr_test(
         First sample.
     a2 : array-like
         Second sample.
-    method : str, {'pearson', 'spearman'}, optional
-        Correlation method. Default 'pearson'.
-    b : int, optional
-        Number of permutations. Default 100.
+    size : int, optional
+        Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'corr': float, 'prop': float}
-        Correlation as well as proportion of permutation distribution less than or
-        equal to that statistic.
+    PermutationResult
     """
-    if random_state is None:
-        rng = np.random.default_rng()
-    elif isinstance(random_state, int):
-        rng = np.random.default_rng(random_state)
-    else:
-        rng = random_state
-
-    a1 = np.asarray(a1)
-    a2 = np.asarray(a2)
-
-    n1 = len(a1)
-    n2 = len(a2)
-
-    if n1 != n2:
+    rng = _normalize_rng(random_state)
+    args = _process([a1, a2])
+    if args is None:
+        raise ValueError("input contains NaN")
+    if len(args[0]) != len(args[1]):
         raise ValueError("a1 and a2 must have have the same length")
-
-    a = np.column_stack((a1, a2))
-
-    a = a[np.amax(~np.isnan(a), axis=1)]
-
-    if method in ["pearson", "distance"]:
-        X = np.asarray([a] * b)
-    elif method == "spearman":
-        a = np.apply_along_axis(func1d=rankdata, arr=a, axis=0)
-        X = np.asarray([a] * b)
-    else:
-        raise ValueError(
-            "method must be either 'pearson', "
-            "'spearman', or 'distance', "
-            f"'{method}' was supplied"
-        )
-
-    def corr(x, y):
-        return np.corrcoef(x, y)[0, 1]
-
-    c = corr(a[:, 0], a[:, 1])
-
-    permute_c = np.asarray([corr(rng.permutation(x[:, 0]), x[:, 1]) for x in X])
-
-    return {"c": c, "prop": np.mean(permute_c <= c)}
+    if len(args[0]) < 2:
+        raise ValueError("length of a1 and a2 must be at least 2.")
+    t = _pearson(args)
+    ts = _compute_permutations(rng, _pearson, size, args)
+    return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
 
 
-def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> Dict:
+def spearman(
+    a1: Iterable,
+    a2: Iterable,
+    size: int = 1000,
+    random_state: Optional[Union[int, np.random.Generator]] = None,
+) -> PermutationResult:
+    """
+    Perform permutation-based correlation test of rank data.
+
+    Parameters
+    ----------
+    a1 : array-like
+        First sample.
+    a2 : array-like
+        Second sample.
+    size : int, optional
+        Number of permutations. Default 1000.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
+
+    Returns
+    -------
+    PermutationResult
+    """
+    rng = _normalize_rng(random_state)
+    args = _process([a1, a2])
+    if args is None:
+        raise ValueError("input contains NaN")
+    if len(args[0]) != len(args[1]):
+        raise ValueError("a1 and a2 must have have the same length")
+    if len(args[0]) < 2:
+        raise ValueError("length of a1 and a2 must be at least 2.")
+    t = _spearman(args)
+    ts = _compute_permutations(rng, _spearman, size, args)
+    return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
+
+
+def ks(
+    a1: Iterable,
+    a2: Iterable,
+    size: int = 1000,
+    random_state: Optional[Union[int, np.random.Generator]] = None,
+) -> PermutationResult:
     """
     Test whether two samples are drawn from the same population.
 
-    This performs the permutation-based Kolmogorov-Smirnov test.
+    This performs the permutation-based two-sided Kolmogorov-Smirnov test.
 
     Parameters
     ----------
@@ -349,51 +312,178 @@ def ks_test(a1: np.ndarray, a2: np.ndarray, b: int = 100, random_state=None) -> 
         First sample.
     a2 : array-like
         Second sample.
-    b : int, optional
-        Number of permutations. Default 100.
+    size : int, optional
+        Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
-    {'d': float, 'prop': float}
-        D statistic as well as proportion of permutation distribution less than or
-        equal to that statistic.
+    PermutationResult
     """
+    t, ts = _compute_statistics(_KS(), (a1, a2), size, random_state)
+    return PermutationResult(t, np.mean(ts) > t, ts)
+
+
+def _compute_statistics(
+    fn: Callable,
+    args: Iterable[Iterable],
+    size: int,
+    random_state: Optional[Union[int, np.random.Generator]],
+) -> Tuple[float, np.ndarray]:
+    rng = _normalize_rng(random_state)
+    args = _process(args)
+    if args is None:
+        raise ValueError("input contains NaN")
+    t = fn(args)
+    ts = _compute_permutations(rng, fn, size, args)
+    return t, ts
+
+
+def _normalize_rng(
+    random_state: Optional[Union[int, np.random.Generator]]
+) -> np.random.Generator:
     if random_state is None:
-        rng = np.random.default_rng()
-    elif isinstance(random_state, int):
-        rng = np.random.default_rng(random_state)
-    else:
-        rng = random_state
+        return np.random.default_rng()
+    if isinstance(random_state, int):
+        return np.random.default_rng(random_state)
+    return random_state
 
-    a1 = np.asarray(a1)
-    a2 = np.asarray(a2)
 
-    a1 = a1[~np.isnan(a1)]
-    a2 = a2[~np.isnan(a2)]
+def _process(args: Iterable[Iterable]) -> Optional[List[np.ndarray]]:
+    r = []
+    for arg in args:
+        a = np.array(arg)
+        if np.any(np.isnan(a)):
+            return None
+        r.append(a)
+    return r
 
+
+def _compute_permutations(
+    rng: np.random.Generator, fn: Callable, size: int, args: List[np.ndarray]
+) -> np.ndarray:
+
+    arr = np.concatenate(args)
+    slices = []
+    start = 0
+    for a in args:
+        stop = start + len(a)
+        slices.append(slice(start, stop))
+        start = stop
+
+    ts = np.empty(size)
+    for i in range(size):
+        rng.shuffle(arr)
+        ts[i] = fn([arr[sl] for sl in slices])
+
+    return ts
+
+
+def _ttest(args: Tuple[np.ndarray, np.ndarray]) -> float:
+    a1, a2 = args
     n1 = len(a1)
     n2 = len(a2)
-    n = n1 + n2
+    m1 = np.mean(a1)
+    m2 = np.mean(a2)
+    v1 = np.var(a1, ddof=1)
+    v2 = np.var(a2, ddof=1)
+    r: float = (m1 - m2) / np.sqrt(v1 / n1 + v2 / n2)
+    return r
 
-    f1 = cdf_gen(a1)
-    f2 = cdf_gen(a2)
-    a = np.sort(np.append(a1, a2))
-    d = np.max([abs(f1(v) - f2(v)) for v in a])
 
-    def h(arr, i, m):
-        return np.searchsorted(arr, i, side="right", sorter=None) / m
+def _mannwhitneyu(args: Tuple[np.ndarray, np.ndarray]) -> float:
+    a1, a2 = args
+    # method 2 from Wikipedia
+    n1 = len(a1)
+    a = rankdata(np.concatenate(args))
+    r1 = np.sum(a[:n1])
+    u1: float = r1 - 0.5 * n1 * (n1 + 1)
+    return u1
 
-    def g(s):
-        mask = np.ones(n, dtype=bool)
-        mask[rng.choice(range(n), size=n2, replace=False)] = False
 
-        return np.max([abs(h(s[mask], i, n1) - h(s[~mask], i, n2)) for i in s])
+def _pearson(args: List[np.ndarray]) -> float:
+    a1, a2 = args
+    m1 = np.mean(a1)
+    m2 = np.mean(a2)
+    s1 = np.mean((a1 - m1) ** 2)
+    s2 = np.mean((a2 - m2) ** 2)
+    r: float = np.mean((a1 - m1) * (a2 - m2)) / np.sqrt(s1 * s2)
+    return r
 
-    x = np.reshape(np.tile(a, b), newshape=(b, n))
 
-    permute_d = np.apply_along_axis(func1d=g, arr=x, axis=1)
+def _spearman(args: List[np.ndarray]) -> float:
+    a1, a2 = args
+    a1 = rankdata(a1)
+    a2 = rankdata(a2)
+    return _pearson([a1, a2])
 
-    return {"d": d, "prop": np.mean(permute_d > d)}
+
+# see https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
+# method 3 and 4
+def _kruskal(args: List[np.ndarray]) -> float:
+    joined = np.concatenate(args)
+
+    r = rankdata(joined)
+    n = len(r)
+
+    start = 0
+    for i, a in enumerate(args):
+        args[i] = r[start : start + len(a)]
+        start += len(a)
+
+    # method 3 (assuming no ties)
+    h = 12.0 / (n * (n + 1)) * sum(len(a) * np.mean(a) ** 2 for a in args) - 3 * (n + 1)
+
+    # apply tie correction
+    h /= tiecorrect(r)
+    return h
+
+
+# see https://en.wikipedia.org/wiki/F-test
+class _ANOVA:
+    km1: int = -2
+    nmk: int = 0
+    a_bar: float = 0.0
+
+    def __call__(self, args: Tuple[np.ndarray, ...]) -> float:
+        if self.km1 == -2:
+            self._init(args)
+
+        between_group_variability = (
+            sum(len(a) * (np.mean(a) - self.a_bar) ** 2 for a in args) / self.km1
+        )
+        within_group_variability = sum(len(a) * np.var(a) for a in args) / (self.nmk)
+        return between_group_variability / within_group_variability
+
+    def _init(self, args: Tuple[np.ndarray, ...]) -> None:
+        n = sum(len(a) for a in args)
+        k = len(args)
+        self.km1 = k - 1
+        self.nmk = n - k
+        self.a_bar = np.mean(np.concatenate(args))
+
+
+class _KS:
+    all = None
+
+    def __call__(self, args: Tuple[np.ndarray, ...]) -> float:
+        if self.all is None:
+            self._init(args)
+        a1, a2 = args
+        f1 = cdf_gen(a1)
+        f2 = cdf_gen(a2)
+        r: float = np.max(f1(self.all) - f2(self.all))
+        return r
+
+    def _init(self, args: Tuple[np.ndarray, ...]) -> None:
+        self.all = np.concatenate(args)
+
+
+del Callable
+del Iterable
+del List
+del Optional
+del Tuple
+del Union
