@@ -32,6 +32,16 @@ NON_PARAMETRIC = {"ordinary", "balanced"}
 ALL_METHODS = NON_PARAMETRIC | PARAMETRIC
 
 
+def chisquare(
+    obs, exp=None
+):  # we do not use scipy.stats.chisquare, because it is broken
+    n = len(obs)
+    if exp is None:
+        exp = 1.0 / n
+    t = np.sum(obs ** 2 / exp) - n
+    return stats.chi2(n - 1).cdf(t)
+
+
 @pytest.fixture
 def rng():
     return np.random.Generator(np.random.PCG64(1))
@@ -114,8 +124,8 @@ def test_resample_1d_statistical_test(method, rng):
         for bx in resample(x, 100, method=method, random_state=rng):
             w = np.histogram(bx, bins=xe)[0]
             wsum += w
-            c = stats.chisquare(w, wref)
-            prob.append(c.pvalue)
+            pvalue = chisquare(w, wref)
+            prob.append(pvalue)
 
     if method == "balanced":
         # balanced bootstrap exactly reproduces frequencies in original sample
@@ -125,8 +135,8 @@ def test_resample_1d_statistical_test(method, rng):
     # - test has chance probability of 1 % to fail randomly
     # - if it fails due to programming error, value is typically < 1e-20
     wp = np.histogram(prob, range=(0, 1))[0]
-    c = stats.chisquare(wp)
-    assert c.pvalue > 0.01
+    pvalue = chisquare(wp)
+    assert pvalue > 0.01
 
 
 def test_resample_1d_statistical_test_poisson(rng):
@@ -142,15 +152,16 @@ def test_resample_1d_statistical_test_poisson(rng):
     prob = []
     for bx in resample(x, 100, method="poisson", random_state=rng):
         w = np.histogram(bx, bins=xe)[0]
-        c = stats.chisquare(w, wref)
-        prob.append(c.pvalue)
+
+        pvalue = chisquare(w, wref)
+        prob.append(pvalue)
 
     # check whether P value distribution is flat
     # - test has chance probability of 1 % to fail randomly
     # - if it fails due to programming error, value is typically < 1e-20
     wp = np.histogram(prob, range=(0, 1))[0]
-    c = stats.chisquare(wp)
-    assert c.pvalue > 0.01
+    pvalue = chisquare(wp)
+    assert pvalue > 0.01
 
 
 def test_resample_invalid_family_raises():
