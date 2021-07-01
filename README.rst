@@ -14,7 +14,7 @@
 .. image:: https://readthedocs.org/projects/resample/badge/?version=stable
    :target: https://resample.readthedocs.io/en/stable
 
-.. image:: https://img.shields.io/badge/coverage-87%25-yellowgreen
+.. image:: https://img.shields.io/badge/coverage-96%25-green
 
 .. skip-marker-do-not-remove
 
