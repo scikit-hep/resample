@@ -366,26 +366,38 @@ def test_random_state():
 
 
 @pytest.mark.parametrize("method", NON_PARAMETRIC)
-def test_resample_several_args(method, rng):
+def test_resample_several_args(method):
     a = [1, 2, 3]
     b = [(1, 2), (2, 3), (3, 4)]
-    ai_different = False
-    bi_different = False
-    for ai, bi in resample(a, b, size=5, method=method, random_state=rng):
-        assert np.shape(ai) == (3,)
-        assert np.shape(bi) == (3, 2)
-        assert set(ai) <= set(a)
-        bi = list(tuple(x) for x in bi)
-        assert set(bi) <= set(b)
-        ai_different |= np.all(ai != a)
-        bi_different |= np.all(bi != b)
-    assert ai_different
-    assert bi_different
-
-    for ai, bi, ci in resample(a, b, ["12", "3", "4"], size=5, random_state=rng):
+    c = ["12", "3", "4"]
+    r = []
+    for ai, bi, ci in resample(a, b, c, size=5, method=method, random_state=1):
         assert np.shape(ai) == (3,)
         assert np.shape(bi) == (3, 2)
         assert np.shape(ci) == (3,)
+        assert set(ai) <= set(a)
+        assert set(ci) <= set(c)
+        bi = list(tuple(x) for x in bi)
+        assert set(bi) <= set(b)
+
+        for aii, bii, cii in zip(ai, bi, ci):
+            r.append((aii, bii, cii))
+
+    r = np.array(r, dtype=object)
+    abc = []
+    for ai, bi, ci in zip(a, b, c):
+        abc.append((ai, bi, ci))
+    r2 = np.concatenate(
+        list(
+            resample(
+                np.array(abc, dtype=object),
+                size=5,
+                method=method,
+                random_state=1,
+            ),
+        )
+    )
+    assert_equal(r, r2)
 
 
 def test_resample_several_args_incompatible_keywords():
