@@ -363,3 +363,49 @@ def test_random_state():
 
     with pytest.raises(TypeError):
         resample(d, size=5, random_state=1.5)
+
+
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
+def test_resample_several_args(method, rng):
+    a = [1, 2, 3]
+    b = [(1, 2), (2, 3), (3, 4)]
+    ai_different = False
+    bi_different = False
+    for ai, bi in resample(a, b, size=5, method=method, random_state=rng):
+        assert np.shape(ai) == (3,)
+        assert np.shape(bi) == (3, 2)
+        assert set(ai) <= set(a)
+        bi = list(tuple(x) for x in bi)
+        assert set(bi) <= set(b)
+        ai_different |= np.all(ai != a)
+        bi_different |= np.all(bi != b)
+    assert ai_different
+    assert bi_different
+
+    for ai, bi, ci in resample(a, b, ["12", "3", "4"], size=5, random_state=rng):
+        assert np.shape(ai) == (3,)
+        assert np.shape(bi) == (3, 2)
+        assert np.shape(ci) == (3,)
+
+
+def test_resample_several_args_incompatible_keywords():
+    a = [1, 2, 3]
+    b = [(1, 2), (2, 3), (3, 4)]
+    with pytest.raises(ValueError):
+        resample(a, b, size=5, method="norm")
+
+    resample(a, size=5, strata=[1, 1, 2])
+
+    with pytest.raises(ValueError):
+        resample(a, b, size=5, strata=[1, 1, 2])
+
+    resample(a, b, a, b, size=5)
+
+    with pytest.raises(ValueError):
+        resample(a, [1, 2])
+
+    with pytest.raises(ValueError):
+        resample(a, [1, 2, 3, 4])
+
+    with pytest.raises(ValueError):
+        resample(a, b, 5)

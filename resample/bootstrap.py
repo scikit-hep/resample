@@ -96,8 +96,11 @@ def resample(
             args_np.append(sample_np)
             for arg in args:
                 arg = np.atleast_1d(arg)
-                if len(arg) != n_sample:
-                    raise ValueError("extra argument has wrong length")
+                n_arg = len(arg)
+                if n_arg != n_sample:
+                    raise ValueError(
+                        f"extra argument has wrong length {n_arg} != {n_sample}"
+                    )
                 args_np.append(arg)
 
     if random_state is None:
@@ -342,6 +345,16 @@ def _resample_ordinary_1(
         yield rng.choice(sample, size=n, replace=True)
 
 
+def _resample_ordinary_n(
+    samples: _tp.List[np.ndarray], size: int, rng: np.random.Generator
+) -> _tp.Generator[np.ndarray, None, None]:
+    n = len(samples[0])
+    indices = np.arange(n)
+    for _ in range(size):
+        m = rng.choice(indices, size=n, replace=True)
+        yield (s[m] for s in samples)
+
+
 def _resample_balanced_1(
     sample: np.ndarray, size: int, rng: np.random.Generator
 ) -> _tp.Generator[np.ndarray, None, None]:
@@ -350,22 +363,18 @@ def _resample_balanced_1(
     n = len(sample)
     indices = rng.permutation(n * size)
     for i in range(size):
-        sel = indices[i * n : (i + 1) * n] % n
-        yield sample[sel]
-
-
-def _resample_ordinary_n(
-    samples: _tp.List[np.ndarray], size: int, rng: np.random.Generator
-) -> _tp.Generator[np.ndarray, None, None]:
-    for _ in range(size):
-        yield []
+        m = indices[i * n : (i + 1) * n] % n
+        yield sample[m]
 
 
 def _resample_balanced_n(
     samples: _tp.List[np.ndarray], size: int, rng: np.random.Generator
 ) -> _tp.Generator[np.ndarray, None, None]:
-    for _ in range(size):
-        yield []
+    n = len(samples[0])
+    indices = rng.permutation(n * size)
+    for i in range(size):
+        m = indices[i * n : (i + 1) * n] % n
+        yield (s[m] for s in samples)
 
 
 def _fit_parametric_family(
