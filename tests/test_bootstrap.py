@@ -320,7 +320,7 @@ def test_variance(method, rng):
     assert r == pytest.approx(v, rel=0.05)
 
 
-def test_deprecation(rng):
+def test_resample_deprecation(rng):
     data = [1, 2, 3]
     from numpy import VisibleDeprecationWarning
 

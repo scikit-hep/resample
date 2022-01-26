@@ -83,3 +83,36 @@ def test_variance():
     # ((3/2 - 1)^2 + (1 - 1)^2 + (1/2 - 1)^2) * 2 / 3
     # (1/4 + 1/4) / 3 * 2 = 1/3
     assert r == pytest.approx(1.0 / 3.0)
+
+
+def test_resample_several_args():
+    a = [1, 2, 3]
+    b = [(1, 2), (2, 3), (3, 4)]
+    c = ["12", "3", "4"]
+    for ai, bi, ci in resample(a, b, c):
+        assert np.shape(ai) == (2,)
+        assert np.shape(bi) == (2, 2)
+        assert np.shape(ci) == (2,)
+        assert set(ai) <= set(a)
+        assert set(ci) <= set(c)
+        bi = list(tuple(x) for x in bi)
+        assert set(bi) <= set(b)
+
+
+def test_resample_several_args_incompatible_keywords():
+    a = [1, 2, 3]
+    with pytest.raises(ValueError):
+        resample(a, [1, 2])
+
+    with pytest.raises(ValueError):
+        resample(a, [1, 2, 3, 4])
+
+
+def test_resample_deprecation():
+    data = [1, 2, 3]
+    from numpy import VisibleDeprecationWarning
+
+    with pytest.warns(VisibleDeprecationWarning):
+        r = list(resample(data, True))
+
+    assert_equal(r, list(resample(data, copy=True)))

@@ -77,9 +77,8 @@ def resample(
             from numpy import VisibleDeprecationWarning
 
             warnings.warn(
-                "Calling resample with named positional arguments like size etc. is "
-                "deprecated. Please change resample(array, 10, ...) to "
-                "resample(array, size=10, ...)",
+                "Calling resample with positional instead of keyword arguments is "
+                "deprecated",
                 VisibleDeprecationWarning,
             )
             if len(args) == 1:
