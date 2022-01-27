@@ -299,7 +299,7 @@ def bias(
     """
     thetas = []
     if args:
-        replicates: _tp.List[_tp.Any] = [[] for _ in range(len(args) + 1)]
+        replicates: _tp.List[_tp.List] = [[] for _ in range(len(args) + 1)]
         for b in resample(sample, *args, **kwargs):
             for ri, bi in zip(replicates, b):
                 ri.append(bi)
