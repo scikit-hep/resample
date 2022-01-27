@@ -12,12 +12,14 @@ preferred. The computational cost also increases quadratically with the sample s
 but only linearly for the bootstrap. An advantage of the jackknife can be the
 deterministic outcome, since no random sampling is involved.
 """
-from typing import Callable, Generator, Iterable
+import typing as _tp
 
 import numpy as np
 
 
-def resample(sample: Iterable, copy: bool = True) -> Generator[np.ndarray, None, None]:
+def resample(
+    sample: _tp.Iterable, *args: _tp.Any, copy: bool = True
+) -> _tp.Generator[np.ndarray, None, None]:
     """
     Generator of jackknifed samples.
 
@@ -26,6 +28,8 @@ def resample(sample: Iterable, copy: bool = True) -> Generator[np.ndarray, None,
     sample : array-like
         Sample. If the sequence is multi-dimensional, the first dimension must
         walk over i.i.d. observations.
+    *args: array-like
+        Optional additional arrays of the same length to resample.
     copy : bool, optional
         If `True`, return the replicated sample as a copy, otherwise return a view into
         the internal array buffer of the generator. Setting this to `False` avoids
@@ -66,11 +70,44 @@ def resample(sample: Iterable, copy: bool = True) -> Generator[np.ndarray, None,
     >>> print(r2)
     [array([1, 2]), array([1, 2]), array([1, 2])]
     """
-    sample = np.atleast_1d(sample)
+    sample_np = np.atleast_1d(sample)
+    n_sample = len(sample_np)
 
-    n = len(sample)
-    x = sample[1:].copy()
+    args_np = []
+    if args:
+        if not isinstance(args[0], _tp.Iterable):
+            import warnings
+
+            from numpy import VisibleDeprecationWarning
+
+            warnings.warn(
+                "Calling resample with positional instead of keyword arguments is "
+                "deprecated",
+                VisibleDeprecationWarning,
+            )
+            if len(args) == 1:
+                (copy,) = args
+            else:
+                raise ValueError("too many arguments")
+        else:
+            args_np.append(sample_np)
+            for arg in args:
+                arg_np = np.atleast_1d(arg)
+                n_arg = len(arg_np)
+                if n_arg != n_sample:
+                    raise ValueError(
+                        f"extra argument has wrong length {n_arg} != {n_sample}"
+                    )
+                args_np.append(arg_np)
+
+    if args_np:
+        return _resample_n(args_np, copy)
+    return _resample_1(sample_np, copy)
+
+
+def _resample_1(sample: np.ndarray, copy: bool):
     # yield x0
+    x = sample[1:].copy()
     yield x.copy() if copy else x
 
     # update of x needs to change only value at index i
@@ -79,12 +116,21 @@ def resample(sample: Iterable, copy: bool = True) -> Generator[np.ndarray, None,
     # x1 = [0, 2, 3] # override first index
     # x2 = [0, 1, 3] # override second index
     # x3 = [0, 1, 2] # ...
-    for i in range(n - 1):
+    for i in range(len(sample) - 1):
         x[i] = sample[i]
         yield x.copy() if copy else x
 
 
-def jackknife(fn: Callable, sample: Iterable) -> np.ndarray:
+def _resample_n(samples: _tp.List[np.ndarray], copy: bool):
+    x = [a[1:].copy() for a in samples]
+    yield (xi.copy() for xi in x)
+    for i in range(len(samples[0]) - 1):
+        for xi, ai in zip(x, samples):
+            xi[i] = ai[i]
+        yield (xi.copy() for xi in x)
+
+
+def jackknife(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
@@ -110,7 +156,7 @@ def jackknife(fn: Callable, sample: Iterable) -> np.ndarray:
     return np.asarray([fn(x) for x in resample(sample, copy=False)])
 
 
-def bias(fn: Callable, sample: Iterable) -> np.ndarray:
+def bias(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -140,7 +186,7 @@ def bias(fn: Callable, sample: Iterable) -> np.ndarray:
     return (n - 1) * (mean_theta - theta)
 
 
-def bias_corrected(fn: Callable, sample: Iterable) -> np.ndarray:
+def bias_corrected(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the jackknife.
 
@@ -171,7 +217,7 @@ def bias_corrected(fn: Callable, sample: Iterable) -> np.ndarray:
     return n * theta - (n - 1) * mean_theta
 
 
-def variance(fn: Callable, sample: Iterable) -> np.ndarray:
+def variance(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 
@@ -197,7 +243,3 @@ def variance(fn: Callable, sample: Iterable) -> np.ndarray:
     thetas = jackknife(fn, sample)
     n = len(sample)
     return (n - 1) * np.var(thetas, ddof=0, axis=0)
-
-
-del Callable
-del Generator

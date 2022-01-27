@@ -56,7 +56,7 @@ def test_resample_shape_1d(method):
     n_rep = 5
     count = 0
     with np.errstate(invalid="ignore"):
-        for bx in resample(x, n_rep, method=method):
+        for bx in resample(x, size=n_rep, method=method):
             assert len(bx) == len(x)
             count += 1
     assert count == n_rep
@@ -67,7 +67,7 @@ def test_resample_shape_2d(method):
     x = [(1.0, 2.0), (4.0, 3.0), (6.0, 5.0)]
     n_rep = 5
     count = 0
-    for bx in resample(x, n_rep, method=method):
+    for bx in resample(x, size=n_rep, method=method):
         assert bx.shape == np.shape(x)
         count += 1
     assert count == n_rep
@@ -78,7 +78,7 @@ def test_resample_shape_4d(method):
     x = np.ones((2, 3, 4, 5))
     n_rep = 5
     count = 0
-    for bx in resample(x, 5, method=method):
+    for bx in resample(x, size=n_rep, method=method):
         assert bx.shape == np.shape(x)
         count += 1
     assert count == n_rep
@@ -121,7 +121,7 @@ def test_resample_1d_statistical_test(method, rng):
     prob = []
     wsum = 0
     with np.errstate(invalid="ignore"):
-        for bx in resample(x, 100, method=method, random_state=rng):
+        for bx in resample(x, size=100, method=method, random_state=rng):
             w = np.histogram(bx, bins=xe)[0]
             wsum += w
             pvalue = chisquare(w, wref)
@@ -150,7 +150,7 @@ def test_resample_1d_statistical_test_poisson(rng):
 
     # compute P values for replicates compared to original
     prob = []
-    for bx in resample(x, 100, method="poisson", random_state=rng):
+    for bx in resample(x, size=100, method="poisson", random_state=rng):
         w = np.histogram(bx, bins=xe)[0]
 
         pvalue = chisquare(w, wref)
@@ -318,3 +318,106 @@ def test_variance(method, rng):
 
     r = variance(np.mean, data, size=1000, method=method, random_state=rng)
     assert r == pytest.approx(v, rel=0.05)
+
+
+def test_resample_deprecation(rng):
+    data = [1, 2, 3]
+    from numpy import VisibleDeprecationWarning
+
+    with pytest.warns(VisibleDeprecationWarning):
+        r = list(resample(data, 10))
+        assert np.shape(r) == (10, 3)
+
+    with pytest.warns(VisibleDeprecationWarning):
+        resample(data, 10, "balanced")
+
+    with pytest.warns(VisibleDeprecationWarning):
+        with pytest.raises(ValueError):
+            resample(data, 10, "foo")
+
+    with pytest.warns(VisibleDeprecationWarning):
+        resample(data, 10, "balanced", [1, 1, 2])
+
+    with pytest.warns(VisibleDeprecationWarning):
+        with pytest.raises(ValueError):
+            resample(data, 10, "balanced", [1, 1])
+
+    with pytest.warns(VisibleDeprecationWarning):
+        resample(data, 10, "balanced", [1, 1, 2], rng)
+
+    with pytest.warns(VisibleDeprecationWarning):
+        resample(data, 10, "balanced", [1, 1, 2], 1)
+
+    with pytest.warns(VisibleDeprecationWarning):
+        with pytest.raises(TypeError):
+            resample(data, 10, "balanced", [1, 1, 2], 1.3)
+
+
+def test_random_state():
+    d = [1, 2, 3]
+    a = list(resample(d, size=5, random_state=np.random.default_rng(1)))
+    b = list(resample(d, size=5, random_state=1))
+    c = list(resample(d, size=5, random_state=[2, 3]))
+    assert_equal(a, b)
+    assert not np.all([np.all(ai == ci) for (ai, ci) in zip(a, c)])
+
+    with pytest.raises(TypeError):
+        resample(d, size=5, random_state=1.5)
+
+
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
+def test_resample_several_args(method):
+    a = [1, 2, 3]
+    b = [(1, 2), (2, 3), (3, 4)]
+    c = ["12", "3", "4"]
+    r = []
+    for ai, bi, ci in resample(a, b, c, size=5, method=method, random_state=1):
+        assert np.shape(ai) == (3,)
+        assert np.shape(bi) == (3, 2)
+        assert np.shape(ci) == (3,)
+        assert set(ai) <= set(a)
+        assert set(ci) <= set(c)
+        bi = list(tuple(x) for x in bi)
+        assert set(bi) <= set(b)
+
+        for aii, bii, cii in zip(ai, bi, ci):
+            r.append((aii, bii, cii))
+
+    r = np.array(r, dtype=object)
+    abc = []
+    for ai, bi, ci in zip(a, b, c):
+        abc.append((ai, bi, ci))
+    r2 = np.concatenate(
+        list(
+            resample(
+                np.array(abc, dtype=object),
+                size=5,
+                method=method,
+                random_state=1,
+            ),
+        )
+    )
+    assert_equal(r, r2)
+
+
+def test_resample_several_args_incompatible_keywords():
+    a = [1, 2, 3]
+    b = [(1, 2), (2, 3), (3, 4)]
+    with pytest.raises(ValueError):
+        resample(a, b, size=5, method="norm")
+
+    resample(a, size=5, strata=[1, 1, 2])
+
+    with pytest.raises(ValueError):
+        resample(a, b, size=5, strata=[1, 1, 2])
+
+    resample(a, b, a, b, size=5)
+
+    with pytest.raises(ValueError):
+        resample(a, [1, 2])
+
+    with pytest.raises(ValueError):
+        resample(a, [1, 2, 3, 4])
+
+    with pytest.raises(ValueError):
+        resample(a, b, 5)
