@@ -16,9 +16,11 @@ import typing as _tp
 
 import numpy as np
 
+_Args = _tp.Tuple[_tp.Any]
+
 
 def resample(
-    sample: _tp.Iterable, *args: _tp.Any, copy: bool = True
+    sample: _tp.Iterable, *args: _Args, copy: bool = True
 ) -> _tp.Generator[np.ndarray, None, None]:
     """
     Generator of jackknifed samples.
@@ -130,7 +132,7 @@ def _resample_n(samples: _tp.List[np.ndarray], copy: bool):
         yield (xi.copy() for xi in x)
 
 
-def jackknife(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
+def jackknife(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
@@ -147,16 +149,21 @@ def jackknife(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
         and k is the length of the output array.
     sample : array-like
         Original sample.
+    *args: array-like
+        Optional additional arrays of the same length to resample.
 
     Returns
     -------
     ndarray
         Jackknife samples.
     """
-    return np.asarray([fn(x) for x in resample(sample, copy=False)])
+    gen = resample(sample, *args, copy=False)
+    if args:
+        return np.array([fn(*b) for b in gen])
+    return np.asarray([fn(b) for b in gen])
 
 
-def bias(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
+def bias(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -173,6 +180,8 @@ def bias(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
         and k is the length of the output array.
     sample : array-like
         Original sample.
+    *args: array-like
+        Optional additional arrays of the same length to resample.
 
     Returns
     -------
@@ -182,11 +191,11 @@ def bias(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
     sample = np.atleast_1d(sample)
     n = len(sample)
     theta = fn(sample)
-    mean_theta = np.mean(jackknife(fn, sample), axis=0)
+    mean_theta = np.mean(jackknife(fn, sample, *args), axis=0)
     return (n - 1) * (mean_theta - theta)
 
 
-def bias_corrected(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
+def bias_corrected(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the jackknife.
 
@@ -204,6 +213,8 @@ def bias_corrected(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
         and k is the length of the output array.
     sample : array-like
         Original sample.
+    *args: array-like
+        Optional additional arrays of the same length to resample.
 
     Returns
     -------
@@ -213,11 +224,11 @@ def bias_corrected(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
     sample = np.atleast_1d(sample)
     n = len(sample)
     theta = fn(sample)
-    mean_theta = np.mean(jackknife(fn, sample), axis=0)
+    mean_theta = np.mean(jackknife(fn, sample, *args), axis=0)
     return n * theta - (n - 1) * mean_theta
 
 
-def variance(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
+def variance(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 
@@ -231,6 +242,8 @@ def variance(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
         and k is the length of the output array.
     sample : array-like
         Original sample.
+    *args: array-like
+        Optional additional arrays of the same length to resample.
 
     Returns
     -------
@@ -240,6 +253,6 @@ def variance(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
     #   = np.var(fj, ddof=0) * (n - 1)
     sample = np.atleast_1d(sample)
-    thetas = jackknife(fn, sample)
+    thetas = jackknife(fn, sample, *args)
     n = len(sample)
     return (n - 1) * np.var(thetas, ddof=0, axis=0)
