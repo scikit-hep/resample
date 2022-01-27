@@ -15,4 +15,4 @@ Features
 - Tools for working with empirical distributions (CDF, quantile, etc.)
 """
 
-__version__ = "1.1.0"
+from ._version import version as __version__  # noqa
