@@ -16,7 +16,7 @@ import typing as _tp
 
 import numpy as np
 
-_Args = _tp.Tuple[_tp.Any]
+_Args = _tp.Any
 
 
 def resample(

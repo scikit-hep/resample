@@ -20,7 +20,7 @@ from resample.empirical import quantile_function_gen
 from resample.jackknife import jackknife
 
 _Kwargs = _tp.Any
-_Args = _tp.Tuple[_tp.Any]
+_Args = _tp.Any
 
 
 def resample(
