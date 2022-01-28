@@ -251,7 +251,6 @@ def confidence_interval(
                 cl, ci_method = args
             else:
                 raise ValueError("too many arguments")
-
             args = ()
 
     if not 0 < cl < 1:
