@@ -388,12 +388,15 @@ def test_confidence_interval_deprecation(rng):
 
     d = [1, 2, 3]
     with pytest.warns(VisibleDeprecationWarning):
-        r = confidence_interval(np.mean, d, 0.6)
-    assert_equal(r, confidence_interval(np.mean, d, cl=0.6))
+        r = confidence_interval(np.mean, d, 0.6, random_state=1)
+    assert_equal(r, confidence_interval(np.mean, d, cl=0.6, random_state=1))
 
     with pytest.warns(VisibleDeprecationWarning):
-        r = confidence_interval(np.mean, d, 0.6, "percentile")
-    assert_equal(r, confidence_interval(np.mean, d, cl=0.6, ci_method="percentile"))
+        r = confidence_interval(np.mean, d, 0.6, "percentile", random_state=1)
+    assert_equal(
+        r,
+        confidence_interval(np.mean, d, cl=0.6, ci_method="percentile", random_state=1),
+    )
 
     with pytest.warns(VisibleDeprecationWarning):
         with pytest.raises(ValueError):
