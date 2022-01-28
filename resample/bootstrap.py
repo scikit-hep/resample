@@ -71,6 +71,7 @@ def resample(
     sample_np = np.atleast_1d(sample)
     n_sample = len(sample_np)
     args_np: _tp.List[np.ndarray] = []
+
     if args:
         if not isinstance(args[0], _tp.Iterable):
             import warnings
@@ -78,23 +79,26 @@ def resample(
             from numpy import VisibleDeprecationWarning
 
             warnings.warn(
-                "Calling resample with positional instead of keyword arguments is "
+                "Calling resample with positional instead of keyword parameters is "
                 "deprecated",
                 VisibleDeprecationWarning,
             )
-            if len(args) == 1:
-                (size,) = args
-            elif len(args) == 2:
-                size, method = args
-            elif len(args) == 3:
-                size, method, strata = args
-            elif len(args) == 4:
-                size, method, strata, random_state = args
-            else:
+            kwargs: _tp.Dict[str, _tp.Any] = {
+                "size": size,
+                "method": method,
+                "strata": strata,
+                "random_state": random_state,
+            }
+            if len(args) > len(kwargs):
                 raise ValueError("too many arguments")
+            for key, val in zip(kwargs, args):
+                kwargs[key] = val
+            size = kwargs["size"]
+            method = kwargs["method"]
+            strata = kwargs["strata"]
+            random_state = kwargs["random_state"]
             del args
         else:
-            args_np = []
             args_np.append(sample_np)
             for arg in args:
                 arg = np.atleast_1d(arg)
