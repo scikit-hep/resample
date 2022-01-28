@@ -12,61 +12,58 @@ samples.
 The tests return a PermutationResult object, which mimics the interface of the result
 objects returned by tests in scipy.stats.
 
+Notes
+-----
+The p-value is computed like the type I error rate, but the two are conceptually
+distinct. The p-value is a random number obtained from a sample, while the type
+I error rate is a property of the test based on the p-value. Part of the test
+description is to reject the null hypothesis if the p-value is smaller than a
+probability alpha. This alpha has to be fixed before the test is carried out.
+Then, if the p-value is computed correctly, the test has a type I error rate of
+at most alpha.
+
 Further reading:
 https://en.wikipedia.org/wiki/P-value
 https://en.wikipedia.org/wiki/Test_statistic
 https://en.wikipedia.org/wiki/Paired_difference_test
 """
-
-from typing import Callable, Iterable, List, Optional, Tuple, Union
+import sys
+import typing as _tp
+from dataclasses import dataclass
 
 import numpy as np
 from scipy.stats import rankdata, tiecorrect
 
-from resample.empirical import cdf_gen
+from ._util import _normalize_rng
+from .empirical import cdf_gen
+
+_dataclass_kwargs = {"frozen": True, "repr": False}
+if sys.version_info >= (3, 10):
+    _dataclass_kwargs["slots"] = True
 
 
-class PermutationResult(tuple):
-    """Holder of the result of the permutation test."""
+@dataclass(**_dataclass_kwargs)
+class PermutationResult:
+    """
+    Holder of the result of the permutation test.
 
-    __slots__ = ()
+    This class acts like a tuple, which means its can be unpacked and the fields can be
+    accessed by name or by index.
 
-    def __new__(
-        cls, statistic: float, pvalue: float, samples: np.ndarray
-    ) -> "PermutationResult":
-        return super(PermutationResult, cls).__new__(
-            cls, (statistic, pvalue, samples)  # type:ignore
-        )
-
-    @property
-    def statistic(self) -> float:
-        """Value of the test statistic computed on the original data."""
-        return self[0]  # type:ignore
-
-    @property
-    def pvalue(self) -> float:
-        """Chance probability (aka Type I error) for rejecting the null hypothesis.
-
-        This calculates the probability to get a value of the test statistic
-        at least as extreme as the actual value if the null hypothesis is true. See
+    Attributes
+    ----------
+    statistic: float
+        Value of the test statistic computed on the original data
+    pvalue: float
+        Chance probability (aka Type I error) for rejecting the null hypothesis. See
         https://en.wikipedia.org/wiki/P-value for details.
+    samples: array
+        Values of the test statistic from the permutated samples.
+    """
 
-        Notes
-        -----
-        The p-value is computed like the type I error rate, but the two are conceptually
-        distinct. The p-value is a random number obtained from a sample, while the type
-        I error rate is a property of the test based on the p-value. Part of the test
-        description is to reject the null hypothesis if the p-value is smaller than a
-        probability alpha. This alpha has to be fixed before the test is carried out.
-        Then, if the p-value is computed correctly, the test has a type I error rate of
-        at most alpha.
-        """
-        return self[1]  # type:ignore
-
-    @property
-    def samples(self) -> np.ndarray:
-        """Values of the test statistic from the permutated samples."""
-        return self[2]
+    statistic: float
+    pvalue: float
+    samples: np.ndarray
 
     def __repr__(self) -> str:
         s = None
@@ -80,12 +77,24 @@ class PermutationResult(tuple):
             self.statistic, self.pvalue, s
         )
 
+    def __len__(self):
+        return 3
+
+    def __getitem__(self, idx):
+        if idx == 0:
+            return self.statistic
+        elif idx == 1:
+            return self.pvalue
+        elif idx == 2:
+            return self.samples
+        raise IndexError
+
 
 def ttest(
-    a1: Iterable,
-    a2: Iterable,
+    a1: _tp.Iterable,
+    a2: _tp.Iterable,
     size: int = 1000,
-    random_state: Optional[Union[int, np.random.Generator]] = None,
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
     Test whether the means of two samples are compatible with Welch's t-test.
@@ -117,9 +126,9 @@ def ttest(
 
 
 def anova(
-    *args: Iterable,
+    *args: _tp.Iterable,
     size: int = 1000,
-    random_state: Optional[Union[int, np.random.Generator]] = None
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None
 ) -> PermutationResult:
     """
     Test whether the means of two or more samples are compatible.
@@ -149,10 +158,10 @@ def anova(
 
 
 def mannwhitneyu(
-    a1: Iterable,
-    a2: Iterable,
+    a1: _tp.Iterable,
+    a2: _tp.Iterable,
     size: int = 1000,
-    random_state: Optional[Union[int, np.random.Generator]] = None,
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
     Test whether two samples are drawn from the same population based on ranking.
@@ -190,9 +199,9 @@ def mannwhitneyu(
 
 
 def kruskal(
-    *args: Iterable,
+    *args: _tp.Iterable,
     size: int = 1000,
-    random_state: Optional[Union[int, np.random.Generator]] = None
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None
 ) -> PermutationResult:
     """
     Test whether two or more samples are drawn from the same population.
@@ -220,10 +229,10 @@ def kruskal(
 
 
 def pearson(
-    a1: Iterable,
-    a2: Iterable,
+    a1: _tp.Iterable,
+    a2: _tp.Iterable,
     size: int = 1000,
-    random_state: Optional[Union[int, np.random.Generator]] = None,
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
     Perform permutation-based correlation test.
@@ -258,10 +267,10 @@ def pearson(
 
 
 def spearman(
-    a1: Iterable,
-    a2: Iterable,
+    a1: _tp.Iterable,
+    a2: _tp.Iterable,
     size: int = 1000,
-    random_state: Optional[Union[int, np.random.Generator]] = None,
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
     Perform permutation-based correlation test of rank data.
@@ -296,10 +305,10 @@ def spearman(
 
 
 def ks(
-    a1: Iterable,
-    a2: Iterable,
+    a1: _tp.Iterable,
+    a2: _tp.Iterable,
     size: int = 1000,
-    random_state: Optional[Union[int, np.random.Generator]] = None,
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
     Test whether two samples are drawn from the same population.
@@ -327,11 +336,11 @@ def ks(
 
 
 def _compute_statistics(
-    fn: Callable,
-    args: Iterable[Iterable],
+    fn: _tp.Callable,
+    args: _tp.Iterable[_tp.Iterable],
     size: int,
-    random_state: Optional[Union[int, np.random.Generator]],
-) -> Tuple[float, np.ndarray]:
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]],
+) -> _tp.Tuple[float, np.ndarray]:
     rng = _normalize_rng(random_state)
     args = _process(args)
     if args is None:
@@ -341,17 +350,7 @@ def _compute_statistics(
     return t, ts
 
 
-def _normalize_rng(
-    random_state: Optional[Union[int, np.random.Generator]]
-) -> np.random.Generator:
-    if random_state is None:
-        return np.random.default_rng()
-    if isinstance(random_state, int):
-        return np.random.default_rng(random_state)
-    return random_state
-
-
-def _process(args: Iterable[Iterable]) -> Optional[List[np.ndarray]]:
+def _process(args: _tp.Iterable[_tp.Iterable]) -> _tp.Optional[_tp.List[np.ndarray]]:
     r = []
     for arg in args:
         a = np.array(arg)
@@ -362,7 +361,7 @@ def _process(args: Iterable[Iterable]) -> Optional[List[np.ndarray]]:
 
 
 def _compute_permutations(
-    rng: np.random.Generator, fn: Callable, size: int, args: List[np.ndarray]
+    rng: np.random.Generator, fn: _tp.Callable, size: int, args: _tp.List[np.ndarray]
 ) -> np.ndarray:
 
     arr = np.concatenate(args)
@@ -381,7 +380,7 @@ def _compute_permutations(
     return ts
 
 
-def _ttest(args: Tuple[np.ndarray, np.ndarray]) -> float:
+def _ttest(args: _tp.Tuple[np.ndarray, np.ndarray]) -> float:
     a1, a2 = args
     n1 = len(a1)
     n2 = len(a2)
@@ -393,7 +392,7 @@ def _ttest(args: Tuple[np.ndarray, np.ndarray]) -> float:
     return r
 
 
-def _mannwhitneyu(args: Tuple[np.ndarray, np.ndarray]) -> float:
+def _mannwhitneyu(args: _tp.Tuple[np.ndarray, np.ndarray]) -> float:
     a1, a2 = args
     # method 2 from Wikipedia
     n1 = len(a1)
@@ -403,7 +402,7 @@ def _mannwhitneyu(args: Tuple[np.ndarray, np.ndarray]) -> float:
     return u1
 
 
-def _pearson(args: List[np.ndarray]) -> float:
+def _pearson(args: _tp.List[np.ndarray]) -> float:
     a1, a2 = args
     m1 = np.mean(a1)
     m2 = np.mean(a2)
@@ -413,7 +412,7 @@ def _pearson(args: List[np.ndarray]) -> float:
     return r
 
 
-def _spearman(args: List[np.ndarray]) -> float:
+def _spearman(args: _tp.List[np.ndarray]) -> float:
     a1, a2 = args
     a1 = rankdata(a1)
     a2 = rankdata(a2)
@@ -422,7 +421,7 @@ def _spearman(args: List[np.ndarray]) -> float:
 
 # see https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
 # method 3 and 4
-def _kruskal(args: List[np.ndarray]) -> float:
+def _kruskal(args: _tp.List[np.ndarray]) -> float:
     joined = np.concatenate(args)
 
     r = rankdata(joined)
@@ -447,7 +446,7 @@ class _ANOVA:
     nmk: int = 0
     a_bar: float = 0.0
 
-    def __call__(self, args: Tuple[np.ndarray, ...]) -> float:
+    def __call__(self, args: _tp.Tuple[np.ndarray, ...]) -> float:
         if self.km1 == -2:
             self._init(args)
 
@@ -457,7 +456,7 @@ class _ANOVA:
         within_group_variability = sum(len(a) * np.var(a) for a in args) / (self.nmk)
         return between_group_variability / within_group_variability
 
-    def _init(self, args: Tuple[np.ndarray, ...]) -> None:
+    def _init(self, args: _tp.Tuple[np.ndarray, ...]) -> None:
         n = sum(len(a) for a in args)
         k = len(args)
         self.km1 = k - 1
@@ -468,7 +467,7 @@ class _ANOVA:
 class _KS:
     all = None
 
-    def __call__(self, args: Tuple[np.ndarray, ...]) -> float:
+    def __call__(self, args: _tp.Tuple[np.ndarray, ...]) -> float:
         if self.all is None:
             self._init(args)
         a1, a2 = args
@@ -477,13 +476,5 @@ class _KS:
         r: float = np.max(f1(self.all) - f2(self.all))
         return r
 
-    def _init(self, args: Tuple[np.ndarray, ...]) -> None:
+    def _init(self, args: _tp.Tuple[np.ndarray, ...]) -> None:
         self.all = np.concatenate(args)
-
-
-del Callable
-del Iterable
-del List
-del Optional
-del Tuple
-del Union

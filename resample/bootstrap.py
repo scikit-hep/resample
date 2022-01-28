@@ -16,8 +16,9 @@ import typing as _tp
 import numpy as np
 from scipy import stats
 
-from resample.empirical import quantile_function_gen
-from resample.jackknife import jackknife
+from ._util import _normalize_rng
+from .empirical import quantile_function_gen
+from .jackknife import jackknife
 
 _Kwargs = _tp.Any
 _Args = _tp.Any
@@ -109,12 +110,7 @@ def resample(
                     )
                 args_np.append(arg)
 
-    if random_state is None:
-        rng = np.random.default_rng()
-    elif isinstance(random_state, np.random.Generator):
-        rng = random_state
-    else:
-        rng = np.random.default_rng(random_state)
+    rng = _normalize_rng(random_state)
 
     if strata is not None:
         strata_np = np.atleast_1d(strata)
