@@ -20,11 +20,12 @@ from resample.empirical import quantile_function_gen
 from resample.jackknife import jackknife
 
 _Kwargs = _tp.Any
+_Args = _tp.Any
 
 
 def resample(
     sample: _tp.Iterable,
-    *args: _tp.Tuple[_tp.Any],
+    *args: _Args,
     size: int = 100,
     method: str = "balanced",
     strata: _tp.Optional[_tp.Iterable] = None,
@@ -69,7 +70,7 @@ def resample(
     """
     sample_np = np.atleast_1d(sample)
     n_sample = len(sample_np)
-    args_np = []
+    args_np: _tp.List[np.ndarray] = []
     if args:
         if not isinstance(args[0], _tp.Iterable):
             import warnings
@@ -91,7 +92,9 @@ def resample(
                 size, method, strata, random_state = args
             else:
                 raise ValueError("too many arguments")
+            del args
         else:
+            args_np = []
             args_np.append(sample_np)
             for arg in args:
                 arg = np.atleast_1d(arg)
@@ -158,7 +161,9 @@ def resample(
     return _resample_parametric(sample_np, size, dist, rng)
 
 
-def bootstrap(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.ndarray:
+def bootstrap(
+    fn: _tp.Callable, sample: _tp.Iterable, *args: _Args, **kwargs: _Kwargs
+) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
 
@@ -168,6 +173,8 @@ def bootstrap(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.n
         Bootstrap samples are passed to this function.
     sample : array-like
         Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
     **kwargs
         Keywords are forwarded to :func:`resample`.
 
@@ -176,13 +183,16 @@ def bootstrap(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.n
     np.array
         Results of `fn` applied to each bootstrap sample.
     """
-    return np.asarray([fn(x) for x in resample(sample, **kwargs)])
+    gen = resample(sample, *args, **kwargs)
+    if args:
+        return np.array([fn(*b) for b in gen])
+    return np.array([fn(x) for x in gen])
 
 
 def confidence_interval(
     fn: _tp.Callable,
     sample: _tp.Iterable,
-    *,
+    *args: _Args,
     cl: float = 0.95,
     ci_method: str = "bca",
     **kwargs: _Kwargs,
@@ -196,6 +206,8 @@ def confidence_interval(
         Function to be bootstrapped.
     sample : array-like
         Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
     cl : float, default : 0.95
         Confidence level. Asymptotically, this is the probability that the interval
         contains the true value.
@@ -221,18 +233,38 @@ def confidence_interval(
     'percentile'. However the increase in accuracy should compensate for this, with the
     result that less bootstrap replicas are needed overall to achieve the same accuracy.
     """
+    if args:
+        if not isinstance(args[0], _tp.Iterable):
+            import warnings
+
+            from numpy import VisibleDeprecationWarning
+
+            warnings.warn(
+                "Calling confidence_interval with positional instead of keyword "
+                "arguments is deprecated",
+                VisibleDeprecationWarning,
+            )
+
+            if len(args) == 1:
+                (cl,) = args
+            elif len(args) == 2:
+                cl, ci_method = args
+            else:
+                raise ValueError("too many arguments")
+            args = ()
+
     if not 0 < cl < 1:
         raise ValueError("cl must be between zero and one")
 
+    thetas = bootstrap(fn, sample, *args, **kwargs)
     alpha = 1 - cl
-    thetas = bootstrap(fn, sample, **kwargs)
 
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha / 2)
 
     if ci_method == "bca":
-        theta = fn(sample)
-        j_thetas = jackknife(fn, sample)
+        theta = fn(sample, *args)
+        j_thetas = jackknife(fn, sample, *args)
         return _confidence_interval_bca(theta, thetas, j_thetas, alpha / 2)
 
     raise ValueError(
@@ -240,7 +272,9 @@ def confidence_interval(
     )
 
 
-def bias(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.ndarray:
+def bias(
+    fn: _tp.Callable, sample: _tp.Iterable, *args: _Args, **kwargs: _Kwargs
+) -> np.ndarray:
     """
     Calculate bias of the function estimate with the bootstrap.
 
@@ -250,6 +284,8 @@ def bias(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.ndarra
         Function to be bootstrapped.
     sample : array-like
         Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
@@ -264,17 +300,25 @@ def bias(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.ndarra
     the original sample in memory at once. The balanced bootstrap is recommended over
     the ordinary bootstrap for bias estimation, it tends to converge faster.
     """
-    replicates = []
     thetas = []
-    for b in resample(sample, **kwargs):
-        replicates.append(b)
-        thetas.append(fn(b))
-    population_theta = fn(np.concatenate(replicates))
+    if args:
+        replicates: _tp.List[_tp.List] = [[] for _ in range(len(args) + 1)]
+        for b in resample(sample, *args, **kwargs):
+            for ri, bi in zip(replicates, b):
+                ri.append(bi)
+            thetas.append(fn(*b))
+        population_theta = fn(*(np.concatenate(r) for r in replicates))
+    else:
+        replicates = []
+        for b in resample(sample, *args, **kwargs):
+            replicates.append(b)
+            thetas.append(fn(b))
+        population_theta = fn(np.concatenate(replicates))
     return np.mean(thetas, axis=0) - population_theta
 
 
 def bias_corrected(
-    fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs
+    fn: _tp.Callable, sample: _tp.Iterable, *args: _Args, **kwargs: _Kwargs
 ) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the bootstrap.
@@ -286,6 +330,8 @@ def bias_corrected(
         and k is the length of the output array.
     sample : array-like
         Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
@@ -294,10 +340,12 @@ def bias_corrected(
     ndarray
         Estimate with some bias removed.
     """
-    return fn(sample) - bias(fn, sample, **kwargs)
+    return fn(sample, *args) - bias(fn, sample, *args, **kwargs)
 
 
-def variance(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.ndarray:
+def variance(
+    fn: _tp.Callable, sample: _tp.Iterable, *args: _Args, **kwargs: _Kwargs
+) -> np.ndarray:
     """
     Calculate bootstrap estimate of variance.
 
@@ -308,6 +356,8 @@ def variance(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.nd
         and k is the length of the output array.
     sample : array-like
         Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
     **kwargs
         Keyword arguments forwarded to :func:`resample`.
 
@@ -316,7 +366,7 @@ def variance(fn: _tp.Callable, sample: _tp.Iterable, **kwargs: _Kwargs) -> np.nd
     ndarray
         Bootstrap estimate of variance.
     """
-    thetas = bootstrap(fn, sample, **kwargs)
+    thetas = bootstrap(fn, sample, *args, **kwargs)
     return np.var(thetas, ddof=1, axis=0)
 
 
@@ -351,7 +401,7 @@ def _resample_ordinary_n(
     indices = np.arange(n)
     for _ in range(size):
         m = rng.choice(indices, size=n, replace=True)
-        yield (s[m] for s in samples)
+        yield tuple(s[m] for s in samples)
 
 
 def _resample_balanced_1(
@@ -373,7 +423,7 @@ def _resample_balanced_n(
     indices = rng.permutation(n * size)
     for i in range(size):
         m = indices[i * n : (i + 1) * n] % n
-        yield (s[m] for s in samples)
+        yield tuple(s[m] for s in samples)
 
 
 def _fit_parametric_family(

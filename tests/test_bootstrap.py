@@ -213,6 +213,36 @@ def test_bootstrap_2d_balanced(rng):
     assert_almost_equal(mean(data), mean(r))
 
 
+@pytest.mark.parametrize(
+    "action", [bootstrap, bias, bias_corrected, variance, confidence_interval]
+)
+def test_bootstrap_several_args(action):
+    x = [1, 2, 3]
+    y = [4, 5, 6]
+    xy = np.transpose([x, y])
+
+    if action is confidence_interval:
+
+        def f1(x, y):
+            return np.sum(x + y)
+
+        def f2(xy):
+            return np.sum(xy)
+
+    else:
+
+        def f1(x, y):
+            return np.sum(x), np.sum(y)
+
+        def f2(xy):
+            return np.sum(xy, axis=0)
+
+    r1 = action(f1, x, y, size=10, random_state=1)
+    r2 = action(f2, xy, size=10, random_state=1)
+
+    assert_equal(r1, r2)
+
+
 @pytest.mark.parametrize("ci_method", ["percentile", "bca"])
 def test_confidence_interval(ci_method, rng):
     data = rng.normal(size=1000)
@@ -353,6 +383,26 @@ def test_resample_deprecation(rng):
             resample(data, 10, "balanced", [1, 1, 2], 1.3)
 
 
+def test_confidence_interval_deprecation(rng):
+    from numpy import VisibleDeprecationWarning
+
+    d = [1, 2, 3]
+    with pytest.warns(VisibleDeprecationWarning):
+        r = confidence_interval(np.mean, d, 0.6, random_state=1)
+    assert_equal(r, confidence_interval(np.mean, d, cl=0.6, random_state=1))
+
+    with pytest.warns(VisibleDeprecationWarning):
+        r = confidence_interval(np.mean, d, 0.6, "percentile", random_state=1)
+    assert_equal(
+        r,
+        confidence_interval(np.mean, d, cl=0.6, ci_method="percentile", random_state=1),
+    )
+
+    with pytest.warns(VisibleDeprecationWarning):
+        with pytest.raises(ValueError):
+            confidence_interval(np.mean, d, 0.6, "percentile", 1)
+
+
 def test_random_state():
     d = [1, 2, 3]
     a = list(resample(d, size=5, random_state=np.random.default_rng(1)))
@@ -370,34 +420,24 @@ def test_resample_several_args(method):
     a = [1, 2, 3]
     b = [(1, 2), (2, 3), (3, 4)]
     c = ["12", "3", "4"]
-    r = []
+    r1 = [[], [], []]
     for ai, bi, ci in resample(a, b, c, size=5, method=method, random_state=1):
-        assert np.shape(ai) == (3,)
-        assert np.shape(bi) == (3, 2)
-        assert np.shape(ci) == (3,)
-        assert set(ai) <= set(a)
-        assert set(ci) <= set(c)
-        bi = list(tuple(x) for x in bi)
-        assert set(bi) <= set(b)
+        r1[0].append(ai)
+        r1[1].append(bi)
+        r1[2].append(ci)
 
-        for aii, bii, cii in zip(ai, bi, ci):
-            r.append((aii, bii, cii))
+    r2 = [[], [], []]
+    abc = np.empty(3, dtype=[("a", "i"), ("b", "i", 2), ("c", "U4")])
+    abc[:]["a"] = a
+    abc[:]["b"] = b
+    abc[:]["c"] = c
+    for abci in resample(abc, size=5, method=method, random_state=1):
+        r2[0].append(abci["a"])
+        r2[1].append(abci["b"])
+        r2[2].append(abci["c"])
 
-    r = np.array(r, dtype=object)
-    abc = []
-    for ai, bi, ci in zip(a, b, c):
-        abc.append((ai, bi, ci))
-    r2 = np.concatenate(
-        list(
-            resample(
-                np.array(abc, dtype=object),
-                size=5,
-                method=method,
-                random_state=1,
-            ),
-        )
-    )
-    assert_equal(r, r2)
+    for i in range(3):
+        assert_equal(r1[i], r2[i])
 
 
 def test_resample_several_args_incompatible_keywords():
