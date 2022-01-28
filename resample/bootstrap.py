@@ -256,8 +256,8 @@ def confidence_interval(
     if not 0 < cl < 1:
         raise ValueError("cl must be between zero and one")
 
-    alpha = 1 - cl
     thetas = bootstrap(fn, sample, *args, **kwargs)
+    alpha = 1 - cl
 
     if ci_method == "percentile":
         return _confidence_interval_percentile(thetas, alpha / 2)
