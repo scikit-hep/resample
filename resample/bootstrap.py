@@ -70,7 +70,7 @@ def resample(
     """
     sample_np = np.atleast_1d(sample)
     n_sample = len(sample_np)
-    args_np = []
+    args_np: _tp.List[np.ndarray] = []
     if args:
         if not isinstance(args[0], _tp.Iterable):
             import warnings
@@ -92,7 +92,9 @@ def resample(
                 size, method, strata, random_state = args
             else:
                 raise ValueError("too many arguments")
+            del args
         else:
+            args_np = []
             args_np.append(sample_np)
             for arg in args:
                 arg = np.atleast_1d(arg)
@@ -249,6 +251,8 @@ def confidence_interval(
                 cl, ci_method = args
             else:
                 raise ValueError("too many arguments")
+
+            args = ()
 
     if not 0 < cl < 1:
         raise ValueError("cl must be between zero and one")

@@ -383,6 +383,23 @@ def test_resample_deprecation(rng):
             resample(data, 10, "balanced", [1, 1, 2], 1.3)
 
 
+def test_confidence_interval_deprecation(rng):
+    from numpy import VisibleDeprecationWarning
+
+    d = [1, 2, 3]
+    with pytest.warns(VisibleDeprecationWarning):
+        r = confidence_interval(np.mean, d, 0.5)
+    assert_equal(r, confidence_interval(np.mean, d, cl=0.5))
+
+    with pytest.warns(VisibleDeprecationWarning):
+        r = confidence_interval(np.mean, d, 0.5, "percentile")
+    assert_equal(r, confidence_interval(np.mean, d, cl=0.5, ci_method="percentile"))
+
+    with pytest.warns(VisibleDeprecationWarning):
+        with pytest.raises(ValueError):
+            confidence_interval(np.mean, d, 0.5, "percentile", 1)
+
+
 def test_random_state():
     d = [1, 2, 3]
     a = list(resample(d, size=5, random_state=np.random.default_rng(1)))
