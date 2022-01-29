@@ -33,16 +33,17 @@ Features
 
 Example
 -------
-```py
-# bootstrap uncertainty of arithmetic mean
-from resample.bootstrap import variance
-import numpy as np
 
-d = [1, 2, 6, 3, 5]
+.. code-block:: python
 
-print(f"bootstrap {variance(np.mean, d) ** 0.5:.2f} exact {(np.var(d) / len(d)) ** 0.5:.2f}")
-# returns: bootstrap 0.82 exact 0.83
-```
+      # bootstrap uncertainty of arithmetic mean
+      from resample.bootstrap import variance
+      import numpy as np
+
+      d = [1, 2, 6, 3, 5]
+
+      print(f"bootstrap {variance(np.mean, d) ** 0.5:.2f} exact {(np.var(d) / len(d)) ** 0.5:.2f}")
+      # bootstrap 0.82 exact 0.83
 
 .. _numpy: http://www.numpy.org
 .. _scipy: https://www.scipy.org
