@@ -10,16 +10,21 @@ def rng():
     return np.random.Generator(np.random.PCG64(1))
 
 
-def test_PermutationResult():
-    p = perm.PermutationResult(1, 2, [3, 4])
+def test_TestResult():
+    p = perm.TestResult(1, 2, [3, 4])
     assert p.statistic == 1
     assert p.pvalue == 2
     assert p.samples == [3, 4]
-    assert repr(p) == "<PermutationResult statistic=1 pvalue=2 samples=[3, 4]>"
+    assert repr(p) == "<TestResult statistic=1 pvalue=2 samples=[3, 4]>"
     assert len(p) == 3
     first, *rest = p
     assert first == 1
     assert rest == [2, [3, 4]]
+
+    p2 = perm.TestResult(1, 2, np.arange(10))
+    assert repr(p2) == (
+        "<TestResult statistic=1 pvalue=2 samples=[0, 1, 2, ..., 7, 8, 9]>"
+    )
 
 
 scipy = {
@@ -136,3 +141,8 @@ def test_three_sample_different_size(test_name, size, rng):
         got = test(a, b, c, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol=5e-2)
+
+
+def test_bad_input():
+    with pytest.raises(ValueError):
+        perm.ttest([1, 2, 3], [1.0, np.nan, 2.0])

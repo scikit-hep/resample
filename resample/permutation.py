@@ -13,7 +13,7 @@ also provide a generic test function that accepts a user-defined function to com
 test statistic and then automatically computes the p-value for that statistic. The other
 tests internally also call this generic test function.
 
-All tests return a PermutationResult object, which mimics the interface of the result
+All tests return a TestResult object, which mimics the interface of the result
 objects returned by tests in scipy.stats, but has a third field to return the
 estimated distribution of the test statistic under the null hypothesis.
 
@@ -36,11 +36,11 @@ from .empirical import cdf_gen
 
 _dataclass_kwargs = {"frozen": True, "repr": False}
 if sys.version_info >= (3, 10):
-    _dataclass_kwargs["slots"] = True
+    _dataclass_kwargs["slots"] = True  # pragma: no cover
 
 
 @dataclass(**_dataclass_kwargs)
-class PermutationResult:
+class TestResult:
     """
     Holder of the result of the permutation test.
 
@@ -67,10 +67,10 @@ class PermutationResult:
         if len(self.samples) < 7:
             s = str(self.samples)
         else:
-            s = "[{0} {1} {2} ... {3} {4} {5}]".format(
-                *self.samples[:3], *self.samples[3:]
+            s = "[{0}, {1}, {2}, ..., {3}, {4}, {5}]".format(
+                *self.samples[:3], *self.samples[-3:]
             )
-        return "<PermutationResult statistic={0} pvalue={1} samples={2}>".format(
+        return "<TestResult statistic={0} pvalue={1} samples={2}>".format(
             self.statistic, self.pvalue, s
         )
 
@@ -121,7 +121,7 @@ def test(
 
     Returns
     -------
-    PermutationResult
+    TestResult
     """
     rng = _normalize_rng(random_state)
     args = _process_args(x, y, *args)
@@ -149,7 +149,7 @@ def test(
         pvalue = np.mean(t < ts)
     else:
         pvalue = np.mean(transform(t) < transform(ts))
-    return PermutationResult(t, pvalue, ts)
+    return TestResult(t, pvalue, ts)
 
 
 def anova(
@@ -158,7 +158,7 @@ def anova(
     *args: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> PermutationResult:
+) -> TestResult:
     """
     Test whether the means of two or more samples are compatible.
 
@@ -184,7 +184,7 @@ def anova(
 
     Returns
     -------
-    PermutationResult
+    TestResult
     """
     return test(_ANOVA(), x, y, *args, size=size, random_state=random_state)
 
@@ -195,7 +195,7 @@ def mannwhitneyu(
     *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> PermutationResult:
+) -> TestResult:
     """
     Test whether two samples are drawn from the same population based on ranking.
 
@@ -225,7 +225,7 @@ def mannwhitneyu(
 
     Returns
     -------
-    PermutationResult
+    TestResult
     """
     n1 = len(x)
     n2 = len(y)
@@ -246,7 +246,7 @@ def kruskal(
     *args: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> PermutationResult:
+) -> TestResult:
     """
     Test whether two or more samples are drawn from the same population.
 
@@ -270,7 +270,7 @@ def kruskal(
 
     Returns
     -------
-    PermutationResult
+    TestResult
     """
     return test(_kruskal, x, y, *args, size=size, random_state=random_state)
 
@@ -281,7 +281,7 @@ def ks(
     *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> PermutationResult:
+) -> TestResult:
     """
     Test whether two samples are drawn from the same population.
 
@@ -301,7 +301,7 @@ def ks(
 
     Returns
     -------
-    PermutationResult
+    TestResult
     """
     return test(_KS(), x, y, size=size, random_state=random_state)
 
@@ -312,7 +312,7 @@ def pearson(
     *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> PermutationResult:
+) -> TestResult:
     """
     Perform permutation-based correlation test.
 
@@ -330,7 +330,7 @@ def pearson(
 
     Returns
     -------
-    PermutationResult
+    TestResult
     """
     if len(x) != len(y):
         raise ValueError("x and y must have have the same length")
@@ -345,7 +345,7 @@ def spearman(
     *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> PermutationResult:
+) -> TestResult:
     """
     Perform permutation-based correlation test of rank data.
 
@@ -363,7 +363,7 @@ def spearman(
 
     Returns
     -------
-    PermutationResult
+    TestResult
     """
     if len(x) != len(y):
         raise ValueError("x and y must have have the same length")
@@ -378,7 +378,7 @@ def ttest(
     *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> PermutationResult:
+) -> TestResult:
     """
     Test whether the means of two samples are compatible with Welch's t-test.
 
@@ -402,7 +402,7 @@ def ttest(
 
     Returns
     -------
-    PermutationResult
+    TestResult
     """
     return test(
         _ttest,
