@@ -12,7 +12,7 @@ import numpy as np
 from .jackknife import jackknife
 
 
-def cdf_gen(sample: _tp.Union[_tp.Iterable, np.ndarray]) -> _tp.Callable:
+def cdf_gen(sample: _tp.Collection) -> _tp.Callable:
     """
     Return the empirical distribution function for the given sample.
 
@@ -31,7 +31,7 @@ def cdf_gen(sample: _tp.Union[_tp.Iterable, np.ndarray]) -> _tp.Callable:
     return lambda x: np.searchsorted(sample_np, x, side="right", sorter=None) / n
 
 
-def quantile_function_gen(sample: _tp.Iterable) -> _tp.Callable:
+def quantile_function_gen(sample: _tp.Collection) -> _tp.Callable:
     """
     Return the empirical quantile function for the given sample.
 
@@ -47,11 +47,11 @@ def quantile_function_gen(sample: _tp.Iterable) -> _tp.Callable:
     """
 
     class QuantileFn:
-        def __init__(self, sample: _tp.Iterable):
+        def __init__(self, sample: _tp.Collection):
             self._sorted = np.sort(sample, axis=0)
 
         def __call__(
-            self, p: _tp.Union[float, _tp.Iterable]
+            self, p: _tp.Union[float, _tp.Collection]
         ) -> _tp.Union[float, np.ndarray]:
             ndim = np.ndim(p)  # must come before atleast_1d
             p = np.atleast_1d(p)
@@ -68,7 +68,7 @@ def quantile_function_gen(sample: _tp.Iterable) -> _tp.Callable:
     return QuantileFn(sample)
 
 
-def influence(fn: _tp.Callable, sample: _tp.Iterable) -> np.ndarray:
+def influence(fn: _tp.Callable, sample: _tp.Collection) -> np.ndarray:
     """
     Calculate the empirical influence function for a given sample and estimator.
 

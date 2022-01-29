@@ -27,6 +27,7 @@ https://en.wikipedia.org/wiki/P-value
 https://en.wikipedia.org/wiki/Test_statistic
 https://en.wikipedia.org/wiki/Paired_difference_test
 """
+import operator
 import sys
 import typing as _tp
 from dataclasses import dataclass
@@ -90,9 +91,70 @@ class PermutationResult:
         raise IndexError
 
 
+def test(
+    fn: _tp.Callable,
+    x: _tp.Collection,
+    y: _tp.Collection,
+    *args: np.ndarray,
+    cmp: _tp.Callable = operator.lt,
+    size: int = 1000,
+    random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
+) -> np.ndarray:
+    """
+    Compute p-value for null hypothesis that samples are drawn from the same population.
+
+    We computes the p-value for the null hypothesis that the samples are drawn from the
+    same population, based on the user-defined test statistic.
+
+    Parameters
+    ----------
+    x : array-like
+        First sample.
+    y : array-like
+        Second sample.
+    *args: array-like, optional
+        Further samples.
+    cmp : Callable
+        Comparison function between test statistic computed from original samples and
+        test statistics computed from permutated samples. Must be vectorised.
+    size : int, optional
+        Number of permutations. Default 1000.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
+
+    Returns
+    -------
+    PermutationResult
+    """
+    rng = _normalize_rng(random_state)
+    args = _process_args(x, y, *args)
+    if args is None:
+        raise ValueError("input contains NaN")
+
+    # compute test statistic for original input
+    t = fn(*args)
+
+    # compute test statistic for permutated inputs
+    arr = np.concatenate(args)
+    slices = []
+    start = 0
+    for a in args:
+        stop = start + len(a)
+        slices.append(slice(start, stop))
+        start = stop
+
+    ts = np.empty(size)
+    for i in range(size):
+        rng.shuffle(arr)
+        ts[i] = fn(*(arr[sl] for sl in slices))
+
+    return PermutationResult(t, np.mean(cmp(t, ts)), ts)
+
+
 def ttest(
-    a1: _tp.Iterable,
-    a2: _tp.Iterable,
+    x: _tp.Collection,
+    y: _tp.Collection,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -101,15 +163,15 @@ def ttest(
 
     See https://en.wikipedia.org/wiki/Welch%27s_t-test for details on this test. The
     p-value computed is for the null hypothesis that the two population means are equal.
-    The test is two-sided, which means that swapping a1 and a2 gives the same pvalue.
+    The test is two-sided, which means that swapping x and y gives the same pvalue.
     Welch's t-test does not require the sample sizes to be equal and it does not require
     the samples to have the same variance.
 
     Parameters
     ----------
-    a1 : array-like
+    x : array-like
         First sample.
-    a2 : array-like
+    y : array-like
         Second sample.
     size : int, optional
         Number of permutations. Default 1000.
@@ -121,14 +183,22 @@ def ttest(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_ttest, (a1, a2), size, random_state)
-    return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
+    return test(
+        _ttest,
+        x,
+        y,
+        cmp=lambda t, ts: np.abs(t) < np.abs(ts),
+        size=size,
+        random_state=random_state,
+    )
 
 
 def anova(
-    *args: _tp.Iterable,
+    x: _tp.Collection,
+    y: _tp.Collection,
+    *args: _tp.Collection,
     size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
     Test whether the means of two or more samples are compatible.
@@ -141,8 +211,12 @@ def anova(
 
     Parameters
     ----------
-    args : sequence of array-like
-        Samples.
+    x : array-like
+        First sample.
+    y : array-like
+        Second sample.
+    *args : array-like
+        Further samples.
     size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
@@ -153,13 +227,12 @@ def anova(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_ANOVA(), args, size, random_state)
-    return PermutationResult(t, np.mean(ts > t), ts)
+    return test(_ANOVA(), x, y, *args, size=size, random_state=random_state)
 
 
 def mannwhitneyu(
-    a1: _tp.Iterable,
-    a2: _tp.Iterable,
+    x: _tp.Collection,
+    y: _tp.Collection,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -170,7 +243,7 @@ def mannwhitneyu(
     https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test for details. The test
     works for any population of samples that are ordinal, so also for integers. This is
     the two-sided version of the test, meaning that the test gives the same pvalue if
-    a1 and a2 are swapped.
+    x and y are swapped.
 
     For normally distributed data, the test is almost as powerful as the t-test and
     considerably more powerful for non-normal populations. It should be kept in mind,
@@ -180,9 +253,9 @@ def mannwhitneyu(
 
     Parameters
     ----------
-    a1 : array-like
+    x : array-like
         First sample.
-    a2 : array-like
+    y : array-like
         Second sample.
     size : int, optional
         Number of permutations. Default 1000.
@@ -194,14 +267,22 @@ def mannwhitneyu(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_mannwhitneyu, (a1, a2), size, random_state)
-    return PermutationResult(t, np.mean(ts < t), ts)
+    return test(
+        _mannwhitneyu,
+        x,
+        y,
+        cmp=lambda t, ts: np.abs(t) < np.abs(ts),
+        size=size,
+        random_state=random_state,
+    )
 
 
 def kruskal(
-    *args: _tp.Iterable,
+    x: _tp.Collection,
+    y: _tp.Collection,
+    *args: _tp.Collection,
     size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
     Test whether two or more samples are drawn from the same population.
@@ -212,8 +293,12 @@ def kruskal(
 
     Parameters
     ----------
-    args : sequence of array-like
-        Samples.
+    x : array-like
+        First sample.
+    y : array-like
+        Second sample.
+    *args : array-like
+        Further samples.
     size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
@@ -224,13 +309,12 @@ def kruskal(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_kruskal, args, size, random_state)
-    return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
+    return test(_kruskal, x, y, *args, size=size, random_state=random_state)
 
 
 def pearson(
-    a1: _tp.Iterable,
-    a2: _tp.Iterable,
+    x: _tp.Collection,
+    y: _tp.Collection,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -239,9 +323,9 @@ def pearson(
 
     Parameters
     ----------
-    a1 : array-like
+    x : array-like
         First sample.
-    a2 : array-like
+    y : array-like
         Second sample.
     size : int, optional
         Number of permutations. Default 1000.
@@ -253,22 +337,16 @@ def pearson(
     -------
     PermutationResult
     """
-    rng = _normalize_rng(random_state)
-    args = _process([a1, a2])
-    if args is None:
-        raise ValueError("input contains NaN")
-    if len(args[0]) != len(args[1]):
-        raise ValueError("a1 and a2 must have have the same length")
-    if len(args[0]) < 2:
-        raise ValueError("length of a1 and a2 must be at least 2.")
-    t = _pearson(args)
-    ts = _compute_permutations(rng, _pearson, size, args)
-    return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
+    if len(x) != len(y):
+        raise ValueError("x and y must have have the same length")
+    if len(x) < 2:
+        raise ValueError("length of x and y must be at least 2.")
+    return test(_pearson, x, y, size=size, random_state=random_state)
 
 
 def spearman(
-    a1: _tp.Iterable,
-    a2: _tp.Iterable,
+    x: _tp.Collection,
+    y: _tp.Collection,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -277,9 +355,9 @@ def spearman(
 
     Parameters
     ----------
-    a1 : array-like
+    x : array-like
         First sample.
-    a2 : array-like
+    y : array-like
         Second sample.
     size : int, optional
         Number of permutations. Default 1000.
@@ -291,22 +369,16 @@ def spearman(
     -------
     PermutationResult
     """
-    rng = _normalize_rng(random_state)
-    args = _process([a1, a2])
-    if args is None:
-        raise ValueError("input contains NaN")
-    if len(args[0]) != len(args[1]):
-        raise ValueError("a1 and a2 must have have the same length")
-    if len(args[0]) < 2:
-        raise ValueError("length of a1 and a2 must be at least 2.")
-    t = _spearman(args)
-    ts = _compute_permutations(rng, _spearman, size, args)
-    return PermutationResult(t, np.mean(np.abs(ts) > np.abs(t)), ts)
+    if len(x) != len(y):
+        raise ValueError("x and y must have have the same length")
+    if len(x) < 2:
+        raise ValueError("length of x and y must be at least 2.")
+    return test(_spearman, x, y, size=size, random_state=random_state)
 
 
 def ks(
-    a1: _tp.Iterable,
-    a2: _tp.Iterable,
+    x: _tp.Collection,
+    y: _tp.Collection,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -317,9 +389,9 @@ def ks(
 
     Parameters
     ----------
-    a1 : array-like
+    x : array-like
         First sample.
-    a2 : array-like
+    y : array-like
         Second sample.
     size : int, optional
         Number of permutations. Default 1000.
@@ -331,122 +403,87 @@ def ks(
     -------
     PermutationResult
     """
-    t, ts = _compute_statistics(_KS(), (a1, a2), size, random_state)
-    return PermutationResult(t, np.mean(ts) > t, ts)
+    return test(_KS(), x, y, size=size, random_state=random_state)
 
 
-def _compute_statistics(
-    fn: _tp.Callable,
-    args: _tp.Iterable[_tp.Iterable],
-    size: int,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]],
-) -> _tp.Tuple[float, np.ndarray]:
-    rng = _normalize_rng(random_state)
-    args = _process(args)
-    if args is None:
-        raise ValueError("input contains NaN")
-    t = fn(args)
-    ts = _compute_permutations(rng, fn, size, args)
-    return t, ts
-
-
-def _process(args: _tp.Iterable[_tp.Iterable]) -> _tp.Optional[_tp.List[np.ndarray]]:
+def _process_args(
+    *args: _tp.Collection,
+) -> _tp.Optional[_tp.List[np.ndarray]]:
     r = []
     for arg in args:
         a = np.array(arg)
-        if np.any(np.isnan(a)):
+        if a.dtype.kind == "f" and np.any(np.isnan(a)):
             return None
         r.append(a)
     return r
 
 
-def _compute_permutations(
-    rng: np.random.Generator, fn: _tp.Callable, size: int, args: _tp.List[np.ndarray]
-) -> np.ndarray:
-
-    arr = np.concatenate(args)
-    slices = []
-    start = 0
-    for a in args:
-        stop = start + len(a)
-        slices.append(slice(start, stop))
-        start = stop
-
-    ts = np.empty(size)
-    for i in range(size):
-        rng.shuffle(arr)
-        ts[i] = fn([arr[sl] for sl in slices])
-
-    return ts
-
-
-def _ttest(args: _tp.Tuple[np.ndarray, np.ndarray]) -> float:
-    a1, a2 = args
-    n1 = len(a1)
-    n2 = len(a2)
-    m1 = np.mean(a1)
-    m2 = np.mean(a2)
-    v1 = np.var(a1, ddof=1)
-    v2 = np.var(a2, ddof=1)
+def _ttest(x: np.ndarray, y: np.ndarray) -> float:
+    n1 = len(x)
+    n2 = len(y)
+    m1 = np.mean(x)
+    m2 = np.mean(y)
+    v1 = np.var(x, ddof=1)
+    v2 = np.var(y, ddof=1)
     r: float = (m1 - m2) / np.sqrt(v1 / n1 + v2 / n2)
     return r
 
 
-def _mannwhitneyu(args: _tp.Tuple[np.ndarray, np.ndarray]) -> float:
-    a1, a2 = args
-    # method 2 from Wikipedia
-    n1 = len(a1)
-    a = rankdata(np.concatenate(args))
+def _mannwhitneyu(x: np.ndarray, y: np.ndarray) -> float:
+    # method 2 from Wikipedia, but returning U1 instead of min(U1, U2) to be
+    # consistent with scipy.stats.mannwhitneyu(x, y, alternative="two-sided")
+    n1 = len(x)
+    a = rankdata(np.concatenate([x, y]))
     r1 = np.sum(a[:n1])
     u1: float = r1 - 0.5 * n1 * (n1 + 1)
     return u1
 
 
-def _pearson(args: _tp.List[np.ndarray]) -> float:
-    a1, a2 = args
-    m1 = np.mean(a1)
-    m2 = np.mean(a2)
-    s1 = np.mean((a1 - m1) ** 2)
-    s2 = np.mean((a2 - m2) ** 2)
-    r: float = np.mean((a1 - m1) * (a2 - m2)) / np.sqrt(s1 * s2)
+def _pearson(x: np.ndarray, y: np.ndarray) -> float:
+    m1 = np.mean(x)
+    m2 = np.mean(y)
+    s1 = np.mean((x - m1) ** 2)
+    s2 = np.mean((y - m2) ** 2)
+    r: float = np.mean((x - m1) * (y - m2)) / np.sqrt(s1 * s2)
     return r
 
 
-def _spearman(args: _tp.List[np.ndarray]) -> float:
-    a1, a2 = args
-    a1 = rankdata(a1)
-    a2 = rankdata(a2)
-    return _pearson([a1, a2])
+def _spearman(x: np.ndarray, y: np.ndarray) -> float:
+    x = rankdata(x)
+    y = rankdata(y)
+    return _pearson(x, y)
 
 
-# see https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
-# method 3 and 4
-def _kruskal(args: _tp.List[np.ndarray]) -> float:
+def _kruskal(*args: np.ndarray) -> float:
+    # see https://en.wikipedia.org/wiki/
+    #           Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
+    # method 3 and 4
     joined = np.concatenate(args)
-
     r = rankdata(joined)
     n = len(r)
-
     start = 0
+    r_args = []
     for i, a in enumerate(args):
-        args[i] = r[start : start + len(a)]
+        r_args.append(r[start : start + len(a)])
         start += len(a)
 
     # method 3 (assuming no ties)
-    h = 12.0 / (n * (n + 1)) * sum(len(a) * np.mean(a) ** 2 for a in args) - 3 * (n + 1)
+    h = 12.0 / (n * (n + 1)) * sum(len(r) * np.mean(r) ** 2 for r in r_args) - 3 * (
+        n + 1
+    )
 
     # apply tie correction
     h /= tiecorrect(r)
     return h
 
 
-# see https://en.wikipedia.org/wiki/F-test
 class _ANOVA:
+    # see https://en.wikipedia.org/wiki/F-test
     km1: int = -2
     nmk: int = 0
     a_bar: float = 0.0
 
-    def __call__(self, args: _tp.Tuple[np.ndarray, ...]) -> float:
+    def __call__(self, *args: np.ndarray) -> float:
         if self.km1 == -2:
             self._init(args)
 
@@ -467,12 +504,12 @@ class _ANOVA:
 class _KS:
     all = None
 
-    def __call__(self, args: _tp.Tuple[np.ndarray, ...]) -> float:
+    def __call__(self, *args: np.ndarray) -> float:
         if self.all is None:
             self._init(args)
-        a1, a2 = args
-        f1 = cdf_gen(a1)
-        f2 = cdf_gen(a2)
+        x, y = args
+        f1 = cdf_gen(x)
+        f2 = cdf_gen(y)
         r: float = np.max(f1(self.all) - f2(self.all))
         return r
 
