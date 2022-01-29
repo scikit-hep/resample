@@ -152,47 +152,6 @@ def test(
     return PermutationResult(t, pvalue, ts)
 
 
-def ttest(
-    x: _ArrayLike,
-    y: _ArrayLike,
-    size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> PermutationResult:
-    """
-    Test whether the means of two samples are compatible with Welch's t-test.
-
-    See https://en.wikipedia.org/wiki/Welch%27s_t-test for details on this test. The
-    p-value computed is for the null hypothesis that the two population means are equal.
-    The test is two-sided, which means that swapping x and y gives the same pvalue.
-    Welch's t-test does not require the sample sizes to be equal and it does not require
-    the samples to have the same variance.
-
-    Parameters
-    ----------
-    x : array-like
-        First sample.
-    y : array-like
-        Second sample.
-    size : int, optional
-        Number of permutations. Default 1000.
-    random_state : numpy.random.Generator or int, optional
-        Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
-
-    Returns
-    -------
-    PermutationResult
-    """
-    return test(
-        _ttest,
-        x,
-        y,
-        transform=np.abs,
-        size=size,
-        random_state=random_state,
-    )
-
-
 def anova(
     x: _ArrayLike,
     y: _ArrayLike,
@@ -233,6 +192,7 @@ def anova(
 def mannwhitneyu(
     x: _ArrayLike,
     y: _ArrayLike,
+    *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -315,9 +275,41 @@ def kruskal(
     return test(_kruskal, x, y, *args, size=size, random_state=random_state)
 
 
+def ks(
+    x: _ArrayLike,
+    y: _ArrayLike,
+    *,
+    size: int = 1000,
+    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
+) -> PermutationResult:
+    """
+    Test whether two samples are drawn from the same population.
+
+    This performs the permutation-based two-sided Kolmogorov-Smirnov test.
+
+    Parameters
+    ----------
+    x : array-like
+        First sample.
+    y : array-like
+        Second sample.
+    size : int, optional
+        Number of permutations. Default 1000.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
+
+    Returns
+    -------
+    PermutationResult
+    """
+    return test(_KS(), x, y, size=size, random_state=random_state)
+
+
 def pearson(
     x: _ArrayLike,
     y: _ArrayLike,
+    *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -350,6 +342,7 @@ def pearson(
 def spearman(
     x: _ArrayLike,
     y: _ArrayLike,
+    *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -379,16 +372,21 @@ def spearman(
     return test(_spearman, x, y, transform=np.abs, size=size, random_state=random_state)
 
 
-def ks(
+def ttest(
     x: _ArrayLike,
     y: _ArrayLike,
+    *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
     """
-    Test whether two samples are drawn from the same population.
+    Test whether the means of two samples are compatible with Welch's t-test.
 
-    This performs the permutation-based two-sided Kolmogorov-Smirnov test.
+    See https://en.wikipedia.org/wiki/Welch%27s_t-test for details on this test. The
+    p-value computed is for the null hypothesis that the two population means are equal.
+    The test is two-sided, which means that swapping x and y gives the same pvalue.
+    Welch's t-test does not require the sample sizes to be equal and it does not require
+    the samples to have the same variance.
 
     Parameters
     ----------
@@ -406,7 +404,14 @@ def ks(
     -------
     PermutationResult
     """
-    return test(_KS(), x, y, size=size, random_state=random_state)
+    return test(
+        _ttest,
+        x,
+        y,
+        transform=np.abs,
+        size=size,
+        random_state=random_state,
+    )
 
 
 def _process_args(

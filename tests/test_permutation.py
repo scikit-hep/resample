@@ -22,115 +22,117 @@ def test_PermutationResult():
     assert rest == [2, [3, 4]]
 
 
-def test_ttest_statistic(rng):
-    expected = []
-    got = []
-    for size in range(2, 100):
-        x = rng.normal(size=size)
-        y = rng.normal(1, size=size * 2)
-        t = stats.ttest_ind(x, y, equal_var=False).statistic
-        expected.append(t)
-        t = perm._ttest(x, y)
-        got.append(t)
-    assert_allclose(expected, got)
-
-
-def test_anova_statistic(rng):
-    expected = []
-    got = []
-    for size in range(2, 100):
-        x = rng.normal(size=size)
-        y = rng.normal(1, size=size * 2)
-        z = rng.normal(0.5, size=size * 2)
-        t = stats.f_oneway(x, y, z).statistic
-        expected.append(t)
-        anova = perm._ANOVA()
-        t = anova(x, y, z)
-        got.append(t)
-    assert_allclose(expected, got)
-
-
-def test_mannwhitneyu_statistic(rng):
-    got = []
-    expected = []
-    for size in range(1, 100):
-        x = rng.normal(size=size)
-        y = rng.normal(1, size=size)
-        got.append(perm._mannwhitneyu(x, y))
-        expected.append(stats.mannwhitneyu(x, y, alternative="two-sided").statistic)
-    assert_allclose(expected, got)
-
-
-def test_kruskal_statistic(rng):
-    got = []
-    expected = []
-    for size in range(2, 100):
-        x = rng.normal(size=size)
-        y = rng.normal(1, size=size)
-        z = rng.normal(0.5, size=size)
-        got.append(perm._kruskal(x, y, z))
-        expected.append(stats.kruskal(x, y, z)[0])
-    assert_allclose(expected, got)
-
-
-def test_pearson_statistic(rng):
-    got = []
-    expected = []
-    for size in range(2, 100):
-        x = rng.normal(size=size)
-        y = rng.normal(1, size=size)
-        got.append(perm._pearson(x, y))
-        expected.append(stats.pearsonr(x, y)[0])
-    assert_allclose(expected, got)
-
-
-def test_spearman_statistic(rng):
-    got = []
-    expected = []
-    for size in range(2, 100):
-        x = rng.normal(size=size)
-        y = rng.normal(1, size=size)
-        got.append(perm._spearman(x, y))
-        expected.append(stats.spearmanr(x, y)[0])
-    assert_allclose(expected, got)
-
-
-def test_ks_statistic(rng):
-    got = []
-    expected = []
-    for size in range(2, 100):
-        x = rng.normal(size=size)
-        y = rng.normal(1, size=size)
-        ks = perm._KS()
-        got.append(ks(x, y))
-        expected.append(stats.ks_2samp(x, y)[0])
-    assert_allclose(expected, got)
+scipy = {
+    "anova": stats.f_oneway,
+    "mannwhitneyu": lambda x, y: stats.mannwhitneyu(x, y, alternative="two-sided"),
+    "kruskal": stats.kruskal,
+    "ks": stats.ks_2samp,
+    "pearson": stats.pearsonr,
+    "spearman": stats.spearmanr,
+    "ttest": lambda x, y: stats.ttest_ind(x, y, equal_var=False),
+}
 
 
 @pytest.mark.parametrize(
-    "test",
-    [
-        perm.ttest,
-        perm.mannwhitneyu,
-        perm.pearson,
-        perm.spearman,
-        perm.ks,
-        perm.kruskal,
-        perm.anova,
-    ],
+    "test_name",
+    (
+        "anova",
+        "mannwhitneyu",
+        "kruskal",
+        "ks",
+        "pearson",
+        "spearman",
+        "ttest",
+    ),
 )
-def test_separable_data(test):
-    x = np.arange(10)
-    y = np.arange(10, 20)
-    r = test(x, y, random_state=1)
-    assert_allclose(r.pvalue, 0.0)
+@pytest.mark.parametrize("size", (10, 100))
+def test_two_sample_same_size(test_name, size, rng):
+    x = rng.normal(size=size)
+    y = rng.normal(1, size=size)
+
+    test = getattr(perm, test_name)
+    scipy_test = scipy[test_name]
+
+    for a, b in ((x, y), (y, x)):
+        expected = scipy_test(a, b)
+        got = test(a, b, random_state=1)
+        assert_allclose(expected[0], got[0])
+        assert_allclose(expected[1], got[1], atol={10: 0.2, 100: 0.02}[size])
 
 
 @pytest.mark.parametrize(
-    "test",
-    [perm.ttest, perm.mannwhitneyu, perm.pearson, perm.spearman, perm.ks, perm.kruskal],
+    "test_name",
+    (
+        "anova",
+        "mannwhitneyu",
+        "kruskal",
+        "ks",
+        "pearson",
+        "spearman",
+        "ttest",
+    ),
 )
-def test_nonseparable_data(test):
-    x = np.arange(100)
-    r = test(x, x, random_state=1)
-    assert r.pvalue > 0.9
+@pytest.mark.parametrize("size", (10, 100))
+def test_two_sample_different_size(test_name, size, rng):
+    x = rng.normal(size=size)
+    y = rng.normal(1, size=2 * size)
+
+    test = getattr(perm, test_name)
+    scipy_test = scipy[test_name]
+
+    if test_name in ("pearson", "spearman"):
+        with pytest.raises(ValueError):
+            test(x, y)
+        return
+
+    for a, b in ((x, y), (y, x)):
+        expected = scipy_test(a, b)
+        got = test(a, b, random_state=1)
+        assert_allclose(expected[0], got[0])
+        assert_allclose(expected[1], got[1], atol=5e-2)
+
+
+@pytest.mark.parametrize(
+    "test_name",
+    (
+        "anova",
+        "kruskal",
+    ),
+)
+@pytest.mark.parametrize("size", (10, 100))
+def test_three_sample_same_size(test_name, size, rng):
+    x = rng.normal(size=size)
+    y = rng.normal(1, size=size)
+    z = rng.normal(0.5, size=size)
+
+    test = getattr(perm, test_name)
+    scipy_test = scipy[test_name]
+
+    for a, b, c in ((x, y, z), (z, y, x)):
+        expected = scipy_test(a, b, c)
+        got = test(a, b, c, random_state=1)
+        assert_allclose(expected[0], got[0])
+        assert_allclose(expected[1], got[1], atol=5e-2)
+
+
+@pytest.mark.parametrize(
+    "test_name",
+    (
+        "anova",
+        "kruskal",
+    ),
+)
+@pytest.mark.parametrize("size", (10, 100))
+def test_three_sample_different_size(test_name, size, rng):
+    x = rng.normal(size=size)
+    y = rng.normal(1, size=2 * size)
+    z = rng.normal(0.5, size=size * 2)
+
+    test = getattr(perm, test_name)
+    scipy_test = scipy[test_name]
+
+    for a, b, c in ((x, y, z), (z, y, x)):
+        expected = scipy_test(a, b, c)
+        got = test(a, b, c, random_state=1)
+        assert_allclose(expected[0], got[0])
+        assert_allclose(expected[1], got[1], atol=5e-2)
