@@ -78,7 +78,7 @@ def resample(
 
     args_np = []
     if args:
-        if not isinstance(args[0], _ArrayLike):
+        if not isinstance(args[0], _tp.Collection):
             import warnings
 
             from numpy import VisibleDeprecationWarning

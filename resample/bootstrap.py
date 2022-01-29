@@ -75,7 +75,7 @@ def resample(
     args_np: _tp.List[np.ndarray] = []
 
     if args:
-        if not isinstance(args[0], _ArrayLike):
+        if not isinstance(args[0], _tp.Collection):
             import warnings
 
             from numpy import VisibleDeprecationWarning
@@ -235,7 +235,7 @@ def confidence_interval(
     result that less bootstrap replicas are needed overall to achieve the same accuracy.
     """
     if args:
-        if not isinstance(args[0], _ArrayLike):
+        if not isinstance(args[0], _tp.Collection):
             import warnings
 
             from numpy import VisibleDeprecationWarning
