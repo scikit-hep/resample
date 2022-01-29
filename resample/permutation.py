@@ -27,8 +27,9 @@ import typing as _tp
 from dataclasses import dataclass as dataclass
 
 import numpy as np
-from numpy import typing as _tpn
-from scipy.stats import rankdata, tiecorrect
+from numpy.typing import ArrayLike as _ArrayLike
+from scipy.stats import rankdata as _rankdata
+from scipy.stats import tiecorrect as _tiecorrect
 
 from ._util import _normalize_rng
 from .empirical import cdf_gen
@@ -88,8 +89,8 @@ class PermutationResult:
 
 def test(
     fn: _tp.Callable,
-    x: _tpn.ArrayLike,
-    y: _tpn.ArrayLike,
+    x: _ArrayLike,
+    y: _ArrayLike,
     *args: np.ndarray,
     transform: _tp.Optional[_tp.Callable] = None,
     size: int = 1000,
@@ -152,8 +153,8 @@ def test(
 
 
 def ttest(
-    x: _tpn.ArrayLike,
-    y: _tpn.ArrayLike,
+    x: _ArrayLike,
+    y: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -193,9 +194,9 @@ def ttest(
 
 
 def anova(
-    x: _tpn.ArrayLike,
-    y: _tpn.ArrayLike,
-    *args: _tpn.ArrayLike,
+    x: _ArrayLike,
+    y: _ArrayLike,
+    *args: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -230,8 +231,8 @@ def anova(
 
 
 def mannwhitneyu(
-    x: _tpn.ArrayLike,
-    y: _tpn.ArrayLike,
+    x: _ArrayLike,
+    y: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -280,9 +281,9 @@ def mannwhitneyu(
 
 
 def kruskal(
-    x: _tpn.ArrayLike,
-    y: _tpn.ArrayLike,
-    *args: _tpn.ArrayLike,
+    x: _ArrayLike,
+    y: _ArrayLike,
+    *args: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -315,8 +316,8 @@ def kruskal(
 
 
 def pearson(
-    x: _tpn.ArrayLike,
-    y: _tpn.ArrayLike,
+    x: _ArrayLike,
+    y: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -347,8 +348,8 @@ def pearson(
 
 
 def spearman(
-    x: _tpn.ArrayLike,
-    y: _tpn.ArrayLike,
+    x: _ArrayLike,
+    y: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -379,8 +380,8 @@ def spearman(
 
 
 def ks(
-    x: _tpn.ArrayLike,
-    y: _tpn.ArrayLike,
+    x: _ArrayLike,
+    y: _ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -409,7 +410,7 @@ def ks(
 
 
 def _process_args(
-    *args: _tpn.ArrayLike,
+    *args: _ArrayLike,
 ) -> _tp.Optional[_tp.List[np.ndarray]]:
     r = []
     for arg in args:
@@ -435,7 +436,7 @@ def _mannwhitneyu(x: np.ndarray, y: np.ndarray) -> float:
     # method 2 from Wikipedia, but returning U1 instead of min(U1, U2) to be
     # consistent with scipy.stats.mannwhitneyu(x, y, alternative="two-sided")
     n1 = len(x)
-    a = rankdata(np.concatenate([x, y]))
+    a = _rankdata(np.concatenate([x, y]))
     r1 = np.sum(a[:n1])
     u1: float = r1 - 0.5 * n1 * (n1 + 1)
     return u1
@@ -451,8 +452,8 @@ def _pearson(x: np.ndarray, y: np.ndarray) -> float:
 
 
 def _spearman(x: np.ndarray, y: np.ndarray) -> float:
-    x = rankdata(x)
-    y = rankdata(y)
+    x = _rankdata(x)
+    y = _rankdata(y)
     return _pearson(x, y)
 
 
@@ -461,7 +462,7 @@ def _kruskal(*args: np.ndarray) -> float:
     #           Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
     # method 3 and 4
     joined = np.concatenate(args)
-    r = rankdata(joined)
+    r = _rankdata(joined)
     n = len(r)
     start = 0
     r_args = []
@@ -475,7 +476,7 @@ def _kruskal(*args: np.ndarray) -> float:
     )
 
     # apply tie correction
-    h /= tiecorrect(r)
+    h /= _tiecorrect(r)
     return h
 
 

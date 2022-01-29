@@ -14,7 +14,7 @@ more efficient BCa method.
 import typing as _tp
 
 import numpy as np
-from numpy import typing as _tpn
+from numpy.typing import ArrayLike as _ArrayLike
 from scipy import stats
 
 from ._util import _normalize_rng
@@ -26,11 +26,11 @@ _Args = _tp.Any
 
 
 def resample(
-    sample: _tpn.ArrayLike,
+    sample: _ArrayLike,
     *args: _Args,
     size: int = 100,
     method: str = "balanced",
-    strata: _tp.Optional[_tpn.ArrayLike] = None,
+    strata: _tp.Optional[_ArrayLike] = None,
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ) -> _tp.Generator[np.ndarray, None, None]:
     """
@@ -75,7 +75,7 @@ def resample(
     args_np: _tp.List[np.ndarray] = []
 
     if args:
-        if not isinstance(args[0], _tpn.ArrayLike):
+        if not isinstance(args[0], _ArrayLike):
             import warnings
 
             from numpy import VisibleDeprecationWarning
@@ -163,7 +163,7 @@ def resample(
 
 
 def bootstrap(
-    fn: _tp.Callable, sample: _tpn.ArrayLike, *args: _Args, **kwargs: _Kwargs
+    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
 ) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
@@ -192,7 +192,7 @@ def bootstrap(
 
 def confidence_interval(
     fn: _tp.Callable,
-    sample: _tpn.ArrayLike,
+    sample: _ArrayLike,
     *args: _Args,
     cl: float = 0.95,
     ci_method: str = "bca",
@@ -235,7 +235,7 @@ def confidence_interval(
     result that less bootstrap replicas are needed overall to achieve the same accuracy.
     """
     if args:
-        if not isinstance(args[0], _tpn.ArrayLike):
+        if not isinstance(args[0], _ArrayLike):
             import warnings
 
             from numpy import VisibleDeprecationWarning
@@ -274,7 +274,7 @@ def confidence_interval(
 
 
 def bias(
-    fn: _tp.Callable, sample: _tpn.ArrayLike, *args: _Args, **kwargs: _Kwargs
+    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
 ) -> np.ndarray:
     """
     Calculate bias of the function estimate with the bootstrap.
@@ -319,7 +319,7 @@ def bias(
 
 
 def bias_corrected(
-    fn: _tp.Callable, sample: _tpn.ArrayLike, *args: _Args, **kwargs: _Kwargs
+    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
 ) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the bootstrap.
@@ -345,7 +345,7 @@ def bias_corrected(
 
 
 def variance(
-    fn: _tp.Callable, sample: _tpn.ArrayLike, *args: _Args, **kwargs: _Kwargs
+    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
 ) -> np.ndarray:
     """
     Calculate bootstrap estimate of variance.
