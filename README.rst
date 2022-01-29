@@ -8,8 +8,8 @@
 .. image:: https://img.shields.io/pypi/v/resample.svg
    :target: https://pypi.org/project/resample
 
-.. image:: https://github.com/resample-project/resample/actions/workflows/run-tests.yml/badge.svg
-   :target: https://github.com/resample-project/resample/actions/workflows/run-tests.yml
+.. image:: https://github.com/resample-project/resample/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/resample-project/resample/actions/workflows/tests.yml
 
 .. image:: https://readthedocs.org/projects/resample/badge/?version=stable
    :target: https://resample.readthedocs.io/en/stable
