@@ -7,14 +7,13 @@
 
 .. image:: https://img.shields.io/pypi/v/resample.svg
    :target: https://pypi.org/project/resample
-
 .. image:: https://github.com/resample-project/resample/actions/workflows/test.yml/badge.svg
    :target: https://github.com/resample-project/resample/actions/workflows/tests.yml
-
 .. image:: https://readthedocs.org/projects/resample/badge/?version=stable
    :target: https://resample.readthedocs.io/en/stable
-
+.. image:: https://img.shields.io/pypi/l/resample
 .. image:: https://img.shields.io/badge/coverage-96%25-green
+
 
 .. skip-marker-do-not-remove
 
