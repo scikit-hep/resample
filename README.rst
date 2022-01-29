@@ -29,22 +29,20 @@ Features
 - Jackknife estimates of bias and variance of any estimator
 - Permutation-based variants of traditional statistical tests (t-test, K-S test, etc.)
 - Tools for working with empirical distributions (CDF, quantile, etc.)
+- Depends only on `numpy`_ and `scipy`_
 
-Dependencies
-------------
+Example
+-------
+```py
+# bootstrap uncertainty of arithmetic mean
+from resample.bootstrap import variance
+import numpy as np
 
-Installation requires only `numpy`_ and `scipy`_.
+d = [1, 2, 6, 3, 5]
 
-Installation
-------------
-
-The latest release can be installed from PyPI::
-
-    pip install resample
-
-or using conda::
-
-    conda install resample -c conda-forge
+print(f"bootstrap {variance(np.mean, d) ** 0.5:.2f} exact {(np.var(d) / len(d)) ** 0.5:.2f}")
+# returns: bootstrap 0.82 exact 0.83
+```
 
 .. _numpy: http://www.numpy.org
 .. _scipy: https://www.scipy.org
