@@ -113,6 +113,10 @@ def test_resample_deprecation():
     from numpy import VisibleDeprecationWarning
 
     with pytest.warns(VisibleDeprecationWarning):
-        r = list(resample(data, True))
+        r = list(resample(data, False))
 
-    assert_equal(r, list(resample(data, copy=True)))
+    assert_equal(r, list(resample(data, copy=False)))
+
+    with pytest.warns(VisibleDeprecationWarning):
+        with pytest.raises(ValueError):  # too many arguments
+            resample(data, True, 1)

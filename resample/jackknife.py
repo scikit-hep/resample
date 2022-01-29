@@ -15,12 +15,13 @@ deterministic outcome, since no random sampling is involved.
 import typing as _tp
 
 import numpy as np
+from numpy.typing import ArrayLike as _ArrayLike
 
 _Args = _tp.Any
 
 
 def resample(
-    sample: _tp.Iterable, *args: _Args, copy: bool = True
+    sample: _ArrayLike, *args: _Args, copy: bool = True
 ) -> _tp.Generator[np.ndarray, None, None]:
     """
     Generator of jackknifed samples.
@@ -77,7 +78,7 @@ def resample(
 
     args_np = []
     if args:
-        if not isinstance(args[0], _tp.Iterable):
+        if not isinstance(args[0], _tp.Collection):
             import warnings
 
             from numpy import VisibleDeprecationWarning
@@ -132,7 +133,7 @@ def _resample_n(samples: _tp.List[np.ndarray], copy: bool):
         yield (xi.copy() for xi in x)
 
 
-def jackknife(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
+def jackknife(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
@@ -163,7 +164,7 @@ def jackknife(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarra
     return np.asarray([fn(b) for b in gen])
 
 
-def bias(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
+def bias(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -195,7 +196,7 @@ def bias(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
     return (n - 1) * (mean_theta - theta)
 
 
-def bias_corrected(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
+def bias_corrected(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the jackknife.
 
@@ -228,7 +229,7 @@ def bias_corrected(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.n
     return n * theta - (n - 1) * mean_theta
 
 
-def variance(fn: _tp.Callable, sample: _tp.Iterable, *args: _Args) -> np.ndarray:
+def variance(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 

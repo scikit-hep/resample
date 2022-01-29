@@ -5,14 +5,15 @@ Empirical functions
 Empirical functions based on a data sample instead of a parameteric density function,
 like the empirical CDF. Implemented here are mostly tools used internally.
 """
-from typing import Callable, Iterable, Union
+import typing as _tp
 
 import numpy as np
+from numpy.typing import ArrayLike as _ArrayLike
 
-from resample.jackknife import jackknife
+from .jackknife import jackknife
 
 
-def cdf_gen(sample: Union[Iterable, np.ndarray]) -> Callable:
+def cdf_gen(sample: _ArrayLike) -> _tp.Callable:
     """
     Return the empirical distribution function for the given sample.
 
@@ -31,7 +32,7 @@ def cdf_gen(sample: Union[Iterable, np.ndarray]) -> Callable:
     return lambda x: np.searchsorted(sample_np, x, side="right", sorter=None) / n
 
 
-def quantile_function_gen(sample: Iterable) -> Callable:
+def quantile_function_gen(sample: _ArrayLike) -> _tp.Callable:
     """
     Return the empirical quantile function for the given sample.
 
@@ -45,13 +46,14 @@ def quantile_function_gen(sample: Iterable) -> Callable:
     callable
         Empirical quantile function.
     """
-    from typing import Iterable, Union
 
     class QuantileFn:
-        def __init__(self, sample: Iterable):
+        def __init__(self, sample: _ArrayLike):
             self._sorted = np.sort(sample, axis=0)
 
-        def __call__(self, p: Union[float, Iterable]) -> Union[float, np.ndarray]:
+        def __call__(
+            self, p: _tp.Union[float, _ArrayLike]
+        ) -> _tp.Union[float, np.ndarray]:
             ndim = np.ndim(p)  # must come before atleast_1d
             p = np.atleast_1d(p)
             result = np.empty(len(p))
@@ -67,7 +69,7 @@ def quantile_function_gen(sample: Iterable) -> Callable:
     return QuantileFn(sample)
 
 
-def influence(fn: Callable, sample: Iterable) -> np.ndarray:
+def influence(fn: _tp.Callable, sample: _ArrayLike) -> np.ndarray:
     """
     Calculate the empirical influence function for a given sample and estimator.
 
@@ -87,8 +89,3 @@ def influence(fn: Callable, sample: Iterable) -> np.ndarray:
     sample = np.atleast_1d(sample)
     n = len(sample)
     return (n - 1) * (fn(sample) - jackknife(fn, sample))
-
-
-del Callable
-del Iterable
-del Union

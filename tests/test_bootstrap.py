@@ -382,6 +382,10 @@ def test_resample_deprecation(rng):
         with pytest.raises(TypeError):
             resample(data, 10, "balanced", [1, 1, 2], 1.3)
 
+    with pytest.warns(VisibleDeprecationWarning):
+        with pytest.raises(ValueError):  # too many arguments
+            resample(data, 10, "balanced", [1, 1, 2], 1, 2)
+
 
 def test_confidence_interval_deprecation(rng):
     from numpy import VisibleDeprecationWarning
