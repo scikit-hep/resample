@@ -3,36 +3,31 @@ Permutation-based equivalence tests
 ===================================
 
 A collection of statistical tests of the null hypothesis that two or more samples are
-compatible. The tests check either whether the samples have compatible means or are
-drawn from the same population. Permutations are used to compute the distribution of
-each test statistic under the null hypothesis, which gives accurate p-values without
-relying on approximate formulas which are only exact in the asymptotic limit of large
-samples.
+drawn from the same population. The included tests check either whether the samples have
+compatible means, medians, or use other sample properties. Permutations are used to
+compute the distribution of the test statistic under the null hypothesis to obtain
+accurate p-values without relying on approximate asymptotic formulas.
 
-The tests return a PermutationResult object, which mimics the interface of the result
-objects returned by tests in scipy.stats.
+The permutation method is generic, it can be used with any test statistic, therefore we
+also provide a generic test function that accepts a user-defined function to compute the
+test statistic and then automatically computes the p-value for that statistic. The other
+tests internally also call this generic test function.
 
-Notes
------
-The p-value is computed like the type I error rate, but the two are conceptually
-distinct. The p-value is a random number obtained from a sample, while the type
-I error rate is a property of the test based on the p-value. Part of the test
-description is to reject the null hypothesis if the p-value is smaller than a
-probability alpha. This alpha has to be fixed before the test is carried out.
-Then, if the p-value is computed correctly, the test has a type I error rate of
-at most alpha.
+All tests return a PermutationResult object, which mimics the interface of the result
+objects returned by tests in scipy.stats, but has a third field to return the
+estimated distribution of the test statistic under the null hypothesis.
 
 Further reading:
 https://en.wikipedia.org/wiki/P-value
 https://en.wikipedia.org/wiki/Test_statistic
 https://en.wikipedia.org/wiki/Paired_difference_test
 """
-import operator
 import sys
 import typing as _tp
-from dataclasses import dataclass
+from dataclasses import dataclass as dataclass
 
 import numpy as np
+from numpy import typing as _tpn
 from scipy.stats import rankdata, tiecorrect
 
 from ._util import _normalize_rng
@@ -93,10 +88,10 @@ class PermutationResult:
 
 def test(
     fn: _tp.Callable,
-    x: _tp.Collection,
-    y: _tp.Collection,
+    x: _tpn.ArrayLike,
+    y: _tpn.ArrayLike,
     *args: np.ndarray,
-    cmp: _tp.Callable = operator.lt,
+    transform: _tp.Optional[_tp.Callable] = None,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ) -> np.ndarray:
@@ -114,9 +109,9 @@ def test(
         Second sample.
     *args: array-like, optional
         Further samples.
-    cmp : Callable
-        Comparison function between test statistic computed from original samples and
-        test statistics computed from permutated samples. Must be vectorised.
+    transform : Callable, optional
+        Function f(x) for the test statistic to turn it into a measure of
+        deviation. Must be vectorised.
     size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
@@ -149,12 +144,16 @@ def test(
         rng.shuffle(arr)
         ts[i] = fn(*(arr[sl] for sl in slices))
 
-    return PermutationResult(t, np.mean(cmp(t, ts)), ts)
+    if transform is None:
+        pvalue = np.mean(t < ts)
+    else:
+        pvalue = np.mean(transform(t) < transform(ts))
+    return PermutationResult(t, pvalue, ts)
 
 
 def ttest(
-    x: _tp.Collection,
-    y: _tp.Collection,
+    x: _tpn.ArrayLike,
+    y: _tpn.ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -187,16 +186,16 @@ def ttest(
         _ttest,
         x,
         y,
-        cmp=lambda t, ts: np.abs(t) < np.abs(ts),
+        transform=np.abs,
         size=size,
         random_state=random_state,
     )
 
 
 def anova(
-    x: _tp.Collection,
-    y: _tp.Collection,
-    *args: _tp.Collection,
+    x: _tpn.ArrayLike,
+    y: _tpn.ArrayLike,
+    *args: _tpn.ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -231,8 +230,8 @@ def anova(
 
 
 def mannwhitneyu(
-    x: _tp.Collection,
-    y: _tp.Collection,
+    x: _tpn.ArrayLike,
+    y: _tpn.ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -267,20 +266,23 @@ def mannwhitneyu(
     -------
     PermutationResult
     """
+    n1 = len(x)
+    n2 = len(y)
+    mu = n1 * n2 // 2
     return test(
         _mannwhitneyu,
         x,
         y,
-        cmp=lambda t, ts: np.abs(t) < np.abs(ts),
+        transform=lambda x: np.abs(x - mu),
         size=size,
         random_state=random_state,
     )
 
 
 def kruskal(
-    x: _tp.Collection,
-    y: _tp.Collection,
-    *args: _tp.Collection,
+    x: _tpn.ArrayLike,
+    y: _tpn.ArrayLike,
+    *args: _tpn.ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -313,8 +315,8 @@ def kruskal(
 
 
 def pearson(
-    x: _tp.Collection,
-    y: _tp.Collection,
+    x: _tpn.ArrayLike,
+    y: _tpn.ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -341,12 +343,12 @@ def pearson(
         raise ValueError("x and y must have have the same length")
     if len(x) < 2:
         raise ValueError("length of x and y must be at least 2.")
-    return test(_pearson, x, y, size=size, random_state=random_state)
+    return test(_pearson, x, y, transform=np.abs, size=size, random_state=random_state)
 
 
 def spearman(
-    x: _tp.Collection,
-    y: _tp.Collection,
+    x: _tpn.ArrayLike,
+    y: _tpn.ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -373,12 +375,12 @@ def spearman(
         raise ValueError("x and y must have have the same length")
     if len(x) < 2:
         raise ValueError("length of x and y must be at least 2.")
-    return test(_spearman, x, y, size=size, random_state=random_state)
+    return test(_spearman, x, y, transform=np.abs, size=size, random_state=random_state)
 
 
 def ks(
-    x: _tp.Collection,
-    y: _tp.Collection,
+    x: _tpn.ArrayLike,
+    y: _tpn.ArrayLike,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
 ) -> PermutationResult:
@@ -407,7 +409,7 @@ def ks(
 
 
 def _process_args(
-    *args: _tp.Collection,
+    *args: _tpn.ArrayLike,
 ) -> _tp.Optional[_tp.List[np.ndarray]]:
     r = []
     for arg in args:
@@ -510,8 +512,10 @@ class _KS:
         x, y = args
         f1 = cdf_gen(x)
         f2 = cdf_gen(y)
-        r: float = np.max(f1(self.all) - f2(self.all))
-        return r
+        d = f1(self.all) - f2(self.all)
+        d1 = np.clip(-np.min(d), 0, 1)
+        d2 = np.max(d)
+        return max(d1, d2)
 
     def _init(self, args: _tp.Tuple[np.ndarray, ...]) -> None:
         self.all = np.concatenate(args)
