@@ -12,7 +12,8 @@
 .. image:: https://readthedocs.org/projects/resample/badge/?version=stable
    :target: https://resample.readthedocs.io/en/stable
 .. image:: https://img.shields.io/pypi/l/resample
-.. image:: https://img.shields.io/badge/coverage-96%25-green
+.. image:: https://coveralls.io/repos/github/resample-project/resample/badge.svg
+   :target: https://coveralls.io/github/resample-project/resample
 
 
 .. skip-marker-do-not-remove
