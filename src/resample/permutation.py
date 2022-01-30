@@ -370,8 +370,7 @@ def ttest(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
 
 
 def usp(
-    x: _ArrayLike,
-    y: _ArrayLike,
+    w: _ArrayLike,
     *,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
@@ -379,23 +378,20 @@ def usp(
     """
     Test independence of two discrete data sets with the U-statistic.
 
-    The test requries that x and y contain integer values, which represent the different
-    discrete categories. To apply this test to continguous data, you need to choose a
-    binning along x and y (number bins and bin widths can be arbitrary, generally going
-    for a large number of bins is safe and better), and then convert continguous values
-    in x and y into bin indices and pass the arrays of bin indices to this test.
-
-    The test is the U-statistic permutation (USP) test of independence for pairs of
-    discrete data, paper: https://doi.org/10.1098/rspa.2021.0549.
+    The USP test is described in this paper: https://doi.org/10.1098/rspa.2021.0549.
     According to the paper, it outperforms the Pearson's chi^2 and the G-test in both
     in stability and power.
 
+    It requires that w is a 2d histogram of the value pairs. Whether the original
+    values were discrete or continuous does not matter for the test. Using a large
+    number bins is safe, since the test is not negatively affected by bins with
+    zero entries. If the
+
     Parameters
     ----------
-    x : array-like
-        Array with the first value of each pair. Must contain integer values.
-    y : array-like
-        Array with the second value of each pair. Must contain integer values.
+    w : array-like
+        Two-dimensional array which represents the counts in a histogram. The counts
+        can be of floating point type, but must have integral values.
     size : int, optional
         Number of permutations. Default 1000.
     random_state : numpy.random.Generator or int, optional
@@ -408,50 +404,43 @@ def usp(
     """
     rng = _normalize_rng(random_state)
 
-    x = np.atleast_1d(x)
-    y = np.atleast_1d(y)
-    for a in (x, y):
-        if a.ndim != 1:
-            raise ValueError("input array must be 1D")
-        if a.dtype.kind != "i":
-            raise ValueError("input array must contain integers")
-    if len(x) != len(y):
-        raise ValueError("input arrays must have same length")
-
-    _, xmap, wx = np.unique(x, return_inverse=True, return_counts=True)
-    _, ymap, wy = np.unique(y, return_inverse=True, return_counts=True)
+    w = np.asarray(w, dtype=int)
+    if w.ndim != 2:
+        raise ValueError("w must be two-dimensional")
+    wx = np.sum(w, axis=1)
+    wy = np.sum(w, axis=0)
     n = np.sum(wx)
+
+    m = np.outer(wx, wy).astype(float) / n
+
     f1 = 1.0 / (n * (n - 3))
     f2 = 4.0 / (n * (n - 2) * (n - 3))
 
-    m = np.outer(wx, wy) / n
-    w = np.zeros((len(wx), len(wy)))
+    # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
+    t = f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
-    t = _usp(f1, f2, xmap, ymap, w, m)
+    # restore x,y index arrays
+    xmap = np.empty(n, dtype=int)
+    ymap = np.empty(n, dtype=int)
+    k = 0
+    for ix in range(w.shape[0]):
+        for iy in range(w.shape[1]):
+            wij = int(w[ix, iy])
+            xmap[k : k + wij] = ix
+            ymap[k : k + wij] = iy
+            k += wij
 
     ts = np.empty(size)
-    for i in range(size):
+    for b in range(size):
         rng.shuffle(ymap)
         w[:] = 0
-        ts[i] = _usp(f1, f2, xmap, ymap, w, m)
+        # TODO: speed this up
+        for i, j in zip(xmap, ymap):
+            w[i, j] += 1
+        ts[b] = f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
     pvalue = np.mean(t < ts)
     return TestResult(t, pvalue, ts)
-
-
-def _usp(
-    f1: float,
-    f2: float,
-    xmap: np.ndarray,
-    ymap: np.ndarray,
-    w: np.ndarray,
-    m: np.ndarray,
-) -> float:
-    # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
-    # to-do: accelerate this
-    for ii, jj in zip(xmap, ymap):
-        w[ii, jj] += 1
-    return f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
 
 def _ttest(x: np.ndarray, y: np.ndarray) -> float:
