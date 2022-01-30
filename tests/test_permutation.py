@@ -177,7 +177,7 @@ def test_usp_1(rng):
 
     w = np.histogram2d(x, y)[0]
 
-    r = perm.usp(w, size=100, random_state=1)
+    r = perm.usp(w, max_size=100, random_state=1)
     assert r.pvalue > 0.05
 
 
@@ -186,7 +186,7 @@ def test_usp_2(rng):
 
     w = np.histogram2d(x, x)[0]
 
-    r = perm.usp(w, size=100, random_state=1)
+    r = perm.usp(w, max_size=100, random_state=1)
     assert r.pvalue == 0
 
 
@@ -209,8 +209,58 @@ def test_usp_3(rng):
 def test_usp_4():
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
-    r = perm.usp(w, size=1000, random_state=1)
+    r = perm.usp(w, precision=0, max_size=1000, random_state=1)
     # according to paper, pvalue is 0.001, but we get 0.0025 in high-statistics runs
     assert_allclose(r.pvalue, 0.0025, atol=0.001)
     _, interval = perm._wilson_score_interval(0.0025 * 1000, 1000, 1)
     assert_allclose(r.interval, interval, atol=0.001)
+
+
+def test_usp_bad_input():
+    with pytest.raises(ValueError):
+        perm.usp([[1, 2], [3, 4]], precision=-1)
+
+    with pytest.raises(ValueError):
+        perm.usp([[1, 2], [3, 4]], max_size=0)
+
+    with pytest.raises(ValueError):
+        perm.usp([[1, 2], [3, 4]], max_size=-1)
+
+    with pytest.raises(ValueError):
+        perm.usp([1, 2])
+
+
+def test_ttest_bad_input():
+    with pytest.raises(ValueError):
+        perm.ttest([1, 2], [3, 4], precision=-1)
+
+    with pytest.raises(ValueError):
+        perm.ttest([1, 2], [3, 4], max_size=0)
+
+    with pytest.raises(ValueError):
+        perm.ttest([1, 2], [3, 4], max_size=-1)
+
+    with pytest.raises(ValueError):
+        perm.ttest(1, 2)
+
+    with pytest.raises(ValueError):
+        perm.ttest([1], [2])
+
+
+@pytest.mark.parametrize("test", (perm.ttest, perm.usp))
+@pytest.mark.parametrize("prec", (0, 0.05, 0.005))
+def test_precision_1(test, prec, rng):
+    x = rng.normal(0, 1, size=100)
+    y = rng.normal(0, 2, size=100)
+    if test is perm.ttest:
+        args = (x, y)
+    else:
+        w = np.histogram2d(x, y)[0]
+        args = (w,)
+
+    r = test(*args, precision=prec, max_size=10000 if prec > 0 else 123)
+    if prec == 0:
+        assert len(r.samples) == 123
+    else:
+        assert (r.interval[1] - r.interval[0]) / 2 < prec
+        assert_allclose((r.interval[1] - r.interval[0]) / 2, prec, atol=0.5 * prec)
