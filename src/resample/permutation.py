@@ -146,7 +146,6 @@ def same_population(
     t = fn(*args)
 
     # compute test statistic for permutated inputs
-    ts = np.empty(size)
     slices = []
     start = 0
     for a in args:
@@ -155,6 +154,7 @@ def same_population(
         start = stop
 
     joined_sample = np.concatenate(args)
+    ts = np.empty(size)
     for i in range(size):
         rng.shuffle(joined_sample)
         ts[i] = fn(*(joined_sample[sl] for sl in slices))
