@@ -11,20 +11,43 @@ def rng():
 
 
 def test_TestResult():
-    p = perm.TestResult(1, 2, [3, 4])
+    p = perm.TestResult(1, 2, (1, 3), [3, 4])
     assert p.statistic == 1
     assert p.pvalue == 2
+    assert p.interval == (1, 3)
     assert p.samples == [3, 4]
-    assert repr(p) == "<TestResult statistic=1 pvalue=2 samples=[3, 4]>"
+    assert repr(p) == "<TestResult statistic=1 pvalue=2 interval=(1, 3) samples=[3, 4]>"
     assert len(p) == 3
     first, *rest = p
     assert first == 1
-    assert rest == [2, [3, 4]]
+    assert rest == [2, (1, 3), [3, 4]]
 
-    p2 = perm.TestResult(1, 2, np.arange(10))
+    p2 = perm.TestResult(1, 2, (1, 3), np.arange(10))
     assert repr(p2) == (
-        "<TestResult statistic=1 pvalue=2 samples=[0, 1, 2, ..., 7, 8, 9]>"
+        "<TestResult "
+        "statistic=1 pvalue=2 interval=(1, 3) "
+        "samples=[0, 1, 2, ..., 7, 8, 9]>"
     )
+
+
+def test_wilson_score_interval():
+    n = 100
+    for n1 in (10, 50, 90):
+        p, lh = perm._wilson_score_interval(n1, n, 1)
+        s = np.sqrt(p * (1 - p) / n)
+        assert_allclose(p, n1 / n)
+        assert_allclose(lh, (p - s, p + s), atol=0.01)
+
+    n = 10
+    n1 = 0
+    p, lh = perm._wilson_score_interval(n1, n, 1)
+    assert_allclose(p, 0.0)
+    assert_allclose(lh, (0, 0.1), atol=0.01)
+
+    n1 = 10
+    p, lh = perm._wilson_score_interval(n1, n, 1)
+    assert_allclose(p, 1.0)
+    assert_allclose(lh, (0.9, 1.0), atol=0.01)
 
 
 scipy = {
@@ -187,5 +210,7 @@ def test_usp_4():
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
     r = perm.usp(w, size=1000, random_state=1)
-    # according to paper, pvalue is 0.001, we rather get 0.0025 in high-statistics runs
+    # according to paper, pvalue is 0.001, but we get 0.0025 in high-statistics runs
     assert_allclose(r.pvalue, 0.0025, atol=0.001)
+    _, interval = perm._wilson_score_interval(0.0025 * 1000, 1000, 1)
+    assert_allclose(r.interval, interval, atol=0.001)
