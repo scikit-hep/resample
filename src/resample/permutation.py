@@ -1,12 +1,10 @@
 """
-Permutation-based equivalence tests
-===================================
+Permutation-based tests
+=======================
 
-A collection of statistical tests of the null hypothesis that two or more samples are
-drawn from the same population. The included tests check either whether the samples have
-compatible means, medians, or use other sample properties. Permutations are used to
-compute the distribution of the test statistic under the null hypothesis to obtain
-accurate p-values without relying on approximate asymptotic formulas.
+A collection of statistical tests that use permutated samples. Permutations are used to
+compute the distribution of a test statistic under some null hypothesis to obtain
+p-values without relying on approximate asymptotic formulas.
 
 The permutation method is generic, it can be used with any test statistic, therefore we
 also provide a generic test function that accepts a user-defined function to compute the
@@ -18,16 +16,16 @@ objects returned by tests in scipy.stats, but has a third field to return the
 estimated distribution of the test statistic under the null hypothesis.
 
 Further reading:
-https://en.wikipedia.org/wiki/P-value
-https://en.wikipedia.org/wiki/Test_statistic
-https://en.wikipedia.org/wiki/Paired_difference_test
+
+- https://en.wikipedia.org/wiki/P-value
+- https://en.wikipedia.org/wiki/Test_statistic
+- https://en.wikipedia.org/wiki/Paired_difference_test
 """
 import sys
 import typing as _tp
 from dataclasses import dataclass as dataclass
 
 import numpy as np
-from numpy.typing import ArrayLike as _ArrayLike
 from scipy.stats import rankdata as _rankdata
 from scipy.stats import tiecorrect as _tiecorrect
 
@@ -39,6 +37,7 @@ if sys.version_info >= (3, 10):
     _dataclass_kwargs["slots"] = True  # pragma: no cover
 
 _Kwargs = _tp.Any
+_ArrayLike = _tp.Collection
 
 
 @dataclass(**_dataclass_kwargs)
@@ -93,7 +92,7 @@ def same_population(
     fn: _tp.Callable,
     x: _ArrayLike,
     y: _ArrayLike,
-    *args: np.ndarray,
+    *args: _ArrayLike,
     transform: _tp.Optional[_tp.Callable] = None,
     size: int = 1000,
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
@@ -379,13 +378,13 @@ def usp(
     Test independence of two discrete data sets with the U-statistic.
 
     The USP test is described in this paper: https://doi.org/10.1098/rspa.2021.0549.
-    According to the paper, it outperforms the Pearson's chi^2 and the G-test in both
+    According to the paper, it outperforms the Pearson's χ² and the G-test in both
     in stability and power.
 
     It requires that w is a 2d histogram of the value pairs. Whether the original
     values were discrete or continuous does not matter for the test. Using a large
     number bins is safe, since the test is not negatively affected by bins with
-    zero entries. If the
+    zero entries.
 
     Parameters
     ----------

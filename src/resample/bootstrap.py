@@ -14,7 +14,6 @@ more efficient BCa method.
 import typing as _tp
 
 import numpy as np
-from numpy.typing import ArrayLike as _ArrayLike
 from scipy import stats
 
 from ._util import _normalize_rng
@@ -23,6 +22,7 @@ from .jackknife import jackknife
 
 _Kwargs = _tp.Any
 _Args = _tp.Any
+_ArrayLike = _tp.Collection
 
 
 def resample(

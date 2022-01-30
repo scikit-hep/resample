@@ -15,9 +15,9 @@ deterministic outcome, since no random sampling is involved.
 import typing as _tp
 
 import numpy as np
-from numpy.typing import ArrayLike as _ArrayLike
 
 _Args = _tp.Any
+_ArrayLike = _tp.Collection
 
 
 def resample(

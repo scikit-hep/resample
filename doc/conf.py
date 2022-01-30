@@ -17,10 +17,9 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
-import sys
+import resample
 
-sys.path.append("..")
-from resample import __version__ as version  # noqa
+version = resample.__version__  # noqa
 
 project = "resample"
 copyright = "2018, Daniel Saxton"
