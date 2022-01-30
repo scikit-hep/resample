@@ -8,9 +8,10 @@ like the empirical CDF. Implemented here are mostly tools used internally.
 import typing as _tp
 
 import numpy as np
-from numpy.typing import ArrayLike as _ArrayLike
 
 from .jackknife import jackknife
+
+_ArrayLike = _tp.Collection
 
 
 def cdf_gen(sample: _ArrayLike) -> _tp.Callable:

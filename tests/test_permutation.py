@@ -146,3 +146,46 @@ def test_three_sample_different_size(test_name, size, rng):
 def test_bad_input():
     with pytest.raises(ValueError):
         perm.ttest([1, 2, 3], [1.0, np.nan, 2.0])
+
+
+def test_usp_1(rng):
+    x = rng.normal(0, 2, size=100)
+    y = rng.normal(1, 3, size=100)
+
+    w = np.histogram2d(x, y)[0]
+
+    r = perm.usp(w, size=100, random_state=1)
+    assert r.pvalue > 0.05
+
+
+def test_usp_2(rng):
+    x = rng.normal(0, 2, size=100).astype(int)
+
+    w = np.histogram2d(x, x)[0]
+
+    r = perm.usp(w, size=100, random_state=1)
+    assert r.pvalue == 0
+
+
+def test_usp_3(rng):
+    cov = np.empty((2, 2))
+    cov[0, 0] = 2**2
+    cov[1, 1] = 3**2
+    rho = 0.5
+    cov[0, 1] = rho * np.sqrt(cov[0, 0] * cov[1, 1])
+    cov[1, 0] = cov[0, 1]
+
+    xy = rng.multivariate_normal([0, 1], cov, size=500).astype(int)
+
+    w = np.histogram2d(*xy.T)[0]
+
+    r = perm.usp(w, random_state=1)
+    assert r.pvalue < 0.001
+
+
+def test_usp_4():
+    # table1 from https://doi.org/10.1098/rspa.2021.0549
+    w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
+    r = perm.usp(w, size=1000, random_state=1)
+    # according to paper, pvalue is 0.001, we rather get 0.0025 in high-statistics runs
+    assert_allclose(r.pvalue, 0.0025, atol=0.001)
