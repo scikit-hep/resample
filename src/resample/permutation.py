@@ -192,7 +192,7 @@ def anova(
     *args : array-like
         Further samples.
     **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+        Keyword arguments are forward to :meth:`same_population`.
 
     Returns
     -------
@@ -225,9 +225,9 @@ def mannwhitneyu(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     y : array-like
         Second sample.
     **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+        Keyword arguments are forward to :meth:`same_population`.
     **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+        Keyword arguments are forward to :meth:`same_population`.
 
     Returns
     -------
@@ -259,7 +259,7 @@ def kruskal(
     *args : array-like
         Further samples.
     **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+        Keyword arguments are forward to :meth:`same_population`.
 
     Returns
     -------
@@ -282,7 +282,7 @@ def ks(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     y : array-like
         Second sample.
     **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+        Keyword arguments are forward to :meth:`same_population`.
 
     Returns
     -------
@@ -303,7 +303,7 @@ def pearson(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     y : array-like
         Second sample.
     **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+        Keyword arguments are forward to :meth:`same_population`.
 
     Returns
     -------
@@ -328,7 +328,7 @@ def spearman(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     y : array-like
         Second sample.
     **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+        Keyword arguments are forward to :meth:`same_population`.
 
     Returns
     -------
@@ -359,7 +359,7 @@ def ttest(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     y : array-like
         Second sample.
     **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+        Keyword arguments are forward to :meth:`same_population`.
 
     Returns
     -------
