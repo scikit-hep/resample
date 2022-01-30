@@ -210,6 +210,7 @@ def test_usp_4():
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
     r = perm.usp(w, size=1000, random_state=1)
-    # according to paper, pvalue is 0.001, we get 0.0025 in high-statistics runs
+    # according to paper, pvalue is 0.001, but we get 0.0025 in high-statistics runs
     assert_allclose(r.pvalue, 0.0025, atol=0.001)
-    assert_allclose(r.interval, (0.0017, 0.0053), atol=0.0001)
+    _, interval = perm._wilson_score_interval(0.0025 * 1000, 1000, 1)
+    assert_allclose(r.interval, interval, atol=0.001)
