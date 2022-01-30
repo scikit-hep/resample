@@ -216,6 +216,34 @@ def test_usp_4():
     assert_allclose(r.interval, interval, atol=0.001)
 
 
+def test_usp_bad_input():
+    with pytest.raises(ValueError):
+        perm.usp([[1, 2], [3, 4]], precision=-1)
+
+    with pytest.raises(ValueError):
+        perm.usp([[1, 2], [3, 4]], max_size=0)
+
+    with pytest.raises(ValueError):
+        perm.usp([[1, 2], [3, 4]], max_size=-1)
+
+    with pytest.raises(ValueError):
+        perm.usp([1, 2])
+
+
+def test_ttest_bad_input():
+    with pytest.raises(ValueError):
+        perm.ttest([1, 2], [3, 4], precision=-1)
+
+    with pytest.raises(ValueError):
+        perm.ttest([1, 2], [3, 4], max_size=0)
+
+    with pytest.raises(ValueError):
+        perm.ttest([1, 2], [3, 4], max_size=-1)
+
+    with pytest.raises(ValueError):
+        perm.ttest(1, 2)
+
+
 @pytest.mark.parametrize("test", (perm.ttest, perm.usp))
 @pytest.mark.parametrize("prec", (0, 0.05, 0.005))
 def test_precision_1(test, prec, rng):

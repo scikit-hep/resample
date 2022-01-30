@@ -134,13 +134,13 @@ def usp(
     -------
     TestResult
     """
-    rng = _normalize_rng(random_state)
-
     if precision < 0:
         raise ValueError("precision cannot be negative")
 
     if max_size <= 0:
         raise ValueError("max_size must be positive")
+
+    rng = _normalize_rng(random_state)
 
     w = np.asarray(w, dtype=int)
     if w.ndim != 2:
@@ -253,7 +253,14 @@ def same_population(
     -------
     TestResult
     """
+    if precision < 0:
+        raise ValueError("precision cannot be negative")
+
+    if max_size <= 0:
+        raise ValueError("max_size must be positive")
+
     rng = _normalize_rng(random_state)
+
     r = []
     for arg in (x, y) + args:
         a = np.array(arg)
@@ -266,12 +273,6 @@ def same_population(
         r.append(a)
     args = r
     del r
-
-    if precision < 0:
-        raise ValueError("precision cannot be negative")
-
-    if max_size <= 0:
-        raise ValueError("max_size must be positive")
 
     # compute test statistic for original input
     t = fn(*args)
