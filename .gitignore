@@ -20,4 +20,4 @@ benchmarks/.asv/
 junit
 py[0-9]*
 venv
-resample/_version.py
+src/resample/_version.py
