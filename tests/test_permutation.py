@@ -146,3 +146,33 @@ def test_three_sample_different_size(test_name, size, rng):
 def test_bad_input():
     with pytest.raises(ValueError):
         perm.ttest([1, 2, 3], [1.0, np.nan, 2.0])
+
+
+def test_usp_1(rng):
+    x = rng.normal(0, 2, size=100).astype(int)
+    y = rng.normal(1, 3, size=100).astype(int)
+
+    r = perm.usp(x, y, random_state=1)
+    assert r.pvalue > 0.05
+
+
+def test_usp_2(rng):
+    x = rng.normal(0, 2, size=100).astype(int)
+
+    r = perm.usp(x, x, random_state=1)
+    assert r.pvalue == 0
+
+
+def test_usp_3(rng):
+    cov = np.empty((2, 2))
+    cov[0, 0] = 2**2
+    cov[1, 1] = 3**2
+    rho = 0.5
+    cov[0, 1] = rho * np.sqrt(cov[0, 0] * cov[1, 1])
+    cov[1, 0] = cov[0, 1]
+
+    xy = rng.multivariate_normal([0, 1], cov, size=1000).astype(int)
+    x, y = xy.T
+
+    r = perm.usp(x, y, random_state=1)
+    assert r.pvalue < 0.001

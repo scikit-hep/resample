@@ -89,7 +89,7 @@ class TestResult:
         raise IndexError
 
 
-def test(
+def same_population(
     fn: _tp.Callable,
     x: _ArrayLike,
     y: _ArrayLike,
@@ -106,14 +106,17 @@ def test(
 
     Parameters
     ----------
+    fn : Callable
+        Function with signature f(x, ...), where the number of arguments corresponds to
+        the number of data samples passed to the test.
     x : array-like
         First sample.
     y : array-like
         Second sample.
-    *args: array-like, optional
-        Further samples.
+    *args: array-like
+        Further samples, if the test allows to compare more than two.
     transform : Callable, optional
-        Function f(x) for the test statistic to turn it into a measure of
+        Function with signature f(x) for the test statistic to turn it into a measure of
         deviation. Must be vectorised.
     size : int, optional
         Number of permutations. Default 1000.
@@ -129,10 +132,12 @@ def test(
     r = []
     for arg in (x, y) + args:
         a = np.array(arg)
+        if a.ndim != 1:
+            raise ValueError("input samples must be 1D arrays")
+        if len(a) < 2:
+            raise ValueError("input arrays must have length >= 2")
         if a.dtype.kind == "f" and np.any(np.isnan(a)):
             raise ValueError("input contains NaN")
-        if len(a) < 2:
-            raise ValueError("input arrays must have at least length 2")
         r.append(a)
     args = r
     del r
@@ -141,7 +146,7 @@ def test(
     t = fn(*args)
 
     # compute test statistic for permutated inputs
-    arr = np.concatenate(args)
+    ts = np.empty(size)
     slices = []
     start = 0
     for a in args:
@@ -149,15 +154,20 @@ def test(
         slices.append(slice(start, stop))
         start = stop
 
-    ts = np.empty(size)
+    joined_sample = np.concatenate(args)
     for i in range(size):
-        rng.shuffle(arr)
-        ts[i] = fn(*(arr[sl] for sl in slices))
+        rng.shuffle(joined_sample)
+        ts[i] = fn(*(joined_sample[sl] for sl in slices))
 
+    # compute p-value
     if transform is None:
-        pvalue = np.mean(t < ts)
+        u = t
+        us = ts
     else:
-        pvalue = np.mean(transform(t) < transform(ts))
+        u = transform(t)
+        us = transform(ts)
+    pvalue = np.mean(u < us)
+
     return TestResult(t, pvalue, ts)
 
 
@@ -188,8 +198,8 @@ def anova(
     -------
     TestResult
     """
-    del kwargs["transform"]
-    return test(_ANOVA(), x, y, *args, **kwargs)
+    kwargs["transform"] = None
+    return same_population(_ANOVA(), x, y, *args, **kwargs)
 
 
 def mannwhitneyu(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
@@ -226,8 +236,8 @@ def mannwhitneyu(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     n1 = len(x)
     n2 = len(y)
     mu = n1 * n2 // 2
-    del kwargs["transform"]
-    return test(_mannwhitneyu, x, y, transform=lambda x: np.abs(x - mu), **kwargs)
+    kwargs["transform"] = lambda x: np.abs(x - mu)
+    return same_population(_mannwhitneyu, x, y, **kwargs)
 
 
 def kruskal(
@@ -255,8 +265,8 @@ def kruskal(
     -------
     TestResult
     """
-    del kwargs["transform"]
-    return test(_kruskal, x, y, *args, **kwargs)
+    kwargs["transform"] = None
+    return same_population(_kruskal, x, y, *args, **kwargs)
 
 
 def ks(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
@@ -278,7 +288,8 @@ def ks(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     -------
     TestResult
     """
-    return test(_KS(), x, y, **kwargs)
+    kwargs["transform"] = None
+    return same_population(_KS(), x, y, **kwargs)
 
 
 def pearson(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
@@ -302,8 +313,8 @@ def pearson(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
         raise ValueError("x and y must have have the same length")
     if len(x) < 2:
         raise ValueError("length of x and y must be at least 2.")
-    del kwargs["transform"]
-    return test(_pearson, x, y, transform=np.abs, **kwargs)
+    kwargs["transform"] = np.abs
+    return same_population(_pearson, x, y, **kwargs)
 
 
 def spearman(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
@@ -327,8 +338,8 @@ def spearman(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
         raise ValueError("x and y must have have the same length")
     if len(x) < 2:
         raise ValueError("length of x and y must be at least 2.")
-    del kwargs["transform"]
-    return test(_spearman, x, y, transform=np.abs, **kwargs)
+    kwargs["transform"] = np.abs
+    return same_population(_spearman, x, y, **kwargs)
 
 
 def ttest(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
@@ -354,45 +365,93 @@ def ttest(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     -------
     TestResult
     """
-    del kwargs["transform"]
-    return test(_ttest, x, y, transform=np.abs, **kwargs)
+    kwargs["transform"] = np.abs
+    return same_population(_ttest, x, y, **kwargs)
 
 
-def usp(w: _ArrayLike, **kwargs: _Kwargs):
+def usp(
+    x: _ArrayLike,
+    y: _ArrayLike,
+    *,
+    size: int = 1000,
+    random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
+):
     """
-    Test independence of two data sets based on a two-dimensional histogram.
+    Test independence of two discrete data sets with the U-statistic.
 
-    To apply this test, generate a two-dimensional histogram from the pairs of input
-    data (X_i, Y_i). Pass the resulting 2D histogram to this function. The histogram
-    does not have to be square.
+    The test requries that x and y contain integer values, which represent the different
+    discrete categories. To apply this test to continguous data, you need to choose a
+    binning along x and y (number bins and bin widths can be arbitrary, generally going
+    for a large number of bins is safe and better), and then convert continguous values
+    in x and y into bin indices and pass the arrays of bin indices to this test.
 
-    The test is the U-statistic permutation (USP) test of independence for
-    discrete data displayed in a contigency table, paper:
-    https://doi.org/10.1098/rspa.2021.0549
-    According to the papeer, it outperforms the Pearson's chi^2 and the G-test, both
+    The test is the U-statistic permutation (USP) test of independence for pairs of
+    discrete data, paper: https://doi.org/10.1098/rspa.2021.0549.
+    According to the paper, it outperforms the Pearson's chi^2 and the G-test in both
     in stability and power.
 
     Parameters
     ----------
-    w : array-like
-        2D histgram of (X, Y) pairs.
-    **kwargs :
-        Keyword arguments are forward to :meth:`test`.
+    x : array-like
+        Array with the first value of each pair. Must contain integer values.
+    y : array-like
+        Array with the second value of each pair. Must contain integer values.
+    size : int, optional
+        Number of permutations. Default 1000.
+    random_state : numpy.random.Generator or int, optional
+        Random number generator instance. If an integer is passed, seed the numpy
+        default generator with it. Default is to use `numpy.random.default_rng()`.
 
     Returns
     -------
     TestResult
     """
-    w = np.atleast_2d(w)
-    if w.ndim != 2:
-        raise ValueError("w must be a 2D array-like")
-    if w.shape[0] < 2 or w.shape[1] < 2:
-        raise ValueError("w must have at least two entries per dimension")
-    return test(_usp, w, **kwargs)
+    rng = _normalize_rng(random_state)
+
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    for a in (x, y):
+        if a.ndim != 1:
+            raise ValueError("input array must be 1D")
+        if a.dtype.kind != "i":
+            raise ValueError("input array must contain integers")
+    if len(x) != len(y):
+        raise ValueError("input arrays must have same length")
+
+    _, xmap, wx = np.unique(x, return_inverse=True, return_counts=True)
+    _, ymap, wy = np.unique(y, return_inverse=True, return_counts=True)
+    n = np.sum(wx)
+    f1 = 1.0 / (n * (n - 3))
+    f2 = 4.0 / (n * (n - 2) * (n - 3))
+
+    m = np.outer(wx, wy) / n
+    w = np.zeros((len(wx), len(wy)))
+
+    t = _usp(f1, f2, xmap, ymap, w, m)
+
+    ts = np.empty(size)
+    for i in range(size):
+        rng.shuffle(ymap)
+        w[:] = 0
+        ts[i] = _usp(f1, f2, xmap, ymap, w, m)
+
+    pvalue = np.mean(t < ts)
+    return TestResult(t, pvalue, ts)
 
 
-def _usp(w: np.ndarray) -> float:
-    return 0.0
+def _usp(
+    f1: float,
+    f2: float,
+    xmap: np.ndarray,
+    ymap: np.ndarray,
+    w: np.ndarray,
+    m: np.ndarray,
+) -> float:
+    # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
+    # to-do: accelerate this
+    for ii, jj in zip(xmap, ymap):
+        w[ii, jj] += 1
+    return f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
 
 def _ttest(x: np.ndarray, y: np.ndarray) -> float:
