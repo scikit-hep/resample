@@ -168,6 +168,7 @@ def usp(
             ymap[k : k + wij] = iy
             k += wij
 
+    # iteratively generate of permutations until target precision is reached
     ts_total = []
     n = 0
     n1 = 0
@@ -175,8 +176,9 @@ def usp(
     for iter in range(20):
         k = min(k, max_size - n)
         if k <= 0:
-            break
+            break  # pragma: no cover
 
+        # compute p-value and its uncertainty
         ts = np.empty(k)
         for b in range(k):
             rng.shuffle(ymap)
@@ -185,7 +187,6 @@ def usp(
             for i, j in zip(xmap, ymap):
                 w[i, j] += 1
             ts[b] = f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
-
         n1 += np.sum(t < ts)
         n += k
         ts_total.append(ts)
@@ -195,8 +196,8 @@ def usp(
             break
 
         pbar = np.mean(interval)
-        kest = int(pbar * (1 - pbar) / precision ** 2)
-        k = np.clip(n // 2, 10 * n, kest - n)
+        k_projected = int(pbar * (1 - pbar) / precision ** 2) - n
+        k = np.clip(n // 2, 10 * n, k_projected)
 
     return TestResult(t, pvalue, interval, np.concatenate(ts_total))
 
@@ -267,7 +268,7 @@ def same_population(
         if a.ndim != 1:
             raise ValueError("input samples must be 1D arrays")
         if len(a) < 2:
-            raise ValueError("input arrays must have length >= 2")
+            raise ValueError("input arrays must have at least two items")
         if a.dtype.kind == "f" and np.any(np.isnan(a)):
             raise ValueError("input contains NaN")
         r.append(a)
@@ -287,6 +288,7 @@ def same_population(
 
     joined_sample = np.concatenate(args)
 
+    # iteratively generate of permutations until target precision is reached
     ts_total = []
     n = 0
     n1 = 0
@@ -294,21 +296,19 @@ def same_population(
     for iter in range(20):
         k = min(k, max_size - n)
         if k <= 0:
-            break
+            break  # pragma: no cover
 
+        # compute p-value and its uncertainty
         ts = np.empty(k)
         for b in range(k):
             rng.shuffle(joined_sample)
             ts[b] = fn(*(joined_sample[sl] for sl in slices))
-
-        # compute p-value
         if transform is None:
             u = t
             us = ts
         else:
             u = transform(t)
             us = transform(ts)
-
         n1 += np.sum(u < us)
         n += k
         ts_total.append(ts)
@@ -318,8 +318,8 @@ def same_population(
             break
 
         pbar = np.mean(interval)
-        kest = int(pbar * (1 - pbar) / precision ** 2)
-        k = np.clip(n // 2, 10 * n, kest - n)
+        k_projected = int(pbar * (1 - pbar) / precision ** 2) - n
+        k = np.clip(n // 2, 10 * n, k_projected)
 
     return TestResult(t, pvalue, interval, np.concatenate(ts_total))
 

@@ -243,6 +243,9 @@ def test_ttest_bad_input():
     with pytest.raises(ValueError):
         perm.ttest(1, 2)
 
+    with pytest.raises(ValueError):
+        perm.ttest([1], [2])
+
 
 @pytest.mark.parametrize("test", (perm.ttest, perm.usp))
 @pytest.mark.parametrize("prec", (0, 0.05, 0.005))
