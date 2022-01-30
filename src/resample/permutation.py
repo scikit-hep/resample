@@ -38,6 +38,8 @@ _dataclass_kwargs = {"frozen": True, "repr": False}
 if sys.version_info >= (3, 10):
     _dataclass_kwargs["slots"] = True  # pragma: no cover
 
+_Kwargs = _tp.Any
+
 
 @dataclass(**_dataclass_kwargs)
 class TestResult:
@@ -124,9 +126,16 @@ def test(
     TestResult
     """
     rng = _normalize_rng(random_state)
-    args = _process_args(x, y, *args)
-    if args is None:
-        raise ValueError("input contains NaN")
+    r = []
+    for arg in (x, y) + args:
+        a = np.array(arg)
+        if a.dtype.kind == "f" and np.any(np.isnan(a)):
+            raise ValueError("input contains NaN")
+        if len(a) < 2:
+            raise ValueError("input arrays must have at least length 2")
+        r.append(a)
+    args = r
+    del r
 
     # compute test statistic for original input
     t = fn(*args)
@@ -153,11 +162,7 @@ def test(
 
 
 def anova(
-    x: _ArrayLike,
-    y: _ArrayLike,
-    *args: _ArrayLike,
-    size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
+    x: _ArrayLike, y: _ArrayLike, *args: _ArrayLike, **kwargs: _Kwargs
 ) -> TestResult:
     """
     Test whether the means of two or more samples are compatible.
@@ -176,26 +181,18 @@ def anova(
         Second sample.
     *args : array-like
         Further samples.
-    size : int, optional
-        Number of permutations. Default 1000.
-    random_state : numpy.random.Generator or int, optional
-        Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
 
     Returns
     -------
     TestResult
     """
-    return test(_ANOVA(), x, y, *args, size=size, random_state=random_state)
+    del kwargs["transform"]
+    return test(_ANOVA(), x, y, *args, **kwargs)
 
 
-def mannwhitneyu(
-    x: _ArrayLike,
-    y: _ArrayLike,
-    *,
-    size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> TestResult:
+def mannwhitneyu(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     Test whether two samples are drawn from the same population based on ranking.
 
@@ -217,11 +214,10 @@ def mannwhitneyu(
         First sample.
     y : array-like
         Second sample.
-    size : int, optional
-        Number of permutations. Default 1000.
-    random_state : numpy.random.Generator or int, optional
-        Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
 
     Returns
     -------
@@ -230,22 +226,12 @@ def mannwhitneyu(
     n1 = len(x)
     n2 = len(y)
     mu = n1 * n2 // 2
-    return test(
-        _mannwhitneyu,
-        x,
-        y,
-        transform=lambda x: np.abs(x - mu),
-        size=size,
-        random_state=random_state,
-    )
+    del kwargs["transform"]
+    return test(_mannwhitneyu, x, y, transform=lambda x: np.abs(x - mu), **kwargs)
 
 
 def kruskal(
-    x: _ArrayLike,
-    y: _ArrayLike,
-    *args: _ArrayLike,
-    size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
+    x: _ArrayLike, y: _ArrayLike, *args: _ArrayLike, **kwargs: _Kwargs
 ) -> TestResult:
     """
     Test whether two or more samples are drawn from the same population.
@@ -262,26 +248,18 @@ def kruskal(
         Second sample.
     *args : array-like
         Further samples.
-    size : int, optional
-        Number of permutations. Default 1000.
-    random_state : numpy.random.Generator or int, optional
-        Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
 
     Returns
     -------
     TestResult
     """
-    return test(_kruskal, x, y, *args, size=size, random_state=random_state)
+    del kwargs["transform"]
+    return test(_kruskal, x, y, *args, **kwargs)
 
 
-def ks(
-    x: _ArrayLike,
-    y: _ArrayLike,
-    *,
-    size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> TestResult:
+def ks(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     Test whether two samples are drawn from the same population.
 
@@ -293,26 +271,17 @@ def ks(
         First sample.
     y : array-like
         Second sample.
-    size : int, optional
-        Number of permutations. Default 1000.
-    random_state : numpy.random.Generator or int, optional
-        Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
 
     Returns
     -------
     TestResult
     """
-    return test(_KS(), x, y, size=size, random_state=random_state)
+    return test(_KS(), x, y, **kwargs)
 
 
-def pearson(
-    x: _ArrayLike,
-    y: _ArrayLike,
-    *,
-    size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> TestResult:
+def pearson(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     Perform permutation-based correlation test.
 
@@ -322,11 +291,8 @@ def pearson(
         First sample.
     y : array-like
         Second sample.
-    size : int, optional
-        Number of permutations. Default 1000.
-    random_state : numpy.random.Generator or int, optional
-        Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
 
     Returns
     -------
@@ -336,16 +302,11 @@ def pearson(
         raise ValueError("x and y must have have the same length")
     if len(x) < 2:
         raise ValueError("length of x and y must be at least 2.")
-    return test(_pearson, x, y, transform=np.abs, size=size, random_state=random_state)
+    del kwargs["transform"]
+    return test(_pearson, x, y, transform=np.abs, **kwargs)
 
 
-def spearman(
-    x: _ArrayLike,
-    y: _ArrayLike,
-    *,
-    size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> TestResult:
+def spearman(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     Perform permutation-based correlation test of rank data.
 
@@ -355,11 +316,8 @@ def spearman(
         First sample.
     y : array-like
         Second sample.
-    size : int, optional
-        Number of permutations. Default 1000.
-    random_state : numpy.random.Generator or int, optional
-        Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
 
     Returns
     -------
@@ -369,16 +327,11 @@ def spearman(
         raise ValueError("x and y must have have the same length")
     if len(x) < 2:
         raise ValueError("length of x and y must be at least 2.")
-    return test(_spearman, x, y, transform=np.abs, size=size, random_state=random_state)
+    del kwargs["transform"]
+    return test(_spearman, x, y, transform=np.abs, **kwargs)
 
 
-def ttest(
-    x: _ArrayLike,
-    y: _ArrayLike,
-    *,
-    size: int = 1000,
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]] = None,
-) -> TestResult:
+def ttest(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     Test whether the means of two samples are compatible with Welch's t-test.
 
@@ -394,36 +347,52 @@ def ttest(
         First sample.
     y : array-like
         Second sample.
-    size : int, optional
-        Number of permutations. Default 1000.
-    random_state : numpy.random.Generator or int, optional
-        Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
 
     Returns
     -------
     TestResult
     """
-    return test(
-        _ttest,
-        x,
-        y,
-        transform=np.abs,
-        size=size,
-        random_state=random_state,
-    )
+    del kwargs["transform"]
+    return test(_ttest, x, y, transform=np.abs, **kwargs)
 
 
-def _process_args(
-    *args: _ArrayLike,
-) -> _tp.Optional[_tp.List[np.ndarray]]:
-    r = []
-    for arg in args:
-        a = np.array(arg)
-        if a.dtype.kind == "f" and np.any(np.isnan(a)):
-            return None
-        r.append(a)
-    return r
+def usp(w: _ArrayLike, **kwargs: _Kwargs):
+    """
+    Test independence of two data sets based on a two-dimensional histogram.
+
+    To apply this test, generate a two-dimensional histogram from the pairs of input
+    data (X_i, Y_i). Pass the resulting 2D histogram to this function. The histogram
+    does not have to be square.
+
+    The test is the U-statistic permutation (USP) test of independence for
+    discrete data displayed in a contigency table, paper:
+    https://doi.org/10.1098/rspa.2021.0549
+    According to the papeer, it outperforms the Pearson's chi^2 and the G-test, both
+    in stability and power.
+
+    Parameters
+    ----------
+    w : array-like
+        2D histgram of (X, Y) pairs.
+    **kwargs :
+        Keyword arguments are forward to :meth:`test`.
+
+    Returns
+    -------
+    TestResult
+    """
+    w = np.atleast_2d(w)
+    if w.ndim != 2:
+        raise ValueError("w must be a 2D array-like")
+    if w.shape[0] < 2 or w.shape[1] < 2:
+        raise ValueError("w must have at least two entries per dimension")
+    return test(_usp, w, **kwargs)
+
+
+def _usp(w: np.ndarray) -> float:
+    return 0.0
 
 
 def _ttest(x: np.ndarray, y: np.ndarray) -> float:
