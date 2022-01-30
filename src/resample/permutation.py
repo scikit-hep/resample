@@ -53,14 +53,20 @@ class TestResult:
     statistic: float
         Value of the test statistic computed on the original data
     pvalue: float
-        Chance probability (aka Type I error) for rejecting the null hypothesis. See
-        https://en.wikipedia.org/wiki/P-value for details.
+        Estimated chance probability (aka Type I error) for rejecting the null
+        hypothesis. See https://en.wikipedia.org/wiki/P-value for details.
+    interval: (float, float)
+        Standard interval (approximately 68 % coverage) for the pvalue. This interval
+        reflects the statistical uncertainty from doing only a finite number of random
+        permutations instead of infinitely many. The interval can be narrowed down by
+        running the test with more permutations.
     samples: array
         Values of the test statistic from the permutated samples.
     """
 
     statistic: float
     pvalue: float
+    interval: _tp.Tuple[float, float]
     samples: np.ndarray
 
     def __repr__(self) -> str:
@@ -71,8 +77,8 @@ class TestResult:
             s = "[{0}, {1}, {2}, ..., {3}, {4}, {5}]".format(
                 *self.samples[:3], *self.samples[-3:]
             )
-        return "<TestResult statistic={0} pvalue={1} samples={2}>".format(
-            self.statistic, self.pvalue, s
+        return "<TestResult statistic={0} pvalue={1} interval={2} samples={3}>".format(
+            self.statistic, self.pvalue, self.interval, s
         )
 
     def __len__(self):
@@ -84,6 +90,8 @@ class TestResult:
         elif idx == 1:
             return self.pvalue
         elif idx == 2:
+            return self.interval
+        elif idx == 3:
             return self.samples
         raise IndexError
 
@@ -165,9 +173,10 @@ def same_population(
     else:
         u = transform(t)
         us = transform(ts)
-    pvalue = np.mean(u < us)
 
-    return TestResult(t, pvalue, ts)
+    n1 = np.sum(u < us)
+    pvalue, interval = _wilson_score_interval(n1, len(us), 1.0)
+    return TestResult(t, pvalue, interval, ts)
 
 
 def anova(
@@ -438,8 +447,9 @@ def usp(
             w[i, j] += 1
         ts[b] = f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
-    pvalue = np.mean(t < ts)
-    return TestResult(t, pvalue, ts)
+    n1 = np.sum(t < ts)
+    pvalue, interval = _wilson_score_interval(n1, len(ts), 1.0)
+    return TestResult(t, pvalue, interval, ts)
 
 
 def _ttest(x: np.ndarray, y: np.ndarray) -> float:
@@ -541,3 +551,11 @@ class _KS:
 
     def _init(self, args: _tp.Tuple[np.ndarray, ...]) -> None:
         self.all = np.concatenate(args)
+
+
+def _wilson_score_interval(n1, n, z):
+    p = n1 / n
+    norm = 1 / (1 + z ** 2 / n)
+    a = p + 0.5 * z ** 2 / n
+    b = z * np.sqrt(p * (1 - p) / n + 0.25 * (z / n) ** 2)
+    return p, ((a - b) * norm, (a + b) * norm)
