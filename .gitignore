@@ -9,12 +9,12 @@ install_log.txt
 .pytest_cache
 .mypy_cache
 .benchmarks
-resample/.coverage
+.coverage
+coverage.xml
 *.sh
 html*
 .doctrees
 _build
-*coverage*
 .idea
 benchmarks/.asv/
 junit
