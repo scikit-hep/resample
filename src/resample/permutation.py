@@ -464,8 +464,6 @@ def pearson(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     if len(x) != len(y):
         raise ValueError("x and y must have have the same length")
-    if len(x) < 2:
-        raise ValueError("length of x and y must be at least 2.")
     kwargs["transform"] = np.abs
     return same_population(_pearson, x, y, **kwargs)
 
@@ -489,8 +487,6 @@ def spearman(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     if len(x) != len(y):
         raise ValueError("x and y must have have the same length")
-    if len(x) < 2:
-        raise ValueError("length of x and y must be at least 2.")
     kwargs["transform"] = np.abs
     return same_population(_spearman, x, y, **kwargs)
 
