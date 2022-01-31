@@ -196,7 +196,7 @@ def usp(
             break
 
         pbar = np.mean(interval)
-        k_projected = int(pbar * (1 - pbar) / precision ** 2) - n
+        k_projected = int(pbar * (1 - pbar) / precision**2) - n
         k = np.clip(n // 2, 10 * n, k_projected)
 
     return TestResult(t, pvalue, interval, np.concatenate(ts_total))
@@ -318,7 +318,7 @@ def same_population(
             break
 
         pbar = np.mean(interval)
-        k_projected = int(pbar * (1 - pbar) / precision ** 2) - n
+        k_projected = int(pbar * (1 - pbar) / precision**2) - n
         k = np.clip(n // 2, 10 * n, k_projected)
 
     return TestResult(t, pvalue, interval, np.concatenate(ts_total))
@@ -621,7 +621,7 @@ class _KS:
 
 def _wilson_score_interval(n1, n, z):
     p = n1 / n
-    norm = 1 / (1 + z ** 2 / n)
-    a = p + 0.5 * z ** 2 / n
+    norm = 1 / (1 + z**2 / n)
+    a = p + 0.5 * z**2 / n
     b = z * np.sqrt(p * (1 - p) / n + 0.25 * (z / n) ** 2)
     return p, ((a - b) * norm, (a + b) * norm)
