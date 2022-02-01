@@ -489,8 +489,8 @@ def _confidence_interval_bca(
     j_thetas = j_thetas.astype(j_mean.dtype, copy=False)
     j_thetas -= j_mean
     num = np.sum((-j_thetas) ** 3)
-    den = np.sum(j_thetas ** 2)
-    acc = num / (6 * den ** 1.5) if den > 0 else 0.0
+    den = np.sum(j_thetas**2)
+    acc = num / (6 * den**1.5) if den > 0 else 0.0
 
     z_low = z_naught + norm.ppf(alpha_half)
     z_high = z_naught + norm.ppf(1 - alpha_half)
