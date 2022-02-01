@@ -29,7 +29,6 @@ from scipy.stats import rankdata as _rankdata
 from scipy.stats import tiecorrect as _tiecorrect
 
 from ._util import _normalize_rng
-from .empirical import cdf_gen
 
 _dataclass_kwargs = {"frozen": True, "repr": False}
 if sys.version_info >= (3, 10):
@@ -434,29 +433,6 @@ def kruskal(
     return same_population(_kruskal, x, y, *args, **kwargs)
 
 
-def ks(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
-    """
-    Test whether two samples are drawn from the same population using the KS distance.
-
-    This performs the permutation-based two-sided Kolmogorov-Smirnov test.
-
-    Parameters
-    ----------
-    x : array-like
-        First sample.
-    y : array-like
-        Second sample.
-    **kwargs :
-        Keyword arguments are forward to :meth:`same_population`.
-
-    Returns
-    -------
-    TestResult
-    """
-    kwargs["transform"] = None
-    return same_population(_KS(), x, y, **kwargs)
-
-
 def pearsonr(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     Test whether two samples are drawn from the same population using the correlation.
@@ -620,24 +596,6 @@ class _ANOVA:
         self.km1 = k - 1
         self.nmk = n - k
         self.a_bar = np.mean(np.concatenate(args))
-
-
-class _KS:
-    all = None
-
-    def __call__(self, *args: np.ndarray) -> float:
-        if self.all is None:
-            self._init(args)
-        x, y = args
-        f1 = cdf_gen(x)
-        f2 = cdf_gen(y)
-        d = f1(self.all) - f2(self.all)
-        d1 = np.clip(-np.min(d), 0, 1)
-        d2 = np.max(d)
-        return max(d1, d2)
-
-    def _init(self, args: _tp.Tuple[np.ndarray, ...]) -> None:
-        self.all = np.concatenate(args)
 
 
 def _wilson_score_interval(n1, n, z):
