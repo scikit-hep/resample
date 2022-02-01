@@ -1,6 +1,5 @@
 """
-Bootstrap resampling
-====================
+Bootstrap resampling tools.
 
 Compute estimator bias, variance, confidence intervals with bootstrap resampling.
 Several forms of bootstrapping on N-dimensional data are supported: ordinary, balanced,

@@ -17,7 +17,7 @@ def test_TestResult():
     assert p.interval == (1, 3)
     assert p.samples == [3, 4]
     assert repr(p) == "<TestResult statistic=1 pvalue=2 interval=(1, 3) samples=[3, 4]>"
-    assert len(p) == 3
+    assert len(p) == 4
     first, *rest = p
     assert first == 1
     assert rest == [2, (1, 3), [3, 4]]
@@ -50,15 +50,22 @@ def test_wilson_score_interval():
     assert_allclose(lh, (0.9, 1.0), atol=0.01)
 
 
-scipy = {
-    "anova": stats.f_oneway,
-    "mannwhitneyu": lambda x, y: stats.mannwhitneyu(x, y, alternative="two-sided"),
-    "kruskal": stats.kruskal,
-    "ks": stats.ks_2samp,
-    "pearson": stats.pearsonr,
-    "spearman": stats.spearmanr,
-    "ttest": lambda x, y: stats.ttest_ind(x, y, equal_var=False),
-}
+class Scipy:
+    def __init__(self, **kwargs):
+        self.d = kwargs
+
+    def __getitem__(self, key):
+        if key in self.d:
+            return self.d[key]
+        return getattr(stats, key)
+
+
+scipy = Scipy(
+    anova=stats.f_oneway,
+    mannwhitneyu=lambda x, y: stats.mannwhitneyu(x, y, alternative="two-sided"),
+    ks=stats.ks_2samp,
+    ttest=lambda x, y: stats.ttest_ind(x, y, equal_var=False),
+)
 
 
 @pytest.mark.parametrize(
@@ -68,8 +75,8 @@ scipy = {
         "mannwhitneyu",
         "kruskal",
         "ks",
-        "pearson",
-        "spearman",
+        "pearsonr",
+        "spearmanr",
         "ttest",
     ),
 )
@@ -95,8 +102,8 @@ def test_two_sample_same_size(test_name, size, rng):
         "mannwhitneyu",
         "kruskal",
         "ks",
-        "pearson",
-        "spearman",
+        "pearsonr",
+        "spearmanr",
         "ttest",
     ),
 )
@@ -108,7 +115,7 @@ def test_two_sample_different_size(test_name, size, rng):
     test = getattr(perm, test_name)
     scipy_test = scipy[test_name]
 
-    if test_name in ("pearson", "spearman"):
+    if test_name in ("pearsonr", "spearmanr"):
         with pytest.raises(ValueError):
             test(x, y)
         return
@@ -192,8 +199,8 @@ def test_usp_2(rng):
 
 def test_usp_3(rng):
     cov = np.empty((2, 2))
-    cov[0, 0] = 2**2
-    cov[1, 1] = 3**2
+    cov[0, 0] = 2 ** 2
+    cov[1, 1] = 3 ** 2
     rho = 0.5
     cov[0, 1] = rho * np.sqrt(cov[0, 0] * cov[1, 1])
     cov[1, 0] = cov[0, 1]

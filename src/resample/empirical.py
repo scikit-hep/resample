@@ -1,6 +1,5 @@
 """
-Empirical functions
-===================
+Empirical functions.
 
 Empirical functions based on a data sample instead of a parameteric density function,
 like the empirical CDF. Implemented here are mostly tools used internally.
