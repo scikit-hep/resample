@@ -1,11 +1,8 @@
 """
-resample
-========
+Resampling tools for Python.
 
-Randomisation-based inference in Python based on data resampling and permutation.
-
-Features
---------
+This library offers randomisation-based inference in Python based on data resampling
+and permutation. The following functionality is implemented.
 
 - Bootstrap samples (ordinary or balanced with optional stratification) from N-D arrays
 - Apply parametric bootstrap (Gaussian, Poisson, gamma, etc.) on samples
