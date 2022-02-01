@@ -1,6 +1,5 @@
 """
-Jackknife resampling
-====================
+Jackknife resampling tools.
 
 Compute estimator bias and variance with jackknife resampling. The implementation
 supports resampling of N-dimensional data. The interface of this module mimics that of
@@ -24,7 +23,7 @@ def resample(
     sample: _ArrayLike, *args: _Args, copy: bool = True
 ) -> _tp.Generator[np.ndarray, None, None]:
     """
-    Generator of jackknifed samples.
+    Generate jackknifed samples.
 
     Parameters
     ----------

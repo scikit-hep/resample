@@ -41,3 +41,9 @@ repos:
   hooks:
   - id: isort
     args: [--profile, black, --filter-files]
+
+# Python sort imports
+- repo: https://github.com/pycqa/pydocstyle
+  rev: 6.1.1  # pick a git hash / tag to point to
+  hooks:
+  - id: pydocstyle

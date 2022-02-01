@@ -1,6 +1,5 @@
 """
-Permutation-based tests
-=======================
+Permutation-based tests.
 
 A collection of statistical tests that use permutated samples. Permutations are used to
 compute the distribution of a test statistic under some null hypothesis to obtain
@@ -56,7 +55,7 @@ class TestResult:
         Estimated chance probability (aka Type I error) for rejecting the null
         hypothesis. See https://en.wikipedia.org/wiki/P-value for details.
     interval: (float, float)
-        Standard interval (approximately 68 % coverage) for the pvalue. This interval
+        Standard interval (approximately 68 % coverage) for the p-value. This interval
         reflects the statistical uncertainty from doing only a finite number of random
         permutations instead of infinitely many. The interval can be narrowed down by
         running the test with more permutations.
@@ -70,6 +69,7 @@ class TestResult:
     samples: np.ndarray
 
     def __repr__(self) -> str:
+        """Return (potentially shortened) representation."""
         s = None
         if len(self.samples) < 7:
             s = str(self.samples)
@@ -82,9 +82,11 @@ class TestResult:
         )
 
     def __len__(self):
-        return 3
+        """Return length of tuple."""
+        return 4
 
     def __getitem__(self, idx):
+        """Return fields by index."""
         if idx == 0:
             return self.statistic
         elif idx == 1:
@@ -330,11 +332,10 @@ def anova(
     """
     Test whether the means of two or more samples are compatible.
 
-    This test uses one-way analysis of variance (one-way ANOVA), see
-    https://en.wikipedia.org/wiki/One-way_analysis_of_variance and
-    https://en.wikipedia.org/wiki/F-test for details. This test is typically used when
-    one has three groups or more. For two groups, Welch's ttest is preferred, because
-    ANOVA assumes equal variances for the samples.
+    This test uses one-way analysis of variance (one-way ANOVA) which tests whether the
+    samples have the same mean. This test is typically used when one has three groups
+    or more. For two groups, Welch's ttest is preferred, because ANOVA assumes equal
+    variances for the samples.
 
     Parameters
     ----------
@@ -350,6 +351,11 @@ def anova(
     Returns
     -------
     TestResult
+
+    Notes
+    -----
+    https://en.wikipedia.org/wiki/One-way_analysis_of_variance
+    https://en.wikipedia.org/wiki/F-test
     """
     kwargs["transform"] = None
     return same_population(_ANOVA(), x, y, *args, **kwargs)
@@ -359,17 +365,15 @@ def mannwhitneyu(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
     Test whether two samples are drawn from the same population based on ranking.
 
-    This performs the permutation-based Mann-Whitney U test, see
-    https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test for details. The test
+    This performs the permutation-based Mann-Whitney U test, see for details. The test
     works for any population of samples that are ordinal, so also for integers. This is
-    the two-sided version of the test, meaning that the test gives the same pvalue if
+    the two-sided version of the test, meaning that the test gives the same p-value if
     x and y are swapped.
 
     For normally distributed data, the test is almost as powerful as the t-test and
-    considerably more powerful for non-normal populations. It should be kept in mind,
-    however, that the two tests are not equivalent. The t-test tests whether
-    two samples have the same mean and ignores differences in variance, while the
-    Mann-Whitney U test would detect differences in variance.
+    considerably more powerful for non-normal populations. The t-test tests whether two
+    samples have the same mean and ignores differences in variance, while the
+    Mann-Whitney U test also detects differences in variance.
 
     Parameters
     ----------
@@ -385,6 +389,10 @@ def mannwhitneyu(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     Returns
     -------
     TestResult
+
+    Notes
+    -----
+    https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
     """
     n1 = len(x)
     n2 = len(y)
@@ -397,11 +405,11 @@ def kruskal(
     x: _ArrayLike, y: _ArrayLike, *args: _ArrayLike, **kwargs: _Kwargs
 ) -> TestResult:
     """
-    Test whether two or more samples are drawn from the same population.
+    Test whether two or more samples have the same mean rank.
 
-    This performs a permutation-based Kruskal-Wallis test, see
-    https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
-    for details. It extends the Mann-Whitney U test to more than two groups.
+    This performs a permutation-based Kruskal-Wallis test. In a sense, it extends the
+    Mann-Whitney U test, which also uses ranks, to more than two groups. It does so by
+    comparing the means of the rank distributions.
 
     Parameters
     ----------
@@ -417,6 +425,10 @@ def kruskal(
     Returns
     -------
     TestResult
+
+    Notes
+    -----
+    https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
     """
     kwargs["transform"] = None
     return same_population(_kruskal, x, y, *args, **kwargs)
@@ -424,7 +436,7 @@ def kruskal(
 
 def ks(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
-    Test whether two samples are drawn from the same population.
+    Test whether two samples are drawn from the same population using the KS distance.
 
     This performs the permutation-based two-sided Kolmogorov-Smirnov test.
 
@@ -445,9 +457,15 @@ def ks(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     return same_population(_KS(), x, y, **kwargs)
 
 
-def pearson(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
+def pearsonr(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
-    Perform permutation-based correlation test.
+    Test whether two samples are drawn from the same population using the correlation.
+
+    The test statistic is the Pearson correlation coefficient. The test is very
+    sensitive to linear relationship of x and y. If the relationship is very non-linear
+    but monotonic, :func:`spearmanr` may be more sensitive.
+
+    https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
     Parameters
     ----------
@@ -468,9 +486,12 @@ def pearson(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     return same_population(_pearson, x, y, **kwargs)
 
 
-def spearman(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
+def spearmanr(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     """
-    Perform permutation-based correlation test of rank data.
+    Test whether two samples are drawn from the same population using rank correlation.
+
+    The test statistic is Spearman's rank correlation coefficient. The test is very
+    sensitive to monotonic relationships between x and y, even if it is very non-linear.
 
     Parameters
     ----------
@@ -497,7 +518,7 @@ def ttest(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
 
     See https://en.wikipedia.org/wiki/Welch%27s_t-test for details on this test. The
     p-value computed is for the null hypothesis that the two population means are equal.
-    The test is two-sided, which means that swapping x and y gives the same pvalue.
+    The test is two-sided, which means that swapping x and y gives the same p-value.
     Welch's t-test does not require the sample sizes to be equal and it does not require
     the samples to have the same variance.
 
