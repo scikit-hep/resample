@@ -62,7 +62,6 @@ class Scipy:
 
 scipy = Scipy(
     anova=stats.f_oneway,
-    mannwhitneyu=lambda x, y: stats.mannwhitneyu(x, y, alternative="two-sided"),
     ttest=lambda x, y: stats.ttest_ind(x, y, equal_var=False),
 )
 
@@ -71,7 +70,6 @@ scipy = Scipy(
     "test_name",
     (
         "anova",
-        "mannwhitneyu",
         "kruskal",
         "pearsonr",
         "spearmanr",
@@ -97,7 +95,6 @@ def test_two_sample_same_size(test_name, size, rng):
     "test_name",
     (
         "anova",
-        "mannwhitneyu",
         "kruskal",
         "pearsonr",
         "spearmanr",
