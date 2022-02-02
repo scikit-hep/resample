@@ -360,46 +360,6 @@ def anova(
     return same_population(_ANOVA(), x, y, *args, **kwargs)
 
 
-def mannwhitneyu(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
-    """
-    Test whether two samples are drawn from the same population based on ranking.
-
-    This performs the permutation-based Mann-Whitney U test, see for details. The test
-    works for any population of samples that are ordinal, so also for integers. This is
-    the two-sided version of the test, meaning that the test gives the same p-value if
-    x and y are swapped.
-
-    For normally distributed data, the test is almost as powerful as the t-test and
-    considerably more powerful for non-normal populations. The t-test tests whether two
-    samples have the same mean and ignores differences in variance, while the
-    Mann-Whitney U test also detects differences in variance.
-
-    Parameters
-    ----------
-    x : array-like
-        First sample.
-    y : array-like
-        Second sample.
-    **kwargs :
-        Keyword arguments are forward to :meth:`same_population`.
-    **kwargs :
-        Keyword arguments are forward to :meth:`same_population`.
-
-    Returns
-    -------
-    TestResult
-
-    Notes
-    -----
-    https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
-    """
-    n1 = len(x)
-    n2 = len(y)
-    mu = n1 * n2 // 2
-    kwargs["transform"] = lambda x: np.abs(x - mu)
-    return same_population(_mannwhitneyu, x, y, **kwargs)
-
-
 def kruskal(
     x: _ArrayLike, y: _ArrayLike, *args: _ArrayLike, **kwargs: _Kwargs
 ) -> TestResult:
@@ -524,16 +484,6 @@ def _ttest(x: np.ndarray, y: np.ndarray) -> float:
     v2 = np.var(y, ddof=1)
     r: float = (m1 - m2) / np.sqrt(v1 / n1 + v2 / n2)
     return r
-
-
-def _mannwhitneyu(x: np.ndarray, y: np.ndarray) -> float:
-    # method 2 from Wikipedia, but returning U1 instead of min(U1, U2) to be
-    # consistent with scipy.stats.mannwhitneyu(x, y, alternative="two-sided")
-    n1 = len(x)
-    a = _rankdata(np.concatenate([x, y]))
-    r1 = np.sum(a[:n1])
-    u1: float = r1 - 0.5 * n1 * (n1 + 1)
-    return u1
 
 
 def _pearson(x: np.ndarray, y: np.ndarray) -> float:
