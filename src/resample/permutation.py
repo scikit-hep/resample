@@ -155,8 +155,7 @@ def usp(
     f1 = 1.0 / (n * (n - 3))
     f2 = 4.0 / (n * (n - 2) * (n - 3))
 
-    # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
-    t = f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
+    t = _usp(f1, f2, w, m)
 
     # generate x,y index arrays
     xmap = np.empty(n, dtype=int)
@@ -169,7 +168,7 @@ def usp(
             ymap[k : k + wij] = iy
             k += wij
 
-    # iteratively generate of permutations until target precision is reached
+    # iteratively generate permutations until target precision is reached
     ts_total = []
     n = 0
     n1 = 0
@@ -183,11 +182,9 @@ def usp(
         ts = np.empty(k)
         for b in range(k):
             rng.shuffle(ymap)
-            w[:] = 0
-            # TODO: speed this up
-            for i, j in zip(xmap, ymap):
-                w[i, j] += 1
-            ts[b] = f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
+            _fill_w(w, xmap, ymap)
+            # m stays the same, since wx and wy remain unchanged
+            ts[b] = _usp(f1, f2, w, m)
         n1 += np.sum(t < ts)
         n += k
         ts_total.append(ts)
@@ -201,6 +198,27 @@ def usp(
         k = np.clip(n // 2, 10 * n, k_projected)
 
     return TestResult(t, pvalue, interval, np.concatenate(ts_total))
+
+
+def _fill_w(w, xmap, ymap):
+    w[:] = 0
+    for i, j in zip(xmap, ymap):
+        w[i, j] += 1
+
+
+# accelerate _fill_w with numba, if it is available,
+# increases speed of usp test 20-30 fold
+try:
+    import numba as nb
+
+    _fill_w = nb.njit(_fill_w)
+except ImportError:
+    pass
+
+
+def _usp(f1, f2, w, m):
+    # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
+    return f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
 
 def same_population(
