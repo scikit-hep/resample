@@ -123,10 +123,10 @@ def usp(
         Two-dimensional array which represents the counts in a histogram. The counts
         can be of floating point type, but must have integral values.
     precision : float, optional
-        Target precision (statistical) for the p-value. The algorithm estimates the
-        number of required permutations to reach the target precision. The accuracy of
-        the actual value may be above or below this value. If precision is zero,
-        max_size permutations are used. Default 0.01.
+        Target precision (statistical) for the p-value. Used to compute the minimum
+        number of permutations needed to reach the target precision. The minimum of this
+        estimate and max_size is used. If precision is zero, max_size permutations are
+        used. Default 0.01.
     max_size : int, optional
         Maximum number of permutations. Default 10000.
     random_state : numpy.random.Generator or int, optional
@@ -172,25 +172,15 @@ def usp(
 
     # For Type I error probabilities to hold theoretically, the number of bootstrap
     # samples drawn may not the depend on the data (comment by Richard Samworth).
-    # However, computing the required number of samples with the worst-case p=0.5
-    # can lead to very pessimistic estimates for the required number of samples,
-    # up to orders of magnitude worse. As a compromise, we burn 10 samples to compute
-    # a crude estimate of the p-value and then use that to draw a fresh sample to
-    # compute the final p-value.
-    niter = 2 if precision > 0 else 1
-    n = 10 if niter > 1 else max_size
-    for iter in range(niter):
-        ts = np.empty(n)
-        for b in range(n):
-            rng.shuffle(ymap)
-            _fill_w(w, xmap, ymap)
-            # m stays the same, since wx and wy remain unchanged
-            ts[b] = _usp(f1, f2, w, m)
-        if iter == 0 and niter > 1:
-            p = _wilson_center(np.mean(t < ts), n)
-            n = min(int(p * (1 - p) / precision**2), max_size)
-        else:
-            pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
+    # So we compute the required number of samples with the worst-case p=0.5.
+    n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
+    ts = np.empty(n)
+    for b in range(n):
+        rng.shuffle(ymap)
+        _fill_w(w, xmap, ymap)
+        # m stays the same, since wx and wy remain unchanged
+        ts[b] = _usp(f1, f2, w, m)
+    pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
 
     return TestResult(t, pvalue, interval, ts)
 
@@ -239,10 +229,10 @@ def same_population(
         Function with signature f(x) for the test statistic to turn it into a measure of
         deviation. Must be vectorised.
     precision : float, optional
-        Target precision (statistical) for the p-value. The algorithm estimates the
-        number of required permutations to reach the target precision. The accuracy of
-        the actual value may be above or below this value. If precision is zero,
-        max_size permutations are used. Default 0.01.
+        Target precision (statistical) for the p-value. Used to compute the minimum
+        number of permutations needed to reach the target precision. The minimum of this
+        estimate and max_size is used. If precision is zero, max_size permutations are
+        used. Default 0.01.
     max_size : int, optional
         Maximum number of permutations. Default 10000.
     random_state : numpy.random.Generator or int, optional
@@ -288,24 +278,18 @@ def same_population(
     joined_sample = np.concatenate(args)
 
     # For algorithm below, see comment in usp function.
-    niter = 2 if precision > 0 else 1
-    n = 10 if niter > 1 else max_size
-    for iter in range(niter):
-        ts = np.empty(n)
-        for b in range(n):
-            rng.shuffle(joined_sample)
-            ts[b] = fn(*(joined_sample[sl] for sl in slices))
-        if transform is None:
-            u = t
-            us = ts
-        else:
-            u = transform(t)
-            us = transform(ts)
-        if iter == 0 and niter > 1:
-            p = _wilson_center(np.mean(u < us), len(us))
-            n = min(int(p * (1 - p) / precision**2), max_size)
-        else:
-            pvalue, interval = _wilson_score_interval(np.sum(u < us), n, 1.0)
+    n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
+    ts = np.empty(n)
+    for b in range(n):
+        rng.shuffle(joined_sample)
+        ts[b] = fn(*(joined_sample[sl] for sl in slices))
+    if transform is None:
+        u = t
+        us = ts
+    else:
+        u = transform(t)
+        us = transform(ts)
+    pvalue, interval = _wilson_score_interval(np.sum(u < us), n, 1.0)
 
     return TestResult(t, pvalue, interval, ts)
 
@@ -539,7 +523,3 @@ def _wilson_score_interval(n1, n, z):
     a = p + 0.5 * z**2 / n
     b = z * np.sqrt(p * (1 - p) / n + 0.25 * (z / n) ** 2)
     return p, ((a - b) * norm, (a + b) * norm)
-
-
-def _wilson_center(p, n):
-    return (p + 0.5 / n) / (1.0 + 1.0 / n)
