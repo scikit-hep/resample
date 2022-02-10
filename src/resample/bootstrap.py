@@ -15,7 +15,7 @@ import typing as _tp
 import numpy as np
 from scipy import stats
 
-from ._util import _normalize_rng
+from ._util import _extended_copy, _normalize_rng
 from .empirical import quantile_function_gen
 from .jackknife import jackknife
 
@@ -44,12 +44,12 @@ def resample(
     size : int, optional
         Number of bootstrap samples to generate. Default is 100.
     method : str or None, optional
-        How to generate bootstrap samples. Supported are 'ordinary', 'balanced', or
-        a distribution name for a parametric bootstrap. Default is 'balanced'.
-        Supported distribution names: 'normal' (also: 'gaussian', 'norm'),
-        'student' (also: 't'), 'laplace', 'logistic', 'F' (also: 'f'),
-        'beta', 'gamma', 'log-normal' (also: 'lognorm', 'log-gaussian'),
-        'inverse-gaussian' (also: 'invgauss'), 'pareto', 'poisson'.
+        How to generate bootstrap samples. Supported are 'ordinary', 'balanced',
+        'poisson', or a distribution name for a parametric bootstrap.
+        Default is 'balanced'. Supported distribution names: 'normal' (also:
+        'gaussian', 'norm'), 'student' (also: 't'), 'laplace', 'logistic',
+        'F' (also: 'f'), 'beta', 'gamma', 'log-normal' (also: 'lognorm',
+        'log-gaussian'), 'inverse-gaussian' (also: 'invgauss'), 'pareto', 'poisson'.
     strata : array-like, optional
         Stratification labels. Must have the same shape as `sample`. Default is None.
     random_state : numpy.random.Generator or int, optional
@@ -130,6 +130,11 @@ def resample(
             return _resample_ordinary_n(args_np, size, rng)
         else:
             return _resample_ordinary_1(sample_np, size, rng)
+    if method == "extended":
+        if args_np:
+            return _resample_extended_n(args_np, size, rng)
+        else:
+            return _resample_extended_1(sample_np, size, rng)
 
     if args_np:
         raise ValueError("Parametric resampling only works with one sample array")
@@ -424,6 +429,25 @@ def _resample_balanced_n(
     for i in range(size):
         m = indices[i * n : (i + 1) * n] % n
         yield tuple(s[m] for s in samples)
+
+
+def _resample_extended_1(
+    sample: np.ndarray, size: int, rng: np.random.Generator
+) -> _tp.Generator[np.ndarray, None, None]:
+    # randomly generates the sample size from a Poisson distribution
+    n = len(sample)
+    for i in range(size):
+        k = rng.poisson(1, size=n)
+        yield _extended_copy(sample, k)
+
+
+def _resample_extended_n(
+    samples: _tp.List[np.ndarray], size: int, rng: np.random.Generator
+) -> _tp.Generator[np.ndarray, None, None]:
+    n = len(samples[0])
+    for i in range(size):
+        k = rng.poisson(1, size=n)
+        yield tuple(_extended_copy(s, k) for s in samples)
 
 
 def _fit_parametric_family(

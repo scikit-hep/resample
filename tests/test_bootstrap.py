@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_equal, assert_allclose
 from scipy import stats
 
 from resample.bootstrap import (
@@ -38,7 +38,7 @@ def chisquare(
     n = len(obs)
     if exp is None:
         exp = 1.0 / n
-    t = np.sum(obs ** 2 / exp) - n
+    t = np.sum(obs**2 / exp) - n
     return stats.chi2(n - 1).cdf(t)
 
 
@@ -210,7 +210,7 @@ def test_bootstrap_2d_balanced(rng):
 
     # arithmetic mean is linear, therefore mean over all replicates in
     # balanced bootstrap is equal to mean of original sample
-    assert_almost_equal(mean(data), mean(r))
+    assert_allclose(mean(data), mean(r))
 
 
 @pytest.mark.parametrize(
@@ -252,8 +252,10 @@ def test_confidence_interval(ci_method, rng):
     )  # accuracy of mean is sqrt(n) better
     cl = 0.9
     ci_ref = dist.ppf(0.05), dist.ppf(0.95)
-    ci = confidence_interval(np.mean, data, cl=cl, size=1000, ci_method=ci_method)
-    assert_almost_equal(ci_ref, ci, decimal=2)
+    ci = confidence_interval(
+        np.mean, data, cl=cl, size=1000, ci_method=ci_method, random_state=rng
+    )
+    assert_allclose(ci_ref, ci, atol=6e-3)
 
 
 def test_confidence_interval_invalid_p_raises():
@@ -274,7 +276,7 @@ def test_bca_confidence_interval_estimator_returns_int(rng):
 
     data = (1, 2, 3)
     ci = confidence_interval(fn, data, ci_method="bca", size=5, random_state=rng)
-    assert_almost_equal((1.0, 2.0), ci, decimal=2)
+    assert_allclose((1.0, 2.0), ci)
 
 
 @pytest.mark.parametrize("ci_method", ["percentile", "bca"])
@@ -284,7 +286,7 @@ def test_bca_confidence_interval_bounded_estimator(ci_method, rng):
 
     data = (-3, -2, -1)
     ci = confidence_interval(fn, data, ci_method=ci_method, size=5, random_state=rng)
-    assert_almost_equal((0.0, 0.0), ci, decimal=2)
+    assert_allclose((0.0, 0.0), ci)
 
 
 @pytest.mark.parametrize("method", NON_PARAMETRIC)
@@ -465,3 +467,46 @@ def test_resample_several_args_incompatible_keywords():
 
     with pytest.raises(ValueError):
         resample(a, b, 5)
+
+
+def test_resample_extended_1():
+    a = [1, 2, 3]
+    bs = list(resample(a, size=100, method="extended", random_state=1))
+
+    # check that lengths of bootstrap samples are poisson distributed
+    w, xe = np.histogram([len(b) for b in bs], bins=10, range=(0, 10))
+    wm = stats.poisson(len(a)).pmf(xe[:-1]) * np.sum(w)
+    t = np.sum((w - wm) ** 2 / wm)
+    pvalue = 1 - stats.chi2(len(w)).cdf(t)
+    assert pvalue > 0.1
+
+
+def test_resample_extended_2():
+    n = 10
+    a = np.arange(n)
+    ts = []
+    for b in resample(a, size=1000, method="extended", random_state=1):
+        ts.append(np.mean(b))
+
+    t = np.var(ts)
+    expected_not_extended = np.var(a) / n
+
+    k = np.arange(100)
+    pk = stats.poisson(n).pmf(k)
+    expected = expected_not_extended * np.sum(pk[1:] * n / k[1:]) / (1 - pk[0])
+
+    assert expected / expected_not_extended > 1.1
+    assert t > expected_not_extended
+    assert_allclose(t, expected, atol=0.02)
+
+
+def test_resample_extended_3():
+    n = 10
+    a = np.arange(n)
+    b = 5 + a
+    ns = []
+    for ai, bi in resample(a, b, size=1000, method="extended", random_state=1):
+        assert len(ai) == len(bi)
+        assert_equal(bi - ai, 5)
+        ns.append(len(ai))
+    assert_allclose(np.var(ns), 10, rtol=0.05)
