@@ -253,7 +253,7 @@ def test_confidence_interval(ci_method, rng):
     cl = 0.9
     ci_ref = dist.ppf(0.05), dist.ppf(0.95)
     ci = confidence_interval(np.mean, data, cl=cl, size=1000, ci_method=ci_method)
-    assert_allclose(ci_ref, ci, atol=2e-3)
+    assert_allclose(ci_ref, ci, atol=3e-3)
 
 
 def test_confidence_interval_invalid_p_raises():
