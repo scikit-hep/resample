@@ -193,8 +193,8 @@ def test_usp_2(rng):
 
 def test_usp_3(rng):
     cov = np.empty((2, 2))
-    cov[0, 0] = 2 ** 2
-    cov[1, 1] = 3 ** 2
+    cov[0, 0] = 2**2
+    cov[1, 1] = 3**2
     rho = 0.5
     cov[0, 1] = rho * np.sqrt(cov[0, 0] * cov[1, 1])
     cov[1, 0] = cov[0, 1]
@@ -213,8 +213,8 @@ def test_usp_4():
     r1 = perm.usp(w, precision=0, max_size=1000, random_state=1)
     r2 = perm.usp(np.transpose(w), precision=0, max_size=1000, random_state=1)
     assert_allclose(r1.statistic, r2.statistic)
-    expected = 0.005216488  # according to Richard Samworth, send by email
-    assert_allclose(r1.statistic, expected)
+    expected = 0.004106  # checked against R implementation
+    assert_allclose(r1.statistic, expected, atol=1e-6)
     # according to paper, pvalue is 0.001, but we get 0.0025 in high-statistics runs
     assert_allclose(r1.pvalue, 0.0025, atol=0.001)
     _, interval = perm._wilson_score_interval(0.0025 * 1000, 1000, 1)
@@ -254,7 +254,7 @@ def test_ttest_bad_input():
 
 @pytest.mark.parametrize("test", (perm.ttest, perm.usp))
 @pytest.mark.parametrize("prec", (0, 0.05, 0.005))
-def test_precision_1(test, prec, rng):
+def test_precision(test, prec, rng):
     x = rng.normal(0, 1, size=100)
     y = rng.normal(0, 2, size=100)
     if test is perm.ttest:
@@ -263,9 +263,9 @@ def test_precision_1(test, prec, rng):
         w = np.histogram2d(x, y)[0]
         args = (w,)
 
-    r = test(*args, precision=prec, max_size=10000 if prec > 0 else 123)
+    r = test(*args, precision=prec, max_size=10000 if prec > 0 else 123, random_state=1)
     if prec == 0:
         assert len(r.samples) == 123
     else:
-        assert (r.interval[1] - r.interval[0]) / 2 < prec
-        assert_allclose((r.interval[1] - r.interval[0]) / 2, prec, atol=0.5 * prec)
+        actual_precision = (r.interval[1] - r.interval[0]) / 2
+        assert_allclose(actual_precision, prec, atol=0.25 * prec)
