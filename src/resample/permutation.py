@@ -177,27 +177,20 @@ def usp(
     # up to orders of magnitude worse. As a compromise, we burn 10 samples to compute
     # a crude estimate of the p-value and then use that to draw a fresh sample to
     # compute the final p-value.
-    if precision > 0:
-        n = 10
+    niter = 2 if precision > 0 else 1
+    n = 10 if niter > 1 else max_size
+    for iter in range(niter):
         ts = np.empty(n)
         for b in range(n):
             rng.shuffle(ymap)
             _fill_w(w, xmap, ymap)
             # m stays the same, since wx and wy remain unchanged
             ts[b] = _usp(f1, f2, w, m)
-        p = _wilson_center(np.mean(t < ts), len(ts))
-        n = min(int(p * (1 - p) / precision**2), max_size)
-    else:
-        n = max_size
-
-    ts = np.empty(n)
-    for b in range(len(ts)):
-        rng.shuffle(ymap)
-        _fill_w(w, xmap, ymap)
-        # m stays the same, since wx and wy remain unchanged
-        ts[b] = _usp(f1, f2, w, m)
-    npass = np.sum(t < ts)
-    pvalue, interval = _wilson_score_interval(npass, n, 1.0)
+        if iter == 0 and niter > 1:
+            p = _wilson_center(np.mean(t < ts), n)
+            n = min(int(p * (1 - p) / precision**2), max_size)
+        else:
+            pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
 
     return TestResult(t, pvalue, interval, ts)
 
@@ -310,8 +303,9 @@ def same_population(
     joined_sample = np.concatenate(args)
 
     # For algorithm below, see comment in usp function.
-    if precision > 0:
-        n = 10
+    niter = 2 if precision > 0 else 1
+    n = 10 if niter > 1 else max_size
+    for iter in range(niter):
         ts = np.empty(n)
         for b in range(n):
             rng.shuffle(joined_sample)
@@ -322,23 +316,11 @@ def same_population(
         else:
             u = transform(t)
             us = transform(ts)
-        p = _wilson_center(np.mean(u < us), len(us))
-        n = min(int(p * (1 - p) / precision**2), max_size)
-    else:
-        n = max_size
-
-    ts = np.empty(n)
-    for b in range(len(ts)):
-        rng.shuffle(joined_sample)
-        ts[b] = fn(*(joined_sample[sl] for sl in slices))
-    if transform is None:
-        u = t
-        us = ts
-    else:
-        u = transform(t)
-        us = transform(ts)
-    npass = np.sum(u < us)
-    pvalue, interval = _wilson_score_interval(npass, n, 1.0)
+        if iter == 0 and niter > 1:
+            p = _wilson_center(np.mean(u < us), len(us))
+            n = min(int(p * (1 - p) / precision**2), max_size)
+        else:
+            pvalue, interval = _wilson_score_interval(np.sum(u < us), n, 1.0)
 
     return TestResult(t, pvalue, interval, ts)
 

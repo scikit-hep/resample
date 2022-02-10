@@ -268,4 +268,4 @@ def test_precision(test, prec, rng):
         assert len(r.samples) == 123
     else:
         actual_precision = (r.interval[1] - r.interval[0]) / 2
-        assert_allclose(actual_precision, prec, atol=0.25 * prec)
+        assert_allclose(actual_precision, prec, atol=0.5 * prec)
