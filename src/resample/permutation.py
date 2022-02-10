@@ -123,8 +123,8 @@ def usp(
         Two-dimensional array which represents the counts in a histogram. The counts
         can be of floating point type, but must have integral values.
     precision : float, optional
-        Target precision (statistical) for the p-value. The minimum number of
-        permutations to reach the target precision is computed. The minimum of this
+        Target precision (statistical) for the p-value. Used to compute the minimum
+        number of permutations needed to reach the target precision. The minimum of this
         estimate and max_size is used. If precision is zero, max_size permutations are
         used. Default 0.01.
     max_size : int, optional
@@ -229,10 +229,10 @@ def same_population(
         Function with signature f(x) for the test statistic to turn it into a measure of
         deviation. Must be vectorised.
     precision : float, optional
-        Target precision (statistical) for the p-value. The algorithm estimates the
-        number of required permutations to reach the target precision. The accuracy of
-        the actual value may be above or below this value. If precision is zero,
-        max_size permutations are used. Default 0.01.
+        Target precision (statistical) for the p-value. Used to compute the minimum
+        number of permutations needed to reach the target precision. The minimum of this
+        estimate and max_size is used. If precision is zero, max_size permutations are
+        used. Default 0.01.
     max_size : int, optional
         Maximum number of permutations. Default 10000.
     random_state : numpy.random.Generator or int, optional
