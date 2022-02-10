@@ -3,6 +3,7 @@
 *checkpoints*
 build
 dist
+prof
 resample.egg-info
 install_log.txt
 *__pycache__

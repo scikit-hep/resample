@@ -57,7 +57,8 @@ class TestResult:
         Standard interval (approximately 68 % coverage) for the p-value. This interval
         reflects the statistical uncertainty from doing only a finite number of random
         permutations instead of infinitely many. The interval can be narrowed down by
-        running the test with more permutations.
+        running the test with more permutations. This interval does not have exact
+        coverage for finite samples.
     samples: array
         Values of the test statistic from the permutated samples.
     """
@@ -122,9 +123,10 @@ def usp(
         Two-dimensional array which represents the counts in a histogram. The counts
         can be of floating point type, but must have integral values.
     precision : float, optional
-        Target precision (statistical) for the p-value. The algorithm iteratively
-        increases the number of permutations until the target precision is reached.
-        If precision is zero, the algorithm uses max_size permutations. Default 0.01.
+        Target precision (statistical) for the p-value. The algorithm estimates the
+        number of required permutations to reach the target precision. The accuracy of
+        the actual value may be above or below this value. If precision is zero,
+        max_size permutations are used. Default 0.01.
     max_size : int, optional
         Maximum number of permutations. Default 10000.
     random_state : numpy.random.Generator or int, optional
@@ -155,8 +157,7 @@ def usp(
     f1 = 1.0 / (n * (n - 3))
     f2 = 4.0 / (n * (n - 2) * (n - 3))
 
-    # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
-    t = f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
+    t = _usp(f1, f2, w, m)
 
     # generate x,y index arrays
     xmap = np.empty(n, dtype=int)
@@ -169,38 +170,49 @@ def usp(
             ymap[k : k + wij] = iy
             k += wij
 
-    # iteratively generate of permutations until target precision is reached
-    ts_total = []
-    n = 0
-    n1 = 0
-    k = max_size if precision == 0 else 10
-    for iter in range(20):
-        k = min(k, max_size - n)
-        if k <= 0:
-            break  # pragma: no cover
-
-        # compute p-value and its uncertainty
-        ts = np.empty(k)
-        for b in range(k):
+    # For Type I error probabilities to hold theoretically, the number of bootstrap
+    # samples drawn may not the depend on the data (comment by Richard Samworth).
+    # However, computing the required number of samples with the worst-case p=0.5
+    # can lead to very pessimistic estimates for the required number of samples,
+    # up to orders of magnitude worse. As a compromise, we burn 10 samples to compute
+    # a crude estimate of the p-value and then use that to draw a fresh sample to
+    # compute the final p-value.
+    niter = 2 if precision > 0 else 1
+    n = 10 if niter > 1 else max_size
+    for iter in range(niter):
+        ts = np.empty(n)
+        for b in range(n):
             rng.shuffle(ymap)
-            w[:] = 0
-            # TODO: speed this up
-            for i, j in zip(xmap, ymap):
-                w[i, j] += 1
-            ts[b] = f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
-        n1 += np.sum(t < ts)
-        n += k
-        ts_total.append(ts)
-        pvalue, interval = _wilson_score_interval(n1, n, 1.0)
+            _fill_w(w, xmap, ymap)
+            # m stays the same, since wx and wy remain unchanged
+            ts[b] = _usp(f1, f2, w, m)
+        if iter == 0 and niter > 1:
+            p = _wilson_center(np.mean(t < ts), n)
+            n = min(int(p * (1 - p) / precision**2), max_size)
+        else:
+            pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
 
-        if precision == 0 or (interval[1] - interval[0]) < 2 * precision:
-            break
+    return TestResult(t, pvalue, interval, ts)
 
-        pbar = np.mean(interval)
-        k_projected = int(pbar * (1 - pbar) / precision**2) - n
-        k = np.clip(n // 2, 10 * n, k_projected)
 
-    return TestResult(t, pvalue, interval, np.concatenate(ts_total))
+def _fill_w(w, xmap, ymap):
+    w[:] = 0
+    for i, j in zip(xmap, ymap):
+        w[i, j] += 1
+
+
+# optionally accelerate _fill_w, increases speed of usp test 20-30 fold
+try:
+    import numba as nb
+
+    _fill_w = nb.njit(_fill_w)
+except ImportError:
+    pass
+
+
+def _usp(f1, f2, w, m):
+    # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
+    return f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
 
 def same_population(
@@ -242,9 +254,10 @@ def same_population(
         Function with signature f(x) for the test statistic to turn it into a measure of
         deviation. Must be vectorised.
     precision : float, optional
-        Target precision (statistical) for the p-value. The algorithm iteratively
-        increases the number of permutations until the target precision is reached.
-        If precision is zero, the algorithm uses max_size permutations. Default 0.01.
+        Target precision (statistical) for the p-value. The algorithm estimates the
+        number of required permutations to reach the target precision. The accuracy of
+        the actual value may be above or below this value. If precision is zero,
+        max_size permutations are used. Default 0.01.
     max_size : int, optional
         Maximum number of permutations. Default 10000.
     random_state : numpy.random.Generator or int, optional
@@ -289,19 +302,12 @@ def same_population(
 
     joined_sample = np.concatenate(args)
 
-    # iteratively generate of permutations until target precision is reached
-    ts_total = []
-    n = 0
-    n1 = 0
-    k = max_size if precision == 0 else 10
-    for iter in range(20):
-        k = min(k, max_size - n)
-        if k <= 0:
-            break  # pragma: no cover
-
-        # compute p-value and its uncertainty
-        ts = np.empty(k)
-        for b in range(k):
+    # For algorithm below, see comment in usp function.
+    niter = 2 if precision > 0 else 1
+    n = 10 if niter > 1 else max_size
+    for iter in range(niter):
+        ts = np.empty(n)
+        for b in range(n):
             rng.shuffle(joined_sample)
             ts[b] = fn(*(joined_sample[sl] for sl in slices))
         if transform is None:
@@ -310,19 +316,13 @@ def same_population(
         else:
             u = transform(t)
             us = transform(ts)
-        n1 += np.sum(u < us)
-        n += k
-        ts_total.append(ts)
-        pvalue, interval = _wilson_score_interval(n1, n, 1.0)
+        if iter == 0 and niter > 1:
+            p = _wilson_center(np.mean(u < us), len(us))
+            n = min(int(p * (1 - p) / precision**2), max_size)
+        else:
+            pvalue, interval = _wilson_score_interval(np.sum(u < us), n, 1.0)
 
-        if precision == 0 or (interval[1] - interval[0]) < 2 * precision:
-            break
-
-        pbar = np.mean(interval)
-        k_projected = int(pbar * (1 - pbar) / precision**2) - n
-        k = np.clip(n // 2, 10 * n, k_projected)
-
-    return TestResult(t, pvalue, interval, np.concatenate(ts_total))
+    return TestResult(t, pvalue, interval, ts)
 
 
 def anova(
@@ -554,3 +554,7 @@ def _wilson_score_interval(n1, n, z):
     a = p + 0.5 * z**2 / n
     b = z * np.sqrt(p * (1 - p) / n + 0.25 * (z / n) ** 2)
     return p, ((a - b) * norm, (a + b) * norm)
+
+
+def _wilson_center(p, n):
+    return (p + 0.5 / n) / (1.0 + 1.0 / n)
