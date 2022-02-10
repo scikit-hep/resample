@@ -30,6 +30,7 @@ Features
 - Permutation-based variants of traditional statistical tests (t-test, K-S test, etc.)
 - Tools for working with empirical distributions (CDF, quantile, etc.)
 - Depends only on `numpy`_ and `scipy`_
+- Optional code acceleration with `numba`, if `numba` can be imported
 
 Example
 -------
