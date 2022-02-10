@@ -28,7 +28,7 @@ import numpy as np
 from scipy.stats import rankdata as _rankdata
 from scipy.stats import tiecorrect as _tiecorrect
 
-from ._util import _normalize_rng
+from ._util import _fill_w, _normalize_rng
 
 _dataclass_kwargs = {"frozen": True, "repr": False}
 if sys.version_info >= (3, 10):
@@ -193,21 +193,6 @@ def usp(
             pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
 
     return TestResult(t, pvalue, interval, ts)
-
-
-def _fill_w(w, xmap, ymap):
-    w[:] = 0
-    for i, j in zip(xmap, ymap):
-        w[i, j] += 1
-
-
-# optionally accelerate _fill_w, increases speed of usp test 20-30 fold
-try:
-    import numba as nb
-
-    _fill_w = nb.njit(_fill_w)
-except ImportError:
-    pass
 
 
 def _usp(f1, f2, w, m):
