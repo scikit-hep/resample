@@ -112,10 +112,10 @@ def usp(
     According to the paper, it outperforms the Pearson's χ² and the G-test in both
     in stability and power.
 
-    It requires that w is a 2d histogram of the value pairs. Whether the original
-    values were discrete or continuous does not matter for the test. Using a large
-    number bins is safe, since the test is not negatively affected by bins with
-    zero entries.
+    It requires that the input is a 2D histogram of the value pairs. Whether the
+    original values were discrete or continuous does not matter for the test. In the
+    latter case, using a large number bins is safe, since the test is not negatively
+    affected by bins with zero entries.
 
     Parameters
     ----------
@@ -178,9 +178,9 @@ def usp(
             ymap[k : k + wij] = iy
             k += wij
 
-    # For Type I error probabilities to hold theoretically, the number of bootstrap
-    # samples may not the depend on the data (comment by Richard Samworth), so not on
-    # the actual pvalue for this data set. So we compute it with the worst-case p=0.5.
+    # For Type I error probabilities to hold theoretically, the number of permutation
+    # samples drawn may not depend on the data (comment by Richard Samworth).
+    # So we compute the required number of samples with the worst-case p=0.5.
     n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
     ts = np.empty(n)
     for b in range(n):
