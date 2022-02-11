@@ -86,7 +86,7 @@ def test_two_sample_same_size(test_name, size, rng):
 
     for a, b in ((x, y), (y, x)):
         expected = scipy_test(a, b)
-        got = test(a, b, random_state=1)
+        got = test(a, b, max_size=500, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol={10: 0.2, 100: 0.02}[size])
 
@@ -116,7 +116,7 @@ def test_two_sample_different_size(test_name, size, rng):
 
     for a, b in ((x, y), (y, x)):
         expected = scipy_test(a, b)
-        got = test(a, b, random_state=1)
+        got = test(a, b, max_size=500, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol=5e-2)
 
@@ -139,7 +139,7 @@ def test_three_sample_same_size(test_name, size, rng):
 
     for a, b, c in ((x, y, z), (z, y, x)):
         expected = scipy_test(a, b, c)
-        got = test(a, b, c, random_state=1)
+        got = test(a, b, c, max_size=500, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol=5e-2)
 
@@ -162,7 +162,7 @@ def test_three_sample_different_size(test_name, size, rng):
 
     for a, b, c in ((x, y, z), (z, y, x)):
         expected = scipy_test(a, b, c)
-        got = test(a, b, c, random_state=1)
+        got = test(a, b, c, max_size=500, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol=5e-2)
 
@@ -211,14 +211,17 @@ def test_usp_4():
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
     r1 = perm.usp(w, precision=0, max_size=1000, random_state=1)
-    r2 = perm.usp(np.transpose(w), precision=0, max_size=1000, random_state=1)
+    r2 = perm.usp(np.transpose(w), max_size=1, random_state=1)
     assert_allclose(r1.statistic, r2.statistic)
-    expected = 0.004106  # checked against R implementation
+    expected = 0.004106  # checked against USP R package
     assert_allclose(r1.statistic, expected, atol=1e-6)
-    # according to paper, pvalue is 0.001, but we get 0.0025 in high-statistics runs
-    assert_allclose(r1.pvalue, 0.0025, atol=0.001)
-    _, interval = perm._wilson_score_interval(0.0025 * 1000, 1000, 1)
-    assert_allclose(r1.interval, interval, atol=0.001)
+    # according to paper, pvalue is 0.001, but USP R package gives correct value
+    expected = 0.0024  # computed from USP R package with b=99999
+    assert_allclose(r1.pvalue, expected, atol=0.001)
+    _, interval = perm._wilson_score_interval(
+        r1.pvalue * len(r1.samples), len(r1.samples), 1
+    )
+    assert_allclose(r1.interval, interval, atol=0.003)
 
 
 def test_usp_bad_input():
