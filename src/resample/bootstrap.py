@@ -15,7 +15,7 @@ import typing as _tp
 import numpy as np
 from scipy import stats
 
-from ._util import _extended_copy, _normalize_rng
+from . import _util
 from .empirical import quantile_function_gen
 from .jackknife import jackknife
 
@@ -110,7 +110,7 @@ def resample(
                     )
                 args_np.append(arg)
 
-    rng = _normalize_rng(random_state)
+    rng = _util.normalize_rng(random_state)
 
     if strata is not None:
         strata_np = np.atleast_1d(strata)
@@ -438,7 +438,7 @@ def _resample_extended_1(
     n = len(sample)
     for i in range(size):
         k = rng.poisson(1, size=n)
-        yield _extended_copy(sample, k)
+        yield _util.extended_copy(sample, k)
 
 
 def _resample_extended_n(
@@ -447,7 +447,7 @@ def _resample_extended_n(
     n = len(samples[0])
     for i in range(size):
         k = rng.poisson(1, size=n)
-        yield tuple(_extended_copy(s, k) for s in samples)
+        yield tuple(_util.extended_copy(s, k) for s in samples)
 
 
 def _fit_parametric_family(

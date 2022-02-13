@@ -25,10 +25,9 @@ import typing as _tp
 from dataclasses import dataclass as dataclass
 
 import numpy as np
-from scipy.stats import rankdata as _rankdata
-from scipy.stats import tiecorrect as _tiecorrect
+from scipy import stats as _stats
 
-from ._util import _fill_w, _normalize_rng
+from . import _util
 
 _dataclass_kwargs = {"frozen": True, "repr": False}
 if sys.version_info >= (3, 10):
@@ -143,7 +142,7 @@ def usp(
     if max_size <= 0:
         raise ValueError("max_size must be positive")
 
-    rng = _normalize_rng(random_state)
+    rng = _util.normalize_rng(random_state)
 
     w = np.asarray(w, dtype=float)
     if w.ndim != 2:
@@ -185,7 +184,7 @@ def usp(
     ts = np.empty(n)
     for b in range(n):
         rng.shuffle(ymap)
-        _fill_w(w, xmap, ymap)
+        _util.fill_w(w, xmap, ymap)
         # m stays the same, since wx and wy remain unchanged
         ts[b] = _usp(f1, f2, w, m)
     pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
@@ -257,7 +256,7 @@ def same_population(
     if max_size <= 0:
         raise ValueError("max_size must be positive")
 
-    rng = _normalize_rng(random_state)
+    rng = _util.normalize_rng(random_state)
 
     r = []
     for arg in (x, y) + args:
@@ -473,8 +472,8 @@ def _pearson(x: np.ndarray, y: np.ndarray) -> float:
 
 
 def _spearman(x: np.ndarray, y: np.ndarray) -> float:
-    x = _rankdata(x)
-    y = _rankdata(y)
+    x = _stats.rankdata(x)
+    y = _stats.rankdata(y)
     return _pearson(x, y)
 
 
@@ -483,7 +482,7 @@ def _kruskal(*args: np.ndarray) -> float:
     #           Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
     # method 3 and 4
     joined = np.concatenate(args)
-    r = _rankdata(joined)
+    r = _stats.rankdata(joined)
     n = len(r)
     start = 0
     r_args = []
@@ -497,7 +496,7 @@ def _kruskal(*args: np.ndarray) -> float:
     )
 
     # apply tie correction
-    h /= _tiecorrect(r)
+    h /= _stats.tiecorrect(r)
     return h
 
 
