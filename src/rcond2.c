@@ -1,9 +1,6 @@
 #include <math.h>
 
-double lfac(double x) {
-  if (x == 0.0) return 0.0;
-  return lgamma(x + 1.0);
-}
+double lfac(double x) { return lgamma(x + 1.0); }
 
 double* ptr(double* m, int nr, int nc, int ir, int ic) {
   return m + nc * ir;
