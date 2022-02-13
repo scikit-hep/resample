@@ -9,7 +9,7 @@ site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 mod = Extension(
     "resample._ext",
-    sources=["src/resample/_ext.c", "src/rcond2.c"],
+    sources=["src/resample/_ext.c", "src/rcont.c"],
     include_dirs=[numpy.get_include()],
 )
 

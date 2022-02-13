@@ -2,11 +2,10 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 #include <numpy/arrayobject.h>
-#include <stdio.h>
 
-int rcond2(double*, int, const double*, int, const double*);
+int rcont(double*, int, const double*, int, const double*);
 
-static PyObject* rcond2_wrap(PyObject *self, PyObject *args)
+static PyObject* rcont_wrap(PyObject *self, PyObject *args)
 {
   PyObject *m = NULL, *r = NULL, *c = NULL;
   PyArrayObject *ma = NULL, *ra = NULL, *ca = NULL;
@@ -17,7 +16,7 @@ static PyObject* rcond2_wrap(PyObject *self, PyObject *args)
     &PyArray_Type, &c))
       return NULL;
 
-  ma = (PyArrayObject*)PyArray_FROM_OTF(m, NPY_DOUBLE, NPY_ARRAY_INOUT_ARRAY);
+  ma = (PyArrayObject*)PyArray_FROM_OTF(m, NPY_DOUBLE, NPY_ARRAY_OUT_ARRAY);
   if (!ma) return NULL;
   ra = (PyArrayObject*)PyArray_FROM_OTF(r, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ra) goto fail;
@@ -37,9 +36,9 @@ static PyObject* rcond2_wrap(PyObject *self, PyObject *args)
     goto fail;
   }
 
-  if (rcond2((double*)PyArray_DATA(ma),
-             c_shape[0], (const double*)PyArray_DATA(ca),
-             r_shape[0], (const double*)PyArray_DATA(ra)) != 0) {
+  if (rcont((double*)PyArray_DATA(ma),
+            r_shape[0], (const double*)PyArray_DATA(ra),
+            c_shape[0], (const double*)PyArray_DATA(ca)) != 0) {
     PyErr_SetString(PyExc_RuntimeError, "error in rcond");
     goto fail;
   }
@@ -59,7 +58,7 @@ fail:
 }
 
 static PyMethodDef methods[] = {
-    {"rcond2", rcond2_wrap, METH_VARARGS},
+    {"rcont", rcont_wrap, METH_VARARGS},
     {NULL, NULL, 0, NULL}
 };
 

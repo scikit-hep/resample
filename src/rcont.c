@@ -3,11 +3,11 @@
 double lfac(double x) { return lgamma(x + 1.0); }
 
 double* ptr(double* m, int nr, int nc, int ir, int ic) {
-  return m + nc * ir;
+  return m + nc * ir + ic;
 }
 
 // Patefield algorithm as 159 Appl. Statist. (1981) vol. 30, no. 1
-int rcond2(double* matrix, int nr, const double* r, int nc, const double* c) {
+int rcont(double* matrix, int nr, const double* r, int nc, const double* c) {
   if (matrix == 0)
     return 1;
 
@@ -41,7 +41,7 @@ int rcond2(double* matrix, int nr, const double* r, int nc, const double* c) {
     // last column is not random due to constraint
     for (int m = 0; m < nc - 1; ++m) {
       const double id = jwork[m]; // third term
-      const double ie = ic; // eigth term
+      const double ie = ic; // eight term
       ic -= id;
       ib = ie - ia;
       const double ii = ib - id; // forth term
@@ -53,16 +53,16 @@ int rcond2(double* matrix, int nr, const double* r, int nc, const double* c) {
       }
       double z = 0.5; // TODO replace 0.5 with uniform number generation
       double nlm;
-      l131: nlm = ia * id / ie + 0.5;
+      l131: nlm = floor(ia * id / ie + 0.5);
       double x = exp(
           lfac(ia)
           + lfac(ib) // second?
           + lfac(ic) // second?
           + lfac(id) // third
+          - lfac(ie)
           - lfac(nlm)
           - lfac(id - nlm)
           - lfac(ia - nlm)
-          - lfac(ie)
           - lfac(ii + nlm)
       );
       if (x >= z) goto l160;
@@ -79,8 +79,7 @@ int rcond2(double* matrix, int nr, const double* r, int nc, const double* c) {
       x *= j / (nlm * (ii + nlm));
       sumprb += x;
       if (sumprb >= z) goto l160;
-      l150:
-      if (lsm) goto l155;
+      l150: if (lsm) goto l155;
       // decrement entry at (l,m)
       j = nll * (ii + nll);
       if (j == 0) goto l154;
