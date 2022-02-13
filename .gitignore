@@ -12,7 +12,6 @@ install_log.txt
 .benchmarks
 .coverage
 coverage.xml
-*.sh
 html*
 .doctrees
 _build
@@ -22,4 +21,4 @@ junit
 py[0-9]*
 venv
 src/resample/_version.py
-src/resample/_ext.cpython-*
+src/resample/_ext.cpython-*.so
