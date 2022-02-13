@@ -8,7 +8,11 @@ def test_rcont():
     c = np.sum(m, axis=0)
 
     w = np.empty_like(m)
-    rcont(w, r, c)
-    print("r", r)
-    print("c", c)
-    print("w", w)
+
+    rng = np.random.default_rng(1)
+
+    for _ in range(5):
+        rcont(w, r, c, rng)
+        print("r", r)
+        print("c", c)
+        print("w", w)

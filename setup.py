@@ -1,19 +1,32 @@
 import site
 import sys
-import setuptools
-import numpy
-from numpy.distutils.extension import Extension
+from numpy.distutils.core import setup
+from numpy.distutils.misc_util import Configuration
+import os
+from pathlib import Path
 
 # workaround to allow editable install as user
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
-mod = Extension(
-    "resample._ext",
-    sources=["src/resample/_ext.c", "src/rcont.c"],
-    include_dirs=[numpy.get_include()],
-)
 
-setuptools.setup(
-    zip_safe=False,
-    ext_modules=[mod],
-)
+def configuration():
+    import numpy
+
+    libs = ["npyrandom"]
+    if os.name == "posix":
+        libs.append("m")
+
+    random_path = str(Path(numpy.get_include()).parent.parent / "random" / "lib")
+
+    config = Configuration("resample")
+    config.add_extension(
+        "_ext",
+        sources=["src/rcont.c", "src/resample/_ext.c"],
+        libraries=libs,
+        library_dirs=[random_path],
+    )
+
+    return config.todict()
+
+
+setup(**configuration())

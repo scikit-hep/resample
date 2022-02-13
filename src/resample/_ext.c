@@ -2,18 +2,22 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 #include <numpy/arrayobject.h>
+#include <numpy/random/bitgen.h>
 
-int rcont(double*, int, const double*, int, const double*);
+int rcont(double*, int, const double*, int, const double*, bitgen_t*);
 
 static PyObject* rcont_wrap(PyObject *self, PyObject *args)
 {
-  PyObject *m = NULL, *r = NULL, *c = NULL;
+  PyObject *m = NULL, *r = NULL, *c = NULL, *rng = NULL;
   PyArrayObject *ma = NULL, *ra = NULL, *ca = NULL;
+  PyObject *bitgen = NULL, *cap = NULL;
+  bitgen_t* state;
 
-  if(!PyArg_ParseTuple(args, "O!O!O!",
+  if(!PyArg_ParseTuple(args, "O!O!O!O",
     &PyArray_Type, &m,
     &PyArray_Type, &r,
-    &PyArray_Type, &c))
+    &PyArray_Type, &c,
+    &rng))
       return NULL;
 
   ma = (PyArrayObject*)PyArray_FROM_OTF(m, NPY_DOUBLE, NPY_ARRAY_OUT_ARRAY);
@@ -32,13 +36,30 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
   npy_intp* c_shape = PyArray_DIMS(ca);
 
   if (m_shape[0] != r_shape[0] || m_shape[1] != c_shape[0]) {
-    PyErr_SetString(PyExc_RuntimeError, "shapes do not match");
+    PyErr_SetString(PyExc_ValueError, "shapes do not match");
+    goto fail;
+  }
+
+  bitgen = PyObject_GetAttrString(rng, "_bit_generator");
+  if (!bitgen) {
+    goto fail;
+  }
+
+  cap = PyObject_GetAttrString(bitgen, "capsule");
+  if (!cap) {
+    goto fail;
+  }
+
+  state = (bitgen_t *)PyCapsule_GetPointer(cap, "BitGenerator");
+  if (!state) {
+    // PyErr_SetString(PyExc_ValueError, "capsule is not BitGenerator");
     goto fail;
   }
 
   if (rcont((double*)PyArray_DATA(ma),
             r_shape[0], (const double*)PyArray_DATA(ra),
-            c_shape[0], (const double*)PyArray_DATA(ca)) != 0) {
+            c_shape[0], (const double*)PyArray_DATA(ca),
+            state) != 0) {
     PyErr_SetString(PyExc_RuntimeError, "error in rcond");
     goto fail;
   }
@@ -47,6 +68,8 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
   Py_DECREF(ra);
   Py_DECREF(ca);
   Py_DECREF(ma);
+  Py_DECREF(bitgen);
+  Py_DECREF(cap);
 
   Py_RETURN_NONE;
 
@@ -54,6 +77,8 @@ fail:
   Py_XDECREF(ra);
   Py_XDECREF(ca);
   Py_XDECREF(ma);
+  Py_XDECREF(bitgen);
+  Py_XDECREF(cap);
   return NULL;
 }
 

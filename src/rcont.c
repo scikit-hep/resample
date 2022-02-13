@@ -1,4 +1,5 @@
 #include <math.h>
+#include <numpy/random/distributions.h>
 
 double lfac(double x) { return lgamma(x + 1.0); }
 
@@ -7,7 +8,8 @@ double* ptr(double* m, int nr, int nc, int ir, int ic) {
 }
 
 // Patefield algorithm as 159 Appl. Statist. (1981) vol. 30, no. 1
-int rcont(double* matrix, int nr, const double* r, int nc, const double* c) {
+int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
+          bitgen_t* bitgen_state) {
   if (matrix == 0)
     return 1;
 
@@ -51,7 +53,7 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c) {
         ia = 0;
         break;
       }
-      double z = 0.5; // TODO replace 0.5 with uniform number generation
+      double z = random_standard_uniform(bitgen_state);
       double nlm;
       l131: nlm = floor(ia * id / ie + 0.5);
       double x = exp(
@@ -91,7 +93,7 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c) {
       goto l150;
       l154: lsm = 1;
       l155: if (!lsp) goto l140;
-      z = 0.5 * sumprb; // TODO replace 0.5 with uniform number generation
+      z = random_standard_uniform(bitgen_state) * sumprb;
       goto l131;
       l156: lsp = 1;
       goto l150;
