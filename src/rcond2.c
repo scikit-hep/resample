@@ -12,30 +12,30 @@ int rcond2(double* matrix, int nr, const double* r, int nc, const double* c) {
     return 1;
 
   if (nr < 2)
-    return 1;
+    return 2;
 
   if (nc < 2)
-    return 1;
+    return 3;
 
   // jwork can be folded into matrix using last row
   double* jwork = ptr(matrix, nr, nc, nr - 1, 0);
   double jc = 0;
   for (int i = 0; i < nc; ++i) {
     if (c[i] == 0) // no zero entries allowed in c
-      return 1;
+      return 5;
     jwork[i] = c[i];
     jc += c[i];
   }
   if (jc == 0) // ntotal must be positive
-    return 1;
+    return 4;
   if (r[nr - 1] == 0) // no zero entries allowed in r
-    return 1;
+    return 6;
   double ib = 0;
   // last row is not random due to constraint
   for (int l = 0; l < nr - 1; ++l) {
     double ia = r[l]; // first term
     if (ia == 0) // no zero entries allowed in r
-      return 1;
+      return 6;
     double ic = jc; // second term
     jc -= r[l];
     // last column is not random due to constraint
