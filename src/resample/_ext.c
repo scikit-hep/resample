@@ -2,8 +2,9 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 #include <numpy/arrayobject.h>
+#include <stdio.h>
 
-int rcond2(double**, int, const double*, int, const double*);
+int rcond2(double*, int, const double*, int, const double*);
 
 static PyObject* rcond2_wrap(PyObject *self, PyObject *args)
 {
@@ -16,7 +17,7 @@ static PyObject* rcond2_wrap(PyObject *self, PyObject *args)
     &PyArray_Type, &c))
       return NULL;
 
-  ma = (PyArrayObject*)PyArray_FROM_OTF(m, NPY_DOUBLE, NPY_ARRAY_OUT_ARRAY);
+  ma = (PyArrayObject*)PyArray_FROM_OTF(m, NPY_DOUBLE, NPY_ARRAY_INOUT_ARRAY);
   if (!ma) return NULL;
   ra = (PyArrayObject*)PyArray_FROM_OTF(r, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ra) goto fail;
@@ -31,13 +32,17 @@ static PyObject* rcond2_wrap(PyObject *self, PyObject *args)
   npy_intp* r_shape = PyArray_DIMS(ra);
   npy_intp* c_shape = PyArray_DIMS(ca);
 
-  if (m_shape[0] != r_shape[0] || m_shape[1] != c_shape[0])
+  if (m_shape[0] != r_shape[0] || m_shape[1] != c_shape[0]) {
+    PyErr_SetString(PyExc_RuntimeError, "shapes do not match");
     goto fail;
+  }
 
-  if (rcond2((double**)PyArray_DATA(ma),
-             r_shape[0], (const double*)PyArray_DATA(ra),
-             c_shape[0], (const double*)PyArray_DATA(ca)) != 0)
+  if (rcond2((double*)PyArray_DATA(ma),
+             c_shape[0], (const double*)PyArray_DATA(ca),
+             r_shape[0], (const double*)PyArray_DATA(ra)) != 0) {
+    PyErr_SetString(PyExc_RuntimeError, "error in rcond");
     goto fail;
+  }
 
   // clean up
   Py_DECREF(ra);

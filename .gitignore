@@ -22,3 +22,4 @@ junit
 py[0-9]*
 venv
 src/resample/_version.py
+src/resample/_ext.cpython-*

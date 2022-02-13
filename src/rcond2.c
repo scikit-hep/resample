@@ -5,8 +5,12 @@ double lfac(double x) {
   return lgamma(x + 1.0);
 }
 
+double* ptr(double* m, int nr, int nc, int ir, int ic) {
+  return m + nc * ir;
+}
+
 // Patefield algorithm as 159 Appl. Statist. (1981) vol. 30, no. 1
-int rcond2(double** matrix, int nr, const double* r, int nc, const double* c) {
+int rcond2(double* matrix, int nr, const double* r, int nc, const double* c) {
   if (matrix == 0)
     return 1;
 
@@ -17,7 +21,7 @@ int rcond2(double** matrix, int nr, const double* r, int nc, const double* c) {
     return 1;
 
   // jwork can be folded into matrix using last row
-  double* jwork = matrix[nr - 1];
+  double* jwork = ptr(matrix, nr, nc, nr - 1, 0);
   double jc = 0;
   for (int i = 0; i < nc; ++i) {
     if (c[i] == 0) // no zero entries allowed in c
@@ -46,7 +50,7 @@ int rcond2(double** matrix, int nr, const double* r, int nc, const double* c) {
       const double ii = ib - id; // forth term
       if (ie == 0) {
         for (int j = m; j < nc - 1; ++j)
-          matrix[l][j] = 0;
+          *ptr(matrix, nr, nc, l, j) = 0;
         ia = 0;
         break;
       }
@@ -96,16 +100,16 @@ int rcond2(double** matrix, int nr, const double* r, int nc, const double* c) {
       l156: lsp = 1;
       goto l150;
       l159: nlm = nll;
-      l160: matrix[l][m] = nlm;
+      l160: *ptr(matrix, nr, nc, l, m) = nlm;
       ia -= nlm;
       jwork[m] -= nlm;
     }
     // compute entry in last column of matrix
-    matrix[l][nc-1] = ia;
+    *ptr(matrix, nr, nc, l, nc-1) = ia;
   }
   // compute entries in last row of matrix
   // jwork is already last row of matrix, so nothing to be done up to nc - 2
-  matrix[nr-1][nc-1] = ib - matrix[nr - 1][nc - 2];
+  *ptr(matrix, nr, nc, nr-1, nc-1) = ib - *ptr(matrix, nr, nc, nr - 1, nc - 2);
 
   return 0;
 }
