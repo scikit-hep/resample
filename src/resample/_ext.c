@@ -4,21 +4,21 @@
 #include <numpy/arrayobject.h>
 #include <numpy/random/bitgen.h>
 
-int rcont(double*, int, const double*, int, const double*, bitgen_t*);
+int rcont(double*, int, const double*, int, const double*, double, bitgen_t*);
 
 static PyObject* rcont_wrap(PyObject *self, PyObject *args)
 {
-  PyObject *m = NULL, *r = NULL, *c = NULL, *rng = NULL;
+  PyObject *m = NULL, *r = NULL, *c = NULL, *ntot = NULL, *rng = NULL;
   PyArrayObject *ma = NULL, *ra = NULL, *ca = NULL;
   PyObject *bitgen = NULL, *cap = NULL;
   bitgen_t* state;
 
-  if(!PyArg_ParseTuple(args, "O!O!O!O",
-    &PyArray_Type, &m,
-    &PyArray_Type, &r,
-    &PyArray_Type, &c,
-    &rng))
-      return NULL;
+  if(!PyArg_ParseTuple(args, "O!O!O!dO",
+     &PyArray_Type, &m,
+     &PyArray_Type, &r,
+     &PyArray_Type, &c,
+     &ntot, &rng))
+    return NULL;
 
   ma = (PyArrayObject*)PyArray_FROM_OTF(m, NPY_DOUBLE, NPY_ARRAY_OUT_ARRAY);
   if (!ma) return NULL;
@@ -59,7 +59,7 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
   if (rcont((double*)PyArray_DATA(ma),
             r_shape[0], (const double*)PyArray_DATA(ra),
             c_shape[0], (const double*)PyArray_DATA(ca),
-            state) != 0) {
+            PyFloat_AsDouble(ntot), state) != 0) {
     PyErr_SetString(PyExc_RuntimeError, "error in rcond");
     goto fail;
   }

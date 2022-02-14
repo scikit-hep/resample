@@ -2,6 +2,8 @@ import typing as _tp
 
 import numpy as np
 
+from . import _ext  # type: ignore
+
 
 def normalize_rng(
     random_state: _tp.Optional[_tp.Union[int, np.random.Generator]]
@@ -31,16 +33,17 @@ def fill_w(w: np.ndarray, xmap: np.ndarray, ymap: np.ndarray) -> None:
         w[i, j] += 1
 
 
-# def patefield(n: int, r: np.ndarray, c: np.ndarray, rng) -> np.ndarray:
-#     ntotal = np.sum(r)
-#     assert ntotal == np.sum(c)
-#
-#     nr = len(r)
-#     nc = len(c)
-#     matrix = np.empty((nr, nc))
-#     jwork = np.empty(nc - 1)
-#
-#     # TODO: handle cases where r or c have zero entries
+def rcont(n: int, r: np.ndarray, c: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+    """Generate random matrices conditional on row and column sum."""
+    ntot = np.sum(r)
+    assert ntot == np.sum(c)
+
+    nr = len(r)
+    nc = len(c)
+    m = np.empty((nr, nc))
+    for _ in range(n):
+        _ext.rcont(m, r, c, ntot, rng)
+        yield m
 
 
 # optionally accelerate some functions with numba if there is a notable benefit

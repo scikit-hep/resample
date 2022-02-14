@@ -7,9 +7,10 @@ double* ptr(double* m, int nr, int nc, int ir, int ic) {
   return m + nc * ir + ic;
 }
 
-// Patefield algorithm as 159 Appl. Statist. (1981) vol. 30, no. 1
-int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
-          bitgen_t* bitgen_state) {
+// Patefield algorithm adapted from AS 159 Appl. Statist. (1981) vol. 30, no. 1
+int rcont(double* matrix,
+          int nr, const double* r, int nc, const double* c,
+          double ntot, bitgen_t* bitgen_state) {
   if (matrix == 0)
     return 1;
 
@@ -58,9 +59,9 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
       l131: nlm = floor(ia * id / ie + 0.5);
       double x = exp(
           lfac(ia)
-          + lfac(ib) // second?
-          + lfac(ic) // second?
-          + lfac(id) // third
+          + lfac(ib)
+          + lfac(ic)
+          + lfac(id)
           - lfac(ie)
           - lfac(nlm)
           - lfac(id - nlm)

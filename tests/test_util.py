@@ -1,5 +1,6 @@
-from resample._ext import rcont
+from resample._util import rcont
 import numpy as np
+from numpy.testing import assert_equal
 
 
 def test_rcont():
@@ -7,12 +8,8 @@ def test_rcont():
     r = np.sum(m, axis=1)
     c = np.sum(m, axis=0)
 
-    w = np.empty_like(m)
-
     rng = np.random.default_rng(1)
-
-    for _ in range(5):
-        rcont(w, r, c, rng)
-        print("r", r)
-        print("c", c)
-        print("w", w)
+    for w in rcont(5, r, c, rng):
+        assert_equal(np.sum(w, axis=0), c)
+        assert_equal(np.sum(w, axis=1), r)
+        print(w)
