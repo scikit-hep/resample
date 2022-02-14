@@ -27,16 +27,25 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
   ca = (PyArrayObject*)PyArray_FROM_OTF(c, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ca) goto fail;
 
-  if (PyArray_NDIM(ma) != 3) goto fail;
-  if (PyArray_NDIM(ra) != 1) goto fail;
-  if (PyArray_NDIM(ca) != 1) goto fail;
+  if (PyArray_NDIM(ma) != 3) {
+    PyErr_SetString(PyExc_ValueError, "m must be 3d");
+    goto fail;
+  }
+  if (PyArray_NDIM(ra) != 1) {
+    PyErr_SetString(PyExc_ValueError, "r must be 1d");
+    goto fail;
+  }
+  if (PyArray_NDIM(ca) != 1) {
+    PyErr_SetString(PyExc_ValueError, "c must be 1d");
+    goto fail;
+  }
 
   npy_intp* m_shape = PyArray_DIMS(ma);
   npy_intp* r_shape = PyArray_DIMS(ra);
   npy_intp* c_shape = PyArray_DIMS(ca);
 
   if (m_shape[1] != r_shape[0] || m_shape[2] != c_shape[0]) {
-    PyErr_SetString(PyExc_ValueError, "shapes do not match");
+    PyErr_SetString(PyExc_ValueError, "shapes of m, r, c do not match");
     goto fail;
   }
 
