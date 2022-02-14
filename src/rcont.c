@@ -7,7 +7,15 @@ double* ptr(double* m, int nr, int nc, int ir, int ic) {
   return m + nc * ir + ic;
 }
 
-// Patefield algorithm adapted from AS 159 Appl. Statist. (1981) vol. 30, no. 1
+/*
+  Patefield algorithm adapted from AS 159 Appl. Statist. (1981) vol. 30, no. 1
+
+  A naive shuffling algorithm has O(N) complexity in space and time, where N is
+  the total number of entries in the input array. Patefield's algorithm has O(K)
+  complexity in time and requires no extra space, where K is the total number of
+  cells in the table. For N >> K, which can easily happen in high-energy physics,
+  the latter will be dramatically faster.
+*/
 int rcont(double* matrix,
           int nr, const double* r, int nc, const double* c,
           double ntot, bitgen_t* bitgen_state) {

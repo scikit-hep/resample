@@ -144,48 +144,28 @@ def usp(
 
     rng = _util.normalize_rng(random_state)
 
-    w = np.asarray(w, dtype=float)
+    w = np.array(w, dtype=float)
     if w.ndim != 2:
         raise ValueError("w must be two-dimensional")
-    wx = np.sum(w, axis=1)
-    wy = np.sum(w, axis=0)
-    n = int(np.sum(wx))
 
-    m = np.outer(wx, wy) / n
+    r = np.sum(w, axis=0)
+    c = np.sum(w, axis=1)
+    ntot = np.sum(r)
 
-    f1 = 1.0 / (n * (n - 3))
-    f2 = 4.0 / (n * (n - 2) * (n - 3))
+    m = np.outer(r, c) / ntot
+
+    f1 = 1.0 / (ntot * (ntot - 3))
+    f2 = 4.0 / (ntot * (ntot - 2) * (ntot - 3))
 
     t = _usp(f1, f2, w, m)
-
-    # TODO: The shuffling algorithm used here has O(N) complexity in space and time
-    # where N is the total number of entries in the input array. The R implementation
-    # uses Patefield's algorithm, see https://rdrr.io/r/stats/r2dtable.html, which has
-    # O(K) complexity in space and time, where K is the total number of cells in the
-    # table. For N >> K, which can easily happen in high-energy physics, the latter
-    # will be dramatically faster. There seems to be no Python implementation of
-    # Patefield's algorithm right now.
-
-    # generate x,y index arrays
-    xmap = np.empty(n, dtype=int)
-    ymap = np.empty(n, dtype=int)
-    k = 0
-    for ix in range(w.shape[0]):
-        for iy in range(w.shape[1]):
-            wij = int(w[ix, iy])
-            xmap[k : k + wij] = ix
-            ymap[k : k + wij] = iy
-            k += wij
 
     # For Type I error probabilities to hold theoretically, the number of permutation
     # samples drawn may not depend on the data (comment by Richard Samworth).
     # So we compute the required number of samples with the worst-case p=0.5.
     n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
     ts = np.empty(n)
-    for b in range(n):
-        rng.shuffle(ymap)
-        _util.fill_w(w, xmap, ymap)
-        # m stays the same, since wx and wy remain unchanged
+    for b, w in enumerate(_util.rcont(n, r, c, rng)):
+        # m stays the same, since r and c remain unchanged
         ts[b] = _usp(f1, f2, w, m)
     pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
 

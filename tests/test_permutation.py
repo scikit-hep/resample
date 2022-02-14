@@ -176,8 +176,7 @@ def test_usp_1(rng):
     x = rng.normal(0, 2, size=100)
     y = rng.normal(1, 3, size=100)
 
-    w = np.histogram2d(x, y)[0]
-
+    w = np.histogram2d(x, y, bins=(5, 10))[0]
     r = perm.usp(w, max_size=100, random_state=1)
     assert r.pvalue > 0.05
 
@@ -193,8 +192,8 @@ def test_usp_2(rng):
 
 def test_usp_3(rng):
     cov = np.empty((2, 2))
-    cov[0, 0] = 2**2
-    cov[1, 1] = 3**2
+    cov[0, 0] = 2 ** 2
+    cov[1, 1] = 3 ** 2
     rho = 0.5
     cov[0, 1] = rho * np.sqrt(cov[0, 0] * cov[1, 1])
     cov[1, 0] = cov[0, 1]
