@@ -8,16 +8,31 @@ double* ptr(double* m, int nr, int nc, int ir, int ic) {
 }
 
 /*
-  Patefield algorithm adapted from AS 159 Appl. Statist. (1981) vol. 30, no. 1
+  Generate random two-way table with given marginal totals.
 
   A naive shuffling algorithm has O(N) complexity in space and time, where N is
-  the total number of entries in the input array. Patefield's algorithm has O(K)
+  the total number of entries in the input array. This algorithm has O(K)
   complexity in time and requires no extra space, where K is the total number of
   cells in the table. For N >> K, which can easily happen in high-energy physics,
   the latter will be dramatically faster.
+
+  Patefield's algorithm adapted from AS 159 Appl. Statist. (1981) vol. 30, no. 1.
+
+  The original FORTRAN code was hand-translated to C. Changes:
+
+  - The section that computed a look-up table of log-factorials was replaced with
+    calls to lgamma, which lifts the limitation that the code only works for tables
+    with less then 5000 entries, although the algorithm will still be slow for very
+    large tables.
+  - The data type of input and output arrays was changed to double to minimize
+    type conversions.
+  - The original implementation allocated a column vector JWORK, but this is not
+    necessary. One can use the last column of the output matrix as work space.
+  - The function uses Numpy's random number generator and distribution library.
+  - Checks for zero entries in row and column vector were integrated into the main
+    algorithm.
 */
-int rcont(double* matrix,
-          int nr, const double* r, int nc, const double* c,
+int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
           double ntot, bitgen_t* bitgen_state) {
   if (matrix == 0)
     return 1;
