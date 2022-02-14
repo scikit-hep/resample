@@ -29,12 +29,14 @@ double* ptr(double* m, int nr, int nc, int ir, int ic) {
   - The original implementation allocated a column vector JWORK, but this is not
     necessary. One can use the last column of the output matrix as work space.
   - The function uses Numpy's random number generator and distribution library.
-  - Checks for zero entries in row and column vector were integrated into the main
-    algorithm.
+  - The algorithm now handles zero entries in row or column vector. When a zero is
+    encountered, the output matrix is filled with zeros along that row or column and
+    the algorithm proceeds to the next entry.
 */
 int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
-          double ntot, bitgen_t* bitgen_state) {
-  if (matrix == 0)
+          double* ntot, bitgen_t* bitgen_state) {
+  // cheap checks are always performed
+  if (matrix == 0 || r == 0 || c == 0 || ntot == 0)
     return 1;
 
   if (nr < 2)
@@ -45,27 +47,44 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
 
   // jwork can be folded into matrix using last row
   double* jwork = ptr(matrix, nr, nc, nr - 1, 0);
-  double jc = 0;
   for (int i = 0; i < nc; ++i) {
-    if (c[i] == 0) // no zero entries allowed in c
-      return 5;
     jwork[i] = c[i];
-    jc += c[i];
   }
-  if (jc == 0) // ntotal must be positive
-    return 4;
-  if (r[nr - 1] == 0) // no zero entries allowed in r
-    return 6;
+
+  // more expensive check is only performed first time when ntot == 0
+  double jc = *ntot;
+  if (jc <= 0) {
+    jc = 0;
+    for (int i = 0; i < nc; ++i)
+      jc += c[i];
+    if (jc <= 0) // ntot must be positive
+      return 4;
+    double jr = 0;
+    for (int i = 0; i < nr; ++i)
+      jr += r[i];
+    if (jc != jr) // sums over c and r must be equal
+      return 5;
+    *ntot = jc; // store value for next run
+  }
+
   double ib = 0;
   // last row is not random due to constraint
   for (int l = 0; l < nr - 1; ++l) {
     double ia = r[l]; // first term
-    if (ia == 0) // no zero entries allowed in r
-      return 6;
+    if (ia == 0) {
+      for (int i = 0; i < nc; ++i)
+        *ptr(matrix, nr, nc, l, i) = 0;
+      continue;
+    }
     double ic = jc; // second term
     jc -= r[l];
     // last column is not random due to constraint
     for (int m = 0; m < nc - 1; ++m) {
+      if (c[m] <= 0) {
+        for (int i = 0; i < nr; ++i)
+          *ptr(matrix, nr, nc, i, m) = 0;
+        continue;
+      }
       const double id = jwork[m]; // third term
       const double ie = ic; // eight term
       ic -= id;

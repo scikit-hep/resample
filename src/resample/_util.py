@@ -35,15 +35,11 @@ def fill_w(w: np.ndarray, xmap: np.ndarray, ymap: np.ndarray) -> None:
 
 def rcont(n: int, r: np.ndarray, c: np.ndarray, rng: np.random.Generator) -> np.ndarray:
     """Generate random matrices conditional on row and column sum."""
-    ntot = np.sum(r)
-    assert ntot == np.sum(c)
-
     nr = len(r)
     nc = len(c)
-    m = np.empty((nr, nc))
-    for _ in range(n):
-        _ext.rcont(m, r, c, ntot, rng)
-        yield m
+    m = np.empty((n, nr, nc))
+    _ext.rcont(m, r, c, rng)
+    return m
 
 
 # optionally accelerate some functions with numba if there is a notable benefit

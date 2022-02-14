@@ -176,7 +176,7 @@ def test_usp_1(rng):
     x = rng.normal(0, 2, size=100)
     y = rng.normal(1, 3, size=100)
 
-    w = np.histogram2d(x, y, bins=(5, 10))[0]
+    w = np.histogram2d(x, y, bins=(5, 10))[0] + 1
     r = perm.usp(w, max_size=100, random_state=1)
     assert r.pvalue > 0.05
 
@@ -184,7 +184,7 @@ def test_usp_1(rng):
 def test_usp_2(rng):
     x = rng.normal(0, 2, size=100).astype(int)
 
-    w = np.histogram2d(x, x)[0]
+    w = np.histogram2d(x, x, range=((-5, 5), (-5, 5)))[0] + 1
 
     r = perm.usp(w, max_size=100, random_state=1)
     assert r.pvalue == 0
@@ -209,7 +209,7 @@ def test_usp_3(rng):
 def test_usp_4():
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
-    r1 = perm.usp(w, precision=0, max_size=1000, random_state=1)
+    r1 = perm.usp(w, precision=0, max_size=10000, random_state=1)
     r2 = perm.usp(np.transpose(w), max_size=1, random_state=1)
     assert_allclose(r1.statistic, r2.statistic)
     expected = 0.004106  # checked against USP R package

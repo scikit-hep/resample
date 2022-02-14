@@ -148,8 +148,8 @@ def usp(
     if w.ndim != 2:
         raise ValueError("w must be two-dimensional")
 
-    r = np.sum(w, axis=0)
-    c = np.sum(w, axis=1)
+    r = np.sum(w, axis=1)
+    c = np.sum(w, axis=0)
     ntot = np.sum(r)
 
     m = np.outer(r, c) / ntot
