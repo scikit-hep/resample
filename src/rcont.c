@@ -10,29 +10,26 @@ int rcont_check(double* n, const double* m, int nr, const double* r, int nc, con
   if (m == 0 || r == 0 || c == 0 || n == 0)
     return 1;
 
-  if (nr < 2)
+  if (nr < 2 || nc < 2)
     return 2;
-
-  if (nc < 2)
-    return 3;
 
   // check sum(r) == sum(c); r[i] >= 0, c[i] >= 0; sum(r) > 0
   *n = 0;
   for (int i = 0; i < nc; ++i) {
     if (!(c[i] >= 0))
-      return 4;
+      return 3;
     *n += c[i];
   }
   double n2 = 0;
   for (int i = 0; i < nr; ++i) {
     if (!(r[i] >= 0))
-      return 4;
+      return 3;
     n2 += r[i];
   }
   if (*n != n2)
-    return 5;
+    return 4;
   if (!(*n > 0))
-    return 6;
+    return 5;
 
   return 0;
 }
@@ -86,15 +83,16 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
     jc -= r[l];
     // last column is not random due to constraint
     for (int m = 0; m < nc - 1; ++m) {
-      if (c[m] <= 0) {
-        for (int i = 0; i < nr; ++i)
-          *ptr(matrix, nr, nc, i, m) = 0;
-        continue;
-      }
       const double id = jwork[m]; // third term
       const double ie = ic; // eight term
       ic -= id;
       ib = ie - ia;
+      // must be after ib calculation, which is used at the end
+      if (id == 0) {
+        for (int i = 0; i < nr; ++i)
+          *ptr(matrix, nr, nc, i, m) = 0;
+        continue;
+      }
       const double ii = ib - id; // forth term
       if (ie == 0) {
         for (int j = m; j < nc - 1; ++j)

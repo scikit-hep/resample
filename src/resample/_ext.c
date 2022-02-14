@@ -78,18 +78,15 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
         PyErr_SetString(PyExc_RuntimeError, "null pointer encountered");
         goto fail;
       case 2:
-        PyErr_SetString(PyExc_ValueError, "number of rows < 2");
+        PyErr_SetString(PyExc_ValueError, "number of rows or columns < 2");
         goto fail;
       case 3:
-        PyErr_SetString(PyExc_ValueError, "number of columns < 2");
-        goto fail;
-      case 4:
         PyErr_SetString(PyExc_ValueError, "negative entries in row or col");
         goto fail;
-      case 5:
+      case 4:
         PyErr_SetString(PyExc_ValueError, "sum(row) != sum(col)");
         goto fail;
-      case 6:
+      case 5:
         PyErr_SetString(PyExc_ValueError, "total number of entries <= 0");
         goto fail;
       default:
