@@ -37,9 +37,64 @@ int rcont_check(double* n, const double* m, int nr, const double* r, int nc, con
 /*
   Generate random two-way table with given marginal totals.
 
+  Shuffling algorithm with O(N) complexity in space and time for a table with
+  N entries in total. The algorithm performs poorly for large N, but is insensitive
+  to the number K of table cells.
+
+  This function uses a work space that is allocated into the argument work
+  (which must be zero initialised) and has to freed by the user.
+*/
+int rcont1(double* matrix, int nr, const double* r, int nc, const double* c,
+           int** work, bitgen_t* rstate) {
+  int status = 0;
+  if (*work == 0) {
+    double nd = 0;
+    status = rcont_check(&nd, matrix, nr, r, nc, c);
+    if (status != 0)
+      return status;
+
+    int n = (int)nd;
+    *work = (int*)malloc(sizeof(int) * (n + 1));
+    *work[0] = n;
+    int* ymap = *work + 1;
+    for (int i = 0; i < nc; ++i) {
+      int ci = (int)c[i];
+      while(ci--)
+        *ymap++ = i;
+    }
+  }
+
+  int n = *work[0];
+  int* ymap = *work + 1;
+
+  // shuffle ymap
+  for (int i=n-1; i>0; --i) {
+    int j = random_interval(rstate, i);
+    int tmp = ymap[j];
+    ymap[j] = ymap[i];
+    ymap[i] = tmp;
+  }
+
+  // clear table
+  for (int i = 0, nrc = (nr * nc); i < nrc; ++i)
+    matrix[i] = 0;
+
+  // fill table
+  for (int ir = 0; ir < nr; ++ir) {
+    int ri = (int)r[ir];
+    while(ri--)
+      *ptr(matrix, nr, nc, ir, *ymap++) += 1;
+  }
+
+  return 0;
+}
+
+/*
+  Generate random two-way table with given marginal totals.
+
   Patefield's algorithm adapted from AS 159 Appl. Statist. (1981) vol. 30, no. 1.
-  This algorithm has O(K) complexity in time, where K is the total number of cells
-  in the table, and requires no extra space (apart from a few variables on the stack).
+  This algorithm has O(K log(N)) complexity in time for a table with K cells and N
+  entries in total. It requires no extra space (apart from a few stack variables).
 
   The original FORTRAN code was hand-translated to C. Changes to the original:
 
@@ -58,8 +113,8 @@ int rcont_check(double* n, const double* m, int nr, const double* r, int nc, con
   The argument ntot is used to detect whether the function has been run before and
   has to be zero initialised.
 */
-int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
-          double* ntot, bitgen_t* rstate) {
+int rcont2(double* matrix, int nr, const double* r, int nc, const double* c,
+           double* ntot, bitgen_t* rstate) {
   int status = 0;
   if (*ntot == 0) // perform checks only once
     status = rcont_check(ntot, matrix, nr, r, nc, c);
@@ -158,61 +213,6 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
   // compute entries in last row of matrix
   // jwork is already last row of matrix, so nothing to be done up to nc - 2
   *ptr(matrix, nr, nc, nr-1, nc-1) = ib - *ptr(matrix, nr, nc, nr - 1, nc - 2);
-
-  return 0;
-}
-
-/*
-  Generate random two-way table with given marginal totals.
-
-  Naive shuffling algorithm with O(N) complexity in space and time, where N is the
-  total number of entries in the input array. The algorithm performs poorly and is
-  only implemented to cross-check Patefield's algorithm. Its merit is its simplicity.
-
-  This function uses a work space that is allocated into the argument work
-  (which must be zero initialised) and has to freed by the user.
-*/
-int rcont_naive(double* matrix, int nr, const double* r, int nc, const double* c,
-                int** work, bitgen_t* rstate) {
-  int status = 0;
-  if (*work == 0) {
-    double nd = 0;
-    status = rcont_check(&nd, matrix, nr, r, nc, c);
-    if (status != 0)
-      return status;
-
-    int n = (int)nd;
-    *work = (int*)malloc(sizeof(int) * (n + 1));
-    *work[0] = n;
-    int* ymap = *work + 1;
-    for (int i = 0; i < nc; ++i) {
-      int ci = (int)c[i];
-      while(ci--)
-        *ymap++ = i;
-    }
-  }
-
-  int n = *work[0];
-  int* ymap = *work + 1;
-
-  // shuffle ymap
-  for (int i=n-1; i>0; --i) {
-    int j = random_interval(rstate, i);
-    int tmp = ymap[j];
-    ymap[j] = ymap[i];
-    ymap[i] = tmp;
-  }
-
-  // clear table
-  for (int i = 0, nrc = (nr * nc); i < nrc; ++i)
-    matrix[i] = 0;
-
-  // fill table
-  for (int ir = 0; ir < nr; ++ir) {
-    int ri = (int)r[ir];
-    while(ri--)
-      *ptr(matrix, nr, nc, ir, *ymap++) += 1;
-  }
 
   return 0;
 }

@@ -206,7 +206,7 @@ def test_usp_3(rng):
     assert r.pvalue < 0.001
 
 
-@pytest.mark.parametrize("method", ("patefield", "naive"))
+@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
 def test_usp_4(method):
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]

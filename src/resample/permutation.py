@@ -102,7 +102,7 @@ def usp(
     *,
     precision: float = 0.01,
     max_size: int = 10000,
-    method: str = "patefield",
+    method: str = "auto",
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ):
     """
@@ -112,10 +112,10 @@ def usp(
     According to the paper, it outperforms the Pearson's χ² and the G-test in both
     in stability and power.
 
-    It requires that the input is a 2D histogram of the value pairs. Whether the
-    original values were discrete or continuous does not matter for the test. In the
-    latter case, using a large number bins is safe, since the test is not negatively
-    affected by bins with zero entries.
+    It requires that the input is a contigency table (a 2D histogram of value pairs).
+    Whether the original values were discrete or continuous does not matter for the
+    test. In case of continuous values, using a large number bins is safe, since the
+    test is not negatively affected by bins with zero entries.
 
     Parameters
     ----------
@@ -131,13 +131,13 @@ def usp(
         Maximum number of permutations. Default 10000.
     method : str, optional
         Method used to generate the 2D histogram under the null hypothesis.
-        "patefield": Uses Patefield's algorithm, which is very fast and does not
-            require additional memory allocation. It is recommended for all tables.
-        "naive": Uses a simple shuffling algorithm, which requires allocating extra
-            space for N integers, where N is the number of entries and performs
-            poorly unless N is very small. It is only implemented as a cross-check
-            for "patefield".
-        Default "patefield".
+        'auto': Uses the fastest algorithm based on the structure of the table.
+        'shuffle': A shuffling algorithm, which requires extra space to store
+            N integers for N entries in total and has O(N) time complexity. It performs
+            poorly when N is large, but is insensitve to the number of table cells.
+        'patefield': Patefield's algorithm, which does not require extra space and
+            has O(K log(N)) time complexity. It performs well even if N is huge.
+        Default is 'auto'.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
@@ -152,10 +152,10 @@ def usp(
     if max_size <= 0:
         raise ValueError("max_size must be positive")
 
-    methods = {"patefield": 0, "naive": 1}
+    methods = {"auto": 0, "shuffle": 1, "patefield": 2}
     imethod = methods.get(method, -1)
     if imethod == -1:
-        raise ValueError(f"method {method} not one of {methods}")
+        raise ValueError(f"method '{method}' not one of {methods}")
 
     rng = _util.normalize_rng(random_state)
 
@@ -166,6 +166,13 @@ def usp(
     r = np.sum(w, axis=1)
     c = np.sum(w, axis=0)
     ntot = np.sum(r)
+
+    if imethod == 0:
+        # TODO refine this
+        if ntot < len(r) * len(c):
+            imethod = 1
+        else:
+            imethod = 2
 
     m = np.outer(r, c) / ntot
 
@@ -179,7 +186,7 @@ def usp(
     # So we compute the required number of samples with the worst-case p=0.5.
     n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
     ts = np.empty(n)
-    for b, w in enumerate(_util.rcont(n, r, c, imethod, rng)):
+    for b, w in enumerate(_util.rcont(n, r, c, imethod - 1, rng)):
         # m stays the same, since r and c remain unchanged
         ts[b] = _usp(f1, f2, w, m)
     pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)

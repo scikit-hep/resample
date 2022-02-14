@@ -4,8 +4,8 @@
 #include <numpy/arrayobject.h>
 #include <numpy/random/bitgen.h>
 
-int rcont(double*, int, const double*, int, const double*, double*, bitgen_t*);
-int rcont_naive(double*, int, const double*, int, const double*, int**, bitgen_t*);
+int rcont1(double*, int, const double*, int, const double*, int**, bitgen_t*);
+int rcont2(double*, int, const double*, int, const double*, double*, bitgen_t*);
 
 static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
   int n = -1, method = -1;
@@ -61,12 +61,10 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     double* m_ptr = (double*)PyArray_GETPTR3(ma, i, 0, 0);
     switch (method) {
     case 0:
-      // Patefield's algorithm. Generally recommended for any table.
-      status = rcont(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &ntot, rstate);
+      status = rcont1(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &work, rstate);
       break;
     case 1:
-      // Naive algorithm. Only useful to check implementation of Patefield's algorithm.
-      status = rcont_naive(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &work, rstate);
+      status = rcont2(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &ntot, rstate);
       break;
     default:
       PyErr_SetString(PyExc_ValueError, "method must be 0 or 1");
