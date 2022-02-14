@@ -14,6 +14,9 @@ on:
       - 'doc/**'
       - '*.rst'
 
+env:
+  PIP_ONLY_BINARY: ":all:"
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
@@ -25,8 +28,10 @@ jobs:
     - uses: actions/setup-python@v2
       with:
         python-version: "3.8"
-    - run: python -m pip install --upgrade pip wheel
-    - run: python -m pip install -e .[test]
+    - run: python -m pip install --upgrade pip
+    # workaround to avoid having different numpy versions during build/test
+    - run: python -m pip install wheel numpy setuptools setuptools_scm[toml] pytest
+    - run: python -m pip install --no-build-isolation -e .
     - run: coverage run -m pytest
     - run: python -m pip uninstall --yes numba
     - run: coverage run --append -m pytest
