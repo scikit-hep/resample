@@ -54,6 +54,9 @@ int rcont_check(double* n, const double* m, int nr, const double* r, int nc, con
   - The algorithm now handles zero entries in row or column vector. When a zero is
     encountered, the output matrix is filled with zeros along that row or column and
     the algorithm proceeds to the next entry.
+
+  The argument ntot is used to detect whether the function has been run before and
+  has to be zero initialised.
 */
 int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
           double* ntot, bitgen_t* rstate) {
@@ -88,7 +91,7 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
       ic -= id;
       ib = ie - ia;
       // must be after ib calculation, which is used at the end
-      if (id == 0) {
+      if (c[m] == 0) {
         for (int i = 0; i < nr; ++i)
           *ptr(matrix, nr, nc, i, m) = 0;
         continue;
@@ -162,12 +165,12 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
 /*
   Generate random two-way table with given marginal totals.
 
-  This is a naive shuffling algorithm, which has O(N) complexity in space and time,
-  where N is the total number of entries in the input array. The algorithm performs
-  poorly and is only implemented to cross-check Patefield's algorithm. Its merit is
-  only its simplicity.
+  Naive shuffling algorithm with O(N) complexity in space and time, where N is the
+  total number of entries in the input array. The algorithm performs poorly and is
+  only implemented to cross-check Patefield's algorithm. Its merit is its simplicity.
 
-  This function requires a work space that has to be allocated with rcont_naive_alloc.
+  This function uses a work space that is allocated into the argument work
+  (which must be zero initialised) and has to freed by the user.
 */
 int rcont_naive(double* matrix, int nr, const double* r, int nc, const double* c,
                 int** work, bitgen_t* rstate) {
@@ -201,9 +204,8 @@ int rcont_naive(double* matrix, int nr, const double* r, int nc, const double* c
   }
 
   // clear table
-  for (int ir = 0; ir < nr; ++ir)
-    for (int ic = 0; ic < nc; ++ic)
-      *ptr(matrix, nr, nc, ir, ic) = 0;
+  for (int i = 0, nrc = (nr * nc); i < nrc; ++i)
+    matrix[i] = 0;
 
   // fill table
   for (int ir = 0; ir < nr; ++ir) {

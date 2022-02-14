@@ -206,11 +206,12 @@ def test_usp_3(rng):
     assert r.pvalue < 0.001
 
 
-def test_usp_4():
+@pytest.mark.parametrize("method", ("patefield", "naive"))
+def test_usp_4(method):
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
-    r1 = perm.usp(w, precision=0, max_size=10000, random_state=1)
-    r2 = perm.usp(np.transpose(w), max_size=1, random_state=1)
+    r1 = perm.usp(w, precision=0, method=method, max_size=10000, random_state=1)
+    r2 = perm.usp(np.transpose(w), method=method, max_size=1, random_state=1)
     assert_allclose(r1.statistic, r2.statistic)
     expected = 0.004106  # checked against USP R package
     assert_allclose(r1.statistic, expected, atol=1e-6)
@@ -235,6 +236,9 @@ def test_usp_bad_input():
 
     with pytest.raises(ValueError):
         perm.usp([1, 2])
+
+    with pytest.raises(ValueError):
+        perm.usp([[1, 2], [3, 4]], method="foo")
 
 
 def test_ttest_bad_input():
