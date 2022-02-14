@@ -8,10 +8,11 @@ int rcont(double*, int, const double*, int, const double*, double, bitgen_t*);
 
 static PyObject* rcont_wrap(PyObject *self, PyObject *args)
 {
-  PyObject *m = NULL, *r = NULL, *c = NULL, *ntot = NULL, *rng = NULL;
+  PyObject *m = NULL, *r = NULL, *c = NULL, *rng = NULL;
   PyArrayObject *ma = NULL, *ra = NULL, *ca = NULL;
   PyObject *bitgen = NULL, *cap = NULL;
   bitgen_t* state;
+  double ntot;
 
   if(!PyArg_ParseTuple(args, "O!O!O!dO",
      &PyArray_Type, &m,
@@ -52,14 +53,13 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
 
   state = (bitgen_t *)PyCapsule_GetPointer(cap, "BitGenerator");
   if (!state) {
-    // PyErr_SetString(PyExc_ValueError, "capsule is not BitGenerator");
     goto fail;
   }
 
   if (rcont((double*)PyArray_DATA(ma),
             r_shape[0], (const double*)PyArray_DATA(ra),
             c_shape[0], (const double*)PyArray_DATA(ca),
-            PyFloat_AsDouble(ntot), state) != 0) {
+            ntot, state) != 0) {
     PyErr_SetString(PyExc_RuntimeError, "error in rcond");
     goto fail;
   }
