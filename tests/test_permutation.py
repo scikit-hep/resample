@@ -172,29 +172,31 @@ def test_bad_input():
         perm.ttest([1, 2, 3], [1.0, np.nan, 2.0])
 
 
-def test_usp_1(rng):
+@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+def test_usp_1(method, rng):
     x = rng.normal(0, 2, size=100)
     y = rng.normal(1, 3, size=100)
 
-    w = np.histogram2d(x, y)[0]
-
+    w = np.histogram2d(x, y, bins=(5, 10))[0]
     r = perm.usp(w, max_size=100, random_state=1)
     assert r.pvalue > 0.05
 
 
-def test_usp_2(rng):
+@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+def test_usp_2(method, rng):
     x = rng.normal(0, 2, size=100).astype(int)
 
-    w = np.histogram2d(x, x)[0]
+    w = np.histogram2d(x, x, range=((-5, 5), (-5, 5)))[0]
 
-    r = perm.usp(w, max_size=100, random_state=1)
+    r = perm.usp(w, method=method, max_size=100, random_state=1)
     assert r.pvalue == 0
 
 
-def test_usp_3(rng):
+@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+def test_usp_3(method, rng):
     cov = np.empty((2, 2))
-    cov[0, 0] = 2**2
-    cov[1, 1] = 3**2
+    cov[0, 0] = 2 ** 2
+    cov[1, 1] = 3 ** 2
     rho = 0.5
     cov[0, 1] = rho * np.sqrt(cov[0, 0] * cov[1, 1])
     cov[1, 0] = cov[0, 1]
@@ -203,15 +205,16 @@ def test_usp_3(rng):
 
     w = np.histogram2d(*xy.T)[0]
 
-    r = perm.usp(w, random_state=1)
+    r = perm.usp(w, method=method, random_state=1)
     assert r.pvalue < 0.001
 
 
-def test_usp_4():
+@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+def test_usp_4(method):
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
-    r1 = perm.usp(w, precision=0, max_size=1000, random_state=1)
-    r2 = perm.usp(np.transpose(w), max_size=1, random_state=1)
+    r1 = perm.usp(w, precision=0, method=method, max_size=10000, random_state=1)
+    r2 = perm.usp(np.transpose(w), method=method, max_size=1, random_state=1)
     assert_allclose(r1.statistic, r2.statistic)
     expected = 0.004106  # checked against USP R package
     assert_allclose(r1.statistic, expected, atol=1e-6)
@@ -222,6 +225,16 @@ def test_usp_4():
         r1.pvalue * len(r1.samples), len(r1.samples), 1
     )
     assert_allclose(r1.interval, interval, atol=0.003)
+
+
+@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+def test_usp_5(method, rng):
+    w = np.empty((100, 100))
+    for i in range(100):
+        for j in range(100):
+            w[i, j] = (i + j) % 2
+    r = perm.usp(w, method=method, max_size=100, random_state=1)
+    assert r.pvalue > 0.1
 
 
 def test_usp_bad_input():
@@ -236,6 +249,9 @@ def test_usp_bad_input():
 
     with pytest.raises(ValueError):
         perm.usp([1, 2])
+
+    with pytest.raises(ValueError):
+        perm.usp([[1, 2], [3, 4]], method="foo")
 
 
 def test_ttest_bad_input():

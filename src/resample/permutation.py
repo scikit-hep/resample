@@ -25,10 +25,9 @@ import typing as _tp
 from dataclasses import dataclass as dataclass
 
 import numpy as np
-from scipy.stats import rankdata as _rankdata
-from scipy.stats import tiecorrect as _tiecorrect
+from scipy import stats as _stats
 
-from ._util import _fill_w, _normalize_rng
+from . import _util
 
 _dataclass_kwargs = {"frozen": True, "repr": False}
 if sys.version_info >= (3, 10):
@@ -103,6 +102,7 @@ def usp(
     *,
     precision: float = 0.01,
     max_size: int = 10000,
+    method: str = "auto",
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ):
     """
@@ -112,10 +112,10 @@ def usp(
     According to the paper, it outperforms the Pearson's χ² and the G-test in both
     in stability and power.
 
-    It requires that the input is a 2D histogram of the value pairs. Whether the
-    original values were discrete or continuous does not matter for the test. In the
-    latter case, using a large number bins is safe, since the test is not negatively
-    affected by bins with zero entries.
+    It requires that the input is a contigency table (a 2D histogram of value pairs).
+    Whether the original values were discrete or continuous does not matter for the
+    test. In case of continuous values, using a large number bins is safe, since the
+    test is not negatively affected by bins with zero entries.
 
     Parameters
     ----------
@@ -129,6 +129,15 @@ def usp(
         used. Default 0.01.
     max_size : int, optional
         Maximum number of permutations. Default 10000.
+    method : str, optional
+        Method used to generate the 2D histogram under the null hypothesis.
+        'auto': Uses the fastest algorithm based on the structure of the table.
+        'shuffle': A shuffling algorithm, which requires extra space to store
+            N integers for N entries in total and has O(N) time complexity. It performs
+            poorly when N is large, but is insensitve to the number of table cells.
+        'patefield': Patefield's algorithm, which does not require extra space and
+            has O(K log(N)) time complexity. It performs well even if N is huge.
+        Default is 'auto'.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
@@ -143,50 +152,42 @@ def usp(
     if max_size <= 0:
         raise ValueError("max_size must be positive")
 
-    rng = _normalize_rng(random_state)
+    methods = {"auto": 0, "shuffle": 1, "patefield": 2}
+    imethod = methods.get(method, -1)
+    if imethod == -1:
+        raise ValueError(f"method '{method}' not one of {methods}")
 
-    w = np.asarray(w, dtype=float)
+    rng = _util.normalize_rng(random_state)
+
+    w = np.array(w, dtype=float)
     if w.ndim != 2:
         raise ValueError("w must be two-dimensional")
-    wx = np.sum(w, axis=1)
-    wy = np.sum(w, axis=0)
-    n = int(np.sum(wx))
 
-    m = np.outer(wx, wy) / n
+    r = np.sum(w, axis=1)
+    c = np.sum(w, axis=0)
+    ntot = np.sum(r)
 
-    f1 = 1.0 / (n * (n - 3))
-    f2 = 4.0 / (n * (n - 2) * (n - 3))
+    if imethod == 0:
+        # TODO refine this
+        if ntot < len(r) * len(c):
+            imethod = 1
+        else:
+            imethod = 2
+
+    m = np.outer(r, c) / ntot
+
+    f1 = 1.0 / (ntot * (ntot - 3))
+    f2 = 4.0 / (ntot * (ntot - 2) * (ntot - 3))
 
     t = _usp(f1, f2, w, m)
-
-    # TODO: The shuffling algorithm used here has O(N) complexity in space and time
-    # where N is the total number of entries in the input array. The R implementation
-    # uses Patefield's algorithm, see https://rdrr.io/r/stats/r2dtable.html, which has
-    # O(K) complexity in space and time, where K is the total number of cells in the
-    # table. For N >> K, which can easily happen in high-energy physics, the latter
-    # will be dramatically faster. There seems to be no Python implementation of
-    # Patefield's algorithm right now.
-
-    # generate x,y index arrays
-    xmap = np.empty(n, dtype=int)
-    ymap = np.empty(n, dtype=int)
-    k = 0
-    for ix in range(w.shape[0]):
-        for iy in range(w.shape[1]):
-            wij = int(w[ix, iy])
-            xmap[k : k + wij] = ix
-            ymap[k : k + wij] = iy
-            k += wij
 
     # For Type I error probabilities to hold theoretically, the number of permutation
     # samples drawn may not depend on the data (comment by Richard Samworth).
     # So we compute the required number of samples with the worst-case p=0.5.
     n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
     ts = np.empty(n)
-    for b in range(n):
-        rng.shuffle(ymap)
-        _fill_w(w, xmap, ymap)
-        # m stays the same, since wx and wy remain unchanged
+    for b, w in enumerate(_util.rcont(n, r, c, imethod - 1, rng)):
+        # m stays the same, since r and c remain unchanged
         ts[b] = _usp(f1, f2, w, m)
     pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
 
@@ -257,7 +258,7 @@ def same_population(
     if max_size <= 0:
         raise ValueError("max_size must be positive")
 
-    rng = _normalize_rng(random_state)
+    rng = _util.normalize_rng(random_state)
 
     r = []
     for arg in (x, y) + args:
@@ -473,8 +474,8 @@ def _pearson(x: np.ndarray, y: np.ndarray) -> float:
 
 
 def _spearman(x: np.ndarray, y: np.ndarray) -> float:
-    x = _rankdata(x)
-    y = _rankdata(y)
+    x = _stats.rankdata(x)
+    y = _stats.rankdata(y)
     return _pearson(x, y)
 
 
@@ -483,7 +484,7 @@ def _kruskal(*args: np.ndarray) -> float:
     #           Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
     # method 3 and 4
     joined = np.concatenate(args)
-    r = _rankdata(joined)
+    r = _stats.rankdata(joined)
     n = len(r)
     start = 0
     r_args = []
@@ -497,7 +498,7 @@ def _kruskal(*args: np.ndarray) -> float:
     )
 
     # apply tie correction
-    h /= _tiecorrect(r)
+    h /= _stats.tiecorrect(r)
     return h
 
 
