@@ -1,42 +1,13 @@
 #include <math.h>
 #include <numpy/random/distributions.h>
 
-double lfac(double x) { return lgamma(x + 1.0); }
-
 double* ptr(double* m, int nr, int nc, int ir, int ic) {
   return m + nc * ir + ic;
 }
 
-/*
-  Generate random two-way table with given marginal totals.
-
-  A naive shuffling algorithm has O(N) complexity in space and time, where N is
-  the total number of entries in the input array. This algorithm has O(K)
-  complexity in time and requires no extra space, where K is the total number of
-  cells in the table. For N >> K, which can easily happen in high-energy physics,
-  the latter will be dramatically faster.
-
-  Patefield's algorithm adapted from AS 159 Appl. Statist. (1981) vol. 30, no. 1.
-
-  The original FORTRAN code was hand-translated to C. Changes:
-
-  - The section that computed a look-up table of log-factorials was replaced with
-    calls to lgamma, which lifts the limitation that the code only works for tables
-    with less then 5000 entries, although the algorithm will still be slow for very
-    large tables.
-  - The data type of input and output arrays was changed to double to minimize
-    type conversions.
-  - The original implementation allocated a column vector JWORK, but this is not
-    necessary. One can use the last column of the output matrix as work space.
-  - The function uses Numpy's random number generator and distribution library.
-  - The algorithm now handles zero entries in row or column vector. When a zero is
-    encountered, the output matrix is filled with zeros along that row or column and
-    the algorithm proceeds to the next entry.
-*/
-int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
-          double* ntot, bitgen_t* bitgen_state) {
-  // cheap checks are always performed
-  if (matrix == 0 || r == 0 || c == 0 || ntot == 0)
+// input sanity checks for rcont and rcont_naive, also sets total number of entries
+int rcont_check(double* n, const double* m, int nr, const double* r, int nc, const double* c) {
+  if (m == 0 || r == 0 || c == 0 || n == 0)
     return 1;
 
   if (nr < 2)
@@ -45,28 +16,63 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
   if (nc < 2)
     return 3;
 
-  // jwork can be folded into matrix using last row
+  // check sum(r) == sum(c); r[i] >= 0, c[i] >= 0; sum(r) > 0
+  *n = 0;
+  for (int i = 0; i < nc; ++i) {
+    if (!(c[i] >= 0))
+      return 4;
+    *n += c[i];
+  }
+  double n2 = 0;
+  for (int i = 0; i < nr; ++i) {
+    if (!(r[i] >= 0))
+      return 4;
+    n2 += r[i];
+  }
+  if (*n != n2)
+    return 5;
+  if (!(*n > 0))
+    return 6;
+
+  return 0;
+}
+
+/*
+  Generate random two-way table with given marginal totals.
+
+  Patefield's algorithm adapted from AS 159 Appl. Statist. (1981) vol. 30, no. 1.
+  This algorithm has O(K) complexity in time, where K is the total number of cells
+  in the table, and requires no extra space (apart from a few variables on the stack).
+
+  The original FORTRAN code was hand-translated to C. Changes to the original:
+
+  - The computation of a look-up table of log-factorials was replaced with
+    calls to lgamma, which lifts the limitation that the code only works for tables
+    with less then 5000 entries.
+  - The data type of input and output arrays was changed to double to minimize
+    type conversions. Users are responsible for passing only integral numbers.
+  - The original implementation allocated a column vector JWORK, but this is not
+    necessary. The vector can be folded into the last column of the output matrix.
+  - The function uses Numpy's random number generator and distribution library.
+  - The algorithm now handles zero entries in row or column vector. When a zero is
+    encountered, the output matrix is filled with zeros along that row or column and
+    the algorithm proceeds to the next entry.
+*/
+int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
+          double* ntot, bitgen_t* rstate) {
+  int status = 0;
+  if (*ntot == 0) // perform checks only once
+    status = rcont_check(ntot, matrix, nr, r, nc, c);
+  if (status != 0)
+    return status;
+
+  // jwork is folded into matrix using last row
   double* jwork = ptr(matrix, nr, nc, nr - 1, 0);
   for (int i = 0; i < nc; ++i) {
     jwork[i] = c[i];
   }
 
-  // more expensive check is only performed first time when ntot == 0
   double jc = *ntot;
-  if (jc <= 0) {
-    jc = 0;
-    for (int i = 0; i < nc; ++i)
-      jc += c[i];
-    if (jc <= 0) // ntot must be positive
-      return 4;
-    double jr = 0;
-    for (int i = 0; i < nr; ++i)
-      jr += r[i];
-    if (jc != jr) // sums over c and r must be equal
-      return 5;
-    *ntot = jc; // store value for next run
-  }
-
   double ib = 0;
   // last row is not random due to constraint
   for (int l = 0; l < nr - 1; ++l) {
@@ -96,19 +102,19 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
         ia = 0;
         break;
       }
-      double z = random_standard_uniform(bitgen_state);
+      double z = random_standard_uniform(rstate);
       double nlm;
       l131: nlm = floor(ia * id / ie + 0.5);
       double x = exp(
-          lfac(ia)
-          + lfac(ib)
-          + lfac(ic)
-          + lfac(id)
-          - lfac(ie)
-          - lfac(nlm)
-          - lfac(id - nlm)
-          - lfac(ia - nlm)
-          - lfac(ii + nlm)
+          lgamma(ia + 1)
+          + lgamma(ib + 1)
+          + lgamma(ic + 1)
+          + lgamma(id + 1)
+          - lgamma(ie + 1)
+          - lgamma(nlm + 1)
+          - lgamma(id - nlm + 1)
+          - lgamma(ia - nlm + 1)
+          - lgamma(ii + nlm + 1)
       );
       if (x >= z) goto l160;
       double sumprb = x;
@@ -136,7 +142,7 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
       goto l150;
       l154: lsm = 1;
       l155: if (!lsp) goto l140;
-      z = random_standard_uniform(bitgen_state) * sumprb;
+      z = random_standard_uniform(rstate) * sumprb;
       goto l131;
       l156: lsp = 1;
       goto l150;
@@ -151,6 +157,62 @@ int rcont(double* matrix, int nr, const double* r, int nc, const double* c,
   // compute entries in last row of matrix
   // jwork is already last row of matrix, so nothing to be done up to nc - 2
   *ptr(matrix, nr, nc, nr-1, nc-1) = ib - *ptr(matrix, nr, nc, nr - 1, nc - 2);
+
+  return 0;
+}
+
+/*
+  Generate random two-way table with given marginal totals.
+
+  This is a naive shuffling algorithm, which has O(N) complexity in space and time,
+  where N is the total number of entries in the input array. The algorithm performs
+  poorly and is only implemented to cross-check Patefield's algorithm. Its merit is
+  only its simplicity.
+
+  This function requires a work space that has to be allocated with rcont_naive_alloc.
+*/
+int rcont_naive(double* matrix, int nr, const double* r, int nc, const double* c,
+                int** work, bitgen_t* rstate) {
+  int status = 0;
+  if (*work == 0) {
+    double nd = 0;
+    status = rcont_check(&nd, matrix, nr, r, nc, c);
+    if (status != 0)
+      return status;
+
+    int n = (int)nd;
+    *work = (int*)malloc(sizeof(int) * (n + 1));
+    *work[0] = n;
+    int* ymap = *work + 1;
+    for (int i = 0; i < nc; ++i) {
+      int ci = (int)c[i];
+      while(ci--)
+        *ymap++ = i;
+    }
+  }
+
+  int n = *work[0];
+  int* ymap = *work + 1;
+
+  // shuffle ymap
+  for (int i=n-1; i>0; --i) {
+    int j = random_interval(rstate, i);
+    int tmp = ymap[j];
+    ymap[j] = ymap[i];
+    ymap[i] = tmp;
+  }
+
+  // clear table
+  for (int ir = 0; ir < nr; ++ir)
+    for (int ic = 0; ic < nc; ++ic)
+      *ptr(matrix, nr, nc, ir, ic) = 0;
+
+  // fill table
+  for (int ir = 0; ir < nr; ++ir) {
+    int ri = (int)r[ir];
+    while(ri--)
+      *ptr(matrix, nr, nc, ir, *ymap++) += 1;
+  }
 
   return 0;
 }

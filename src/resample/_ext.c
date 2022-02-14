@@ -5,6 +5,7 @@
 #include <numpy/random/bitgen.h>
 
 int rcont(double*, int, const double*, int, const double*, double*, bitgen_t*);
+int rcont_naive(double*, int, const double*, int, const double*, int**, bitgen_t*);
 
 static PyObject* rcont_wrap(PyObject *self, PyObject *args)
 {
@@ -12,11 +13,13 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
   PyArrayObject *ma = NULL, *ra = NULL, *ca = NULL;
   PyObject *bitgen = NULL, *cap = NULL;
   bitgen_t* rstate;
+  int method = -1;
 
-  if(!PyArg_ParseTuple(args, "O!O!O!O",
+  if(!PyArg_ParseTuple(args, "O!O!O!iO",
      &PyArray_Type, &m,
      &PyArray_Type, &r,
      &PyArray_Type, &c,
+     &method,
      &rng))
     return NULL;
 
@@ -64,14 +67,30 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
     goto fail;
   }
 
-  double ntot = 0; // indicator to run expensive one-time checks, is filled by rcont
+  const double* r_ptr = (const double*)PyArray_DATA(ra);
+  const double* c_ptr = (const double*)PyArray_DATA(ca);
+
+  double ntot = 0; // indicator to run/skip expensive one-time checks, filled by rcont
+  int* work = 0; // pointer to hold workspace for rcont_naive, allocated by rcont_naive
   for (int i = 0; i < m_shape[0]; ++i) {
-    int status = rcont((double*)PyArray_GETPTR3(ma, i, 0, 0),
-                       r_shape[0], (const double*)PyArray_DATA(ra),
-                       c_shape[0], (const double*)PyArray_DATA(ca),
-                       &ntot, rstate);
+    int status = 0;
+    double* m_ptr = (double*)PyArray_GETPTR3(ma, i, 0, 0);
+    switch (method) {
+    case 0:
+      // Patefield's algorithm. Generally recommended for any table.
+      status = rcont(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &ntot, rstate);
+      break;
+    case 1:
+      // Naive algorithm. Only useful to check implementation of Patefield's algorithm.
+      status = rcont_naive(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &work, rstate);
+      break;
+    default:
+      PyErr_SetString(PyExc_ValueError, "method must be 0 or 1");
+      goto fail;
+    }
     switch(status) {
       case 1:
+        // this should never happen and is only listed for completeness
         PyErr_SetString(PyExc_RuntimeError, "null pointer encountered");
         goto fail;
       case 2:
@@ -81,10 +100,13 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "number of columns < 2");
         goto fail;
       case 4:
-        PyErr_SetString(PyExc_ValueError, "total number of entries <= 0");
+        PyErr_SetString(PyExc_ValueError, "negative entries in row or col");
         goto fail;
       case 5:
         PyErr_SetString(PyExc_ValueError, "sum(row) != sum(col)");
+        goto fail;
+      case 6:
+        PyErr_SetString(PyExc_ValueError, "total number of entries <= 0");
         goto fail;
       default:
         break;
@@ -97,6 +119,8 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
   Py_DECREF(ma);
   Py_DECREF(bitgen);
   Py_DECREF(cap);
+  if (work)
+    free(work);
 
   Py_RETURN_NONE;
 
@@ -106,6 +130,9 @@ fail:
   Py_XDECREF(ma);
   Py_XDECREF(bitgen);
   Py_XDECREF(cap);
+  if (work)
+    free(work);
+
   return NULL;
 }
 

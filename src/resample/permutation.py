@@ -102,7 +102,7 @@ def usp(
     *,
     precision: float = 0.01,
     max_size: int = 10000,
-    method: str = "auto",
+    method: str = "patefield",
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ):
     """
@@ -131,10 +131,13 @@ def usp(
         Maximum number of permutations. Default 10000.
     method : str, optional
         Method used to generate the 2D histogram under the null hypothesis.
-        The value "auto" selects the most appropriate method; "naive" uses a simple
-        algorithm but which has O(N) space complexity, where N is the number of
-        entries; "patefield" uses Patefield's algorithm, which has O(1) space
-        complexity. Default "auto".
+        "patefield": Uses Patefield's algorithm, which is very fast and does not
+            require additional memory allocation. It is recommended for all tables.
+        "naive": Uses a simple shuffling algorithm, which requires allocating extra
+            space for N integers, where N is the number of entries and performs
+            poorly unless N is very small. It is only implemented as a cross-check
+            for "patefield".
+        Default "patefield".
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
@@ -149,7 +152,7 @@ def usp(
     if max_size <= 0:
         raise ValueError("max_size must be positive")
 
-    methods = {"auto": 0, "patefield": 1, "naive": 2}
+    methods = {"patefield": 0, "naive": 1}
     imethod = methods.get(method, -1)
     if imethod == -1:
         raise ValueError(f"method {method} not one of {methods}")

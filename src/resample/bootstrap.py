@@ -438,7 +438,7 @@ def _resample_extended_1(
     n = len(sample)
     for i in range(size):
         k = rng.poisson(1, size=n)
-        yield _util.expand(sample, k)
+        yield np.repeat(sample, k)
 
 
 def _resample_extended_n(
@@ -447,7 +447,7 @@ def _resample_extended_n(
     n = len(samples[0])
     for i in range(size):
         k = rng.poisson(1, size=n)
-        yield tuple(_util.expand(s, k) for s in samples)
+        yield tuple(np.repeat(s, k) for s in samples)
 
 
 def _fit_parametric_family(
