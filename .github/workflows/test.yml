@@ -3,8 +3,8 @@ name: Test
 on:
   pull_request:
 
-env:
-  PIP_ONLY_BINARY: ":all:"
+# env:
+#   PIP_ONLY_BINARY: ":all:"
 
 jobs:
   test:
