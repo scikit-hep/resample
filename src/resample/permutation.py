@@ -102,6 +102,7 @@ def usp(
     *,
     precision: float = 0.01,
     max_size: int = 10000,
+    method: str = "auto",
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ):
     """
@@ -128,6 +129,12 @@ def usp(
         used. Default 0.01.
     max_size : int, optional
         Maximum number of permutations. Default 10000.
+    method : str, optional
+        Method used to generate the 2D histogram under the null hypothesis.
+        The value "auto" selects the most appropriate method; "naive" uses a simple
+        algorithm but which has O(N) space complexity, where N is the number of
+        entries; "patefield" uses Patefield's algorithm, which has O(1) space
+        complexity. Default "auto".
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
@@ -141,6 +148,11 @@ def usp(
 
     if max_size <= 0:
         raise ValueError("max_size must be positive")
+
+    methods = {"auto": 0, "patefield": 1, "naive": 2}
+    imethod = methods.get(method, -1)
+    if imethod == -1:
+        raise ValueError(f"method {method} not one of {methods}")
 
     rng = _util.normalize_rng(random_state)
 
@@ -164,7 +176,7 @@ def usp(
     # So we compute the required number of samples with the worst-case p=0.5.
     n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
     ts = np.empty(n)
-    for b, w in enumerate(_util.rcont(n, r, c, rng)):
+    for b, w in enumerate(_util.rcont(n, r, c, imethod, rng)):
         # m stays the same, since r and c remain unchanged
         ts[b] = _usp(f1, f2, w, m)
     pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)

@@ -16,7 +16,7 @@ def normalize_rng(
     return np.random.default_rng(random_state)
 
 
-def extended_copy(s: np.ndarray, k: np.ndarray) -> np.ndarray:
+def expand(s: np.ndarray, k: np.ndarray) -> np.ndarray:
     """Return array with elements of s repeated k times."""
     r = np.empty(np.sum(k), dtype=s.dtype)
     m = 0
@@ -26,20 +26,35 @@ def extended_copy(s: np.ndarray, k: np.ndarray) -> np.ndarray:
     return r
 
 
-def fill_w(w: np.ndarray, xmap: np.ndarray, ymap: np.ndarray) -> None:
+def fill(w: np.ndarray, i: int, xmap: np.ndarray, ymap: np.ndarray) -> None:
     """Clear and fill w matrix."""
-    w[:] = 0
-    for i, j in zip(xmap, ymap):
-        w[i, j] += 1
+    for j, k in zip(xmap, ymap):
+        w[i, j, k] += 1
 
 
-def rcont(n: int, r: np.ndarray, c: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+def rcont(
+    n: int, r: np.ndarray, c: np.ndarray, method: int, rng: np.random.Generator
+) -> np.ndarray:
     """Generate random matrices conditional on row and column sum."""
     nr = len(r)
     nc = len(c)
-    m = np.empty((n, nr, nc))
-    _ext.rcont(m, r, c, rng)
-    return m
+    w = np.empty((n, nr, nc))
+    if method == 0:  # auto
+        method = 1  # TODO make choice based on ntot
+    if method == 1:
+        # Patefield algorithm
+        _ext.rcont(w, r, c, rng)
+    elif method == 2:
+        # Naive algorithm, only kept because it is simple to implement
+        xmap = expand(np.arange(nr), r.astype(np.int32))
+        ymap = expand(np.arange(nc), c.astype(np.int32))
+        w[:] = 0
+        for i in range(n):
+            rng.shuffle(ymap)
+            fill(w, i, xmap, ymap)
+    else:
+        assert False, "invalid method"
+    return w
 
 
 # optionally accelerate some functions with numba if there is a notable benefit
@@ -48,7 +63,7 @@ try:
 
     _jit = _nb.njit(cache=True)
 
-    extended_copy = _jit(extended_copy)
-    fill_w = _jit(fill_w)  # factor 20-30 speed-up of usp test
+    expand = _jit(expand)
+    fill = _jit(fill)  # factor 20-30 speed-up of usp test
 except ImportError:
     pass
