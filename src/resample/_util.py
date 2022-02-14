@@ -2,7 +2,7 @@ import typing as _tp
 
 import numpy as np
 
-from ._ext import rcond  # noqa type: ignore
+from ._ext import rcont  # noqa type: ignore
 
 
 def normalize_rng(

@@ -7,71 +7,55 @@
 int rcont(double*, int, const double*, int, const double*, double*, bitgen_t*);
 int rcont_naive(double*, int, const double*, int, const double*, int**, bitgen_t*);
 
-static PyObject* rcont_wrap(PyObject *self, PyObject *args)
-{
-  PyObject *m = NULL, *r = NULL, *c = NULL, *rng = NULL;
-  PyArrayObject *ma = NULL, *ra = NULL, *ca = NULL;
-  PyObject *bitgen = NULL, *cap = NULL;
-  bitgen_t* rstate;
-  int method = -1;
+static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
+  int n = -1, method = -1;
+  PyObject *r = NULL, *c = NULL, *rng = NULL,
+    *ra = NULL, *ca = NULL, *ma = NULL,
+    *bitgen = NULL, *cap = NULL;
+  int* work = 0; // pointer to workspace for rcont_naive, allocated by rcont_naive
 
-  if(!PyArg_ParseTuple(args, "O!O!O!iO",
-     &PyArray_Type, &m,
-     &PyArray_Type, &r,
-     &PyArray_Type, &c,
-     &method,
-     &rng))
+  if(!PyArg_ParseTuple(args, "iO!O!iO",
+    &n,
+    &PyArray_Type, &r,
+    &PyArray_Type, &c,
+    &method,
+    &rng))
     return NULL;
 
-  ma = (PyArrayObject*)PyArray_FROM_OTF(m, NPY_DOUBLE, NPY_ARRAY_OUT_ARRAY);
-  if (!ma) return NULL;
-  ra = (PyArrayObject*)PyArray_FROM_OTF(r, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  ra = PyArray_FROM_OTF(r, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ra) goto fail;
-  ca = (PyArrayObject*)PyArray_FROM_OTF(c, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  ca = PyArray_FROM_OTF(c, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ca) goto fail;
 
-  if (PyArray_NDIM(ma) != 3) {
-    PyErr_SetString(PyExc_ValueError, "m must be 3d");
-    goto fail;
-  }
   if (PyArray_NDIM(ra) != 1) {
     PyErr_SetString(PyExc_ValueError, "r must be 1d");
     goto fail;
   }
+
   if (PyArray_NDIM(ca) != 1) {
     PyErr_SetString(PyExc_ValueError, "c must be 1d");
     goto fail;
   }
 
-  npy_intp* m_shape = PyArray_DIMS(ma);
   npy_intp* r_shape = PyArray_DIMS(ra);
   npy_intp* c_shape = PyArray_DIMS(ca);
 
-  if (m_shape[1] != r_shape[0] || m_shape[2] != c_shape[0]) {
-    PyErr_SetString(PyExc_ValueError, "shapes of m, r, c do not match");
-    goto fail;
-  }
+  npy_intp m_shape[3] = {n, *r_shape, *c_shape};
+  ma = PyArray_SimpleNew(3, m_shape, NPY_DOUBLE);
 
   bitgen = PyObject_GetAttrString(rng, "_bit_generator");
-  if (!bitgen) {
-    goto fail;
-  }
+  if (!bitgen) goto fail;
 
   cap = PyObject_GetAttrString(bitgen, "capsule");
-  if (!cap) {
-    goto fail;
-  }
+  if (!cap) goto fail;
 
-  rstate = (bitgen_t *)PyCapsule_GetPointer(cap, "BitGenerator");
-  if (!rstate) {
-    goto fail;
-  }
+  bitgen_t* rstate = (bitgen_t *)PyCapsule_GetPointer(cap, "BitGenerator");
+  if (!rstate) goto fail;
 
   const double* r_ptr = (const double*)PyArray_DATA(ra);
   const double* c_ptr = (const double*)PyArray_DATA(ca);
 
   double ntot = 0; // indicator to run/skip expensive one-time checks, filled by rcont
-  int* work = 0; // pointer to hold workspace for rcont_naive, allocated by rcont_naive
   for (int i = 0; i < m_shape[0]; ++i) {
     int status = 0;
     double* m_ptr = (double*)PyArray_GETPTR3(ma, i, 0, 0);
@@ -116,13 +100,12 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
   // clean up
   Py_DECREF(ra);
   Py_DECREF(ca);
-  Py_DECREF(ma);
   Py_DECREF(bitgen);
   Py_DECREF(cap);
   if (work)
     free(work);
 
-  Py_RETURN_NONE;
+  return ma;
 
 fail:
   Py_XDECREF(ra);
@@ -137,11 +120,11 @@ fail:
 }
 
 static PyMethodDef methods[] = {
-    {"rcont", rcont_wrap, METH_VARARGS},
-    {NULL, NULL, 0, NULL}
+  {"rcont", rcont_wrap, METH_VARARGS},
+  {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef mod = {
+static PyModuleDef mod = {
   PyModuleDef_HEAD_INIT,
   "resample._ext",
   NULL,
@@ -150,8 +133,7 @@ static struct PyModuleDef mod = {
 };
 
 PyMODINIT_FUNC
-PyInit__ext(void)
-{
+PyInit__ext(void) {
   PyObject* m = PyModule_Create(&mod);
   if (!m)
     return NULL;
