@@ -55,7 +55,7 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args)
     goto fail;
   }
 
-  double ntot = 0;
+  double ntot = 0; // indicator to run expensive one-time checks, is filled by rcont
   for (int i = 0; i < m_shape[0]; ++i) {
     int status = rcont((double*)PyArray_GETPTR3(ma, i, 0, 0),
                        r_shape[0], (const double*)PyArray_DATA(ra),
