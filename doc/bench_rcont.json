@@ -1,0 +1,2505 @@
+{
+    "machine_info": {
+        "node": "MacBook-Pro-2",
+        "processor": "i386",
+        "machine": "x86_64",
+        "python_compiler": "Clang 13.0.0 (clang-1300.0.29.3)",
+        "python_implementation": "CPython",
+        "python_implementation_version": "3.8.12",
+        "python_version": "3.8.12",
+        "python_build": [
+            "default",
+            "Oct 22 2021 18:39:35"
+        ],
+        "release": "21.2.0",
+        "system": "Darwin",
+        "cpu": {
+            "python_version": "3.8.12.final.0 (64 bit)",
+            "cpuinfo_version": [
+                8,
+                0,
+                0
+            ],
+            "cpuinfo_version_string": "8.0.0",
+            "arch": "X86_64",
+            "bits": 64,
+            "count": 8,
+            "arch_string_raw": "x86_64",
+            "vendor_id_raw": "GenuineIntel",
+            "brand_raw": "Intel(R) Core(TM) i7-8569U CPU @ 2.80GHz",
+            "hz_advertised_friendly": "2.8000 GHz",
+            "hz_actual_friendly": "2.8000 GHz",
+            "hz_advertised": [
+                2800000000,
+                0
+            ],
+            "hz_actual": [
+                2800000000,
+                0
+            ],
+            "l2_cache_size": 262144,
+            "stepping": 10,
+            "model": 142,
+            "family": 6,
+            "flags": [
+                "1gbpage",
+                "3dnowprefetch",
+                "abm",
+                "acpi",
+                "adx",
+                "aes",
+                "apic",
+                "avx",
+                "avx1.0",
+                "avx2",
+                "bmi1",
+                "bmi2",
+                "clflush",
+                "clflushopt",
+                "clfsh",
+                "clfsopt",
+                "cmov",
+                "cx16",
+                "cx8",
+                "de",
+                "ds",
+                "ds_cpl",
+                "dscpl",
+                "dtes64",
+                "dts",
+                "em64t",
+                "erms",
+                "est",
+                "f16c",
+                "fma",
+                "fpu",
+                "fpu_csds",
+                "fxsr",
+                "ht",
+                "htt",
+                "ibrs",
+                "intel_pt",
+                "invpcid",
+                "ipt",
+                "l1df",
+                "lahf",
+                "lahf_lm",
+                "lzcnt",
+                "mca",
+                "mce",
+                "mdclear",
+                "mmx",
+                "mon",
+                "monitor",
+                "movbe",
+                "mpx",
+                "msr",
+                "mtrr",
+                "osxsave",
+                "pae",
+                "pat",
+                "pbe",
+                "pcid",
+                "pclmulqdq",
+                "pdcm",
+                "pge",
+                "pni",
+                "popcnt",
+                "prefetchw",
+                "pse",
+                "pse36",
+                "rdrand",
+                "rdrnd",
+                "rdseed",
+                "rdtscp",
+                "rdwrfsgs",
+                "seglim64",
+                "sep",
+                "sgx",
+                "smap",
+                "smep",
+                "ss",
+                "ssbd",
+                "sse",
+                "sse2",
+                "sse3",
+                "sse4.1",
+                "sse4.2",
+                "sse4_1",
+                "sse4_2",
+                "ssse3",
+                "stibp",
+                "syscall",
+                "tm",
+                "tm2",
+                "tpr",
+                "tsc",
+                "tsc_thread_offset",
+                "tscdeadline",
+                "tsci",
+                "tsctmr",
+                "tsxfa",
+                "vme",
+                "vmx",
+                "x2apic",
+                "xd",
+                "xsave",
+                "xtpr"
+            ],
+            "l2_cache_line_size": 256,
+            "l2_cache_associativity": 6
+        }
+    },
+    "commit_info": {
+        "id": "dd429c71a44a6dfa03cbfaeb3c43ba0e0b981376",
+        "time": "2022-02-14T23:51:05+01:00",
+        "author_time": "2022-02-14T23:51:05+01:00",
+        "dirty": true,
+        "project": "resample",
+        "branch": "develop"
+    },
+    "benchmarks": [
+        {
+            "group": null,
+            "name": "test_rcont[0-2-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-2-10]",
+            "params": {
+                "method": 0,
+                "k": 2,
+                "n": 10
+            },
+            "param": "0-2-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.139999999823289e-06,
+                "max": 8.268999999994087e-05,
+                "mean": 9.332696620803019e-06,
+                "stddev": 2.5782775004204554e-06,
+                "rounds": 28054,
+                "median": 8.993000000012685e-06,
+                "iqr": 3.699999999717818e-07,
+                "q1": 8.819999999909456e-06,
+                "q3": 9.189999999881238e-06,
+                "iqr_outliers": 1516,
+                "stddev_outliers": 480,
+                "outliers": "480;1516",
+                "ld15iqr": 8.264999999951783e-06,
+                "hd15iqr": 9.745000000060955e-06,
+                "ops": 107150.16684148427,
+                "total": 0.2618194710000079,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-2-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-2-100]",
+            "params": {
+                "method": 0,
+                "k": 2,
+                "n": 100
+            },
+            "param": "0-2-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.753600000011019e-05,
+                "max": 0.00036115499999977985,
+                "mean": 9.325653548512452e-05,
+                "stddev": 1.3772475154147929e-05,
+                "rounds": 10286,
+                "median": 9.04170000000093e-05,
+                "iqr": 2.04600000008881e-06,
+                "q1": 8.967399999981751e-05,
+                "q3": 9.171999999990632e-05,
+                "iqr_outliers": 914,
+                "stddev_outliers": 431,
+                "outliers": "431;914",
+                "ld15iqr": 8.753600000011019e-05,
+                "hd15iqr": 9.479300000014845e-05,
+                "ops": 10723.109053944121,
+                "total": 0.9592367239999908,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-2-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-2-1000]",
+            "params": {
+                "method": 0,
+                "k": 2,
+                "n": 1000
+            },
+            "param": "0-2-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0008555709999997774,
+                "max": 0.0013872120000000265,
+                "mean": 0.0008950194105075729,
+                "stddev": 5.874657745602207e-05,
+                "rounds": 1123,
+                "median": 0.0008800700000000106,
+                "iqr": 2.873749999998676e-05,
+                "q1": 0.000863645000000024,
+                "q3": 0.0008923825000000107,
+                "iqr_outliers": 136,
+                "stddev_outliers": 103,
+                "outliers": "103;136",
+                "ld15iqr": 0.0008555709999997774,
+                "hd15iqr": 0.0009356089999998929,
+                "ops": 1117.2942041926126,
+                "total": 1.0051067980000044,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-2-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-2-10000]",
+            "params": {
+                "method": 0,
+                "k": 2,
+                "n": 10000
+            },
+            "param": "0-2-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.009270274000000356,
+                "max": 0.010697342000000276,
+                "mean": 0.009692832343434404,
+                "stddev": 0.00023797211482164422,
+                "rounds": 99,
+                "median": 0.009639087000000046,
+                "iqr": 0.0002691372499996625,
+                "q1": 0.009536815000000143,
+                "q3": 0.009805952249999805,
+                "iqr_outliers": 4,
+                "stddev_outliers": 24,
+                "outliers": "24;4",
+                "ld15iqr": 0.009270274000000356,
+                "hd15iqr": 0.01029490200000005,
+                "ops": 103.16901856631885,
+                "total": 0.9595904020000061,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-2-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-2-100000]",
+            "params": {
+                "method": 0,
+                "k": 2,
+                "n": 100000
+            },
+            "param": "0-2-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.09519890800000042,
+                "max": 0.0990542879999996,
+                "mean": 0.09708701727272731,
+                "stddev": 0.0012272527366992117,
+                "rounds": 11,
+                "median": 0.09702924200000052,
+                "iqr": 0.0014867555000004362,
+                "q1": 0.09628101474999995,
+                "q3": 0.09776777025000039,
+                "iqr_outliers": 0,
+                "stddev_outliers": 4,
+                "outliers": "4;0",
+                "ld15iqr": 0.09519890800000042,
+                "hd15iqr": 0.0990542879999996,
+                "ops": 10.300038337679055,
+                "total": 1.0679571900000004,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-4-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-4-10]",
+            "params": {
+                "method": 0,
+                "k": 4,
+                "n": 10
+            },
+            "param": "0-4-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.478999999894654e-06,
+                "max": 0.0005837360000002789,
+                "mean": 1.030748981636411e-05,
+                "stddev": 4.469348036122733e-06,
+                "rounds": 66872,
+                "median": 9.664000000242368e-06,
+                "iqr": 6.239999992274647e-07,
+                "q1": 9.376000000393958e-06,
+                "q3": 9.999999999621423e-06,
+                "iqr_outliers": 3787,
+                "stddev_outliers": 2155,
+                "outliers": "2155;3787",
+                "ld15iqr": 8.478999999894654e-06,
+                "hd15iqr": 1.0935999999794888e-05,
+                "ops": 97016.83123784473,
+                "total": 0.6892824589999007,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-4-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-4-100]",
+            "params": {
+                "method": 0,
+                "k": 4,
+                "n": 100
+            },
+            "param": "0-4-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.360900000070615e-05,
+                "max": 0.0014295680000007138,
+                "mean": 9.625435291252645e-05,
+                "stddev": 2.5785712028022946e-05,
+                "rounds": 10266,
+                "median": 9.140049999967204e-05,
+                "iqr": 4.624999999869317e-06,
+                "q1": 8.833399999996772e-05,
+                "q3": 9.295899999983703e-05,
+                "iqr_outliers": 1126,
+                "stddev_outliers": 688,
+                "outliers": "688;1126",
+                "ld15iqr": 8.360900000070615e-05,
+                "hd15iqr": 9.990500000078839e-05,
+                "ops": 10389.140540051993,
+                "total": 0.9881471869999965,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-4-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-4-1000]",
+            "params": {
+                "method": 0,
+                "k": 4,
+                "n": 1000
+            },
+            "param": "0-4-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.000818704000000281,
+                "max": 0.0017336920000001754,
+                "mean": 0.0009636470350241208,
+                "stddev": 0.0001767465421742624,
+                "rounds": 828,
+                "median": 0.000886840999999805,
+                "iqr": 8.611550000026114e-05,
+                "q1": 0.000878905999999624,
+                "q3": 0.0009650214999998852,
+                "iqr_outliers": 119,
+                "stddev_outliers": 98,
+                "outliers": "98;119",
+                "ld15iqr": 0.000818704000000281,
+                "hd15iqr": 0.001094550999999555,
+                "ops": 1037.7243572123575,
+                "total": 0.7978997449999721,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-4-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-4-10000]",
+            "params": {
+                "method": 0,
+                "k": 4,
+                "n": 10000
+            },
+            "param": "0-4-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.009095420999999604,
+                "max": 0.0120038289999993,
+                "mean": 0.010229607391752651,
+                "stddev": 0.0006718462697749324,
+                "rounds": 97,
+                "median": 0.0101807160000007,
+                "iqr": 0.0009618017499999354,
+                "q1": 0.009698312749999882,
+                "q3": 0.010660114499999818,
+                "iqr_outliers": 0,
+                "stddev_outliers": 34,
+                "outliers": "34;0",
+                "ld15iqr": 0.009095420999999604,
+                "hd15iqr": 0.0120038289999993,
+                "ops": 97.75546232656235,
+                "total": 0.9922719170000072,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-4-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-4-100000]",
+            "params": {
+                "method": 0,
+                "k": 4,
+                "n": 100000
+            },
+            "param": "0-4-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.09556290599999961,
+                "max": 0.13462473099999883,
+                "mean": 0.1165164424545455,
+                "stddev": 0.014181558037815596,
+                "rounds": 11,
+                "median": 0.11909928599999908,
+                "iqr": 0.025925765500000697,
+                "q1": 0.10484323674999985,
+                "q3": 0.13076900225000054,
+                "iqr_outliers": 0,
+                "stddev_outliers": 5,
+                "outliers": "5;0",
+                "ld15iqr": 0.09556290599999961,
+                "hd15iqr": 0.13462473099999883,
+                "ops": 8.582479682128232,
+                "total": 1.2816808670000004,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-10-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-10-10]",
+            "params": {
+                "method": 0,
+                "k": 10,
+                "n": 10
+            },
+            "param": "0-10-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.011200000000656e-05,
+                "max": 0.0005417449999995938,
+                "mean": 1.384684694081159e-05,
+                "stddev": 7.852541854647735e-06,
+                "rounds": 45159,
+                "median": 1.1874000000133833e-05,
+                "iqr": 9.649999999084002e-07,
+                "q1": 1.144099999983439e-05,
+                "q3": 1.240599999974279e-05,
+                "iqr_outliers": 6117,
+                "stddev_outliers": 3196,
+                "outliers": "3196;6117",
+                "ld15iqr": 1.011200000000656e-05,
+                "hd15iqr": 1.3855000000617679e-05,
+                "ops": 72218.60718721774,
+                "total": 0.6253097610001106,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-10-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-10-100]",
+            "params": {
+                "method": 0,
+                "k": 10,
+                "n": 100
+            },
+            "param": "0-10-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.594399999850566e-05,
+                "max": 0.00036296000000035633,
+                "mean": 0.00010700646470774254,
+                "stddev": 3.145801142093672e-05,
+                "rounds": 9563,
+                "median": 9.544899999980316e-05,
+                "iqr": 5.775000000873831e-06,
+                "q1": 9.233400000008274e-05,
+                "q3": 9.810900000095657e-05,
+                "iqr_outliers": 1947,
+                "stddev_outliers": 1208,
+                "outliers": "1208;1947",
+                "ld15iqr": 8.594399999850566e-05,
+                "hd15iqr": 0.00010681400000045471,
+                "ops": 9345.229774025458,
+                "total": 1.0233028220001419,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-10-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-10-1000]",
+            "params": {
+                "method": 0,
+                "k": 10,
+                "n": 1000
+            },
+            "param": "0-10-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0008004509999999243,
+                "max": 0.001706711000000638,
+                "mean": 0.0009145739086229113,
+                "stddev": 0.00013207052580917027,
+                "rounds": 777,
+                "median": 0.0008617609999994613,
+                "iqr": 9.333675000045005e-05,
+                "q1": 0.0008397554999994838,
+                "q3": 0.0009330922499999339,
+                "iqr_outliers": 80,
+                "stddev_outliers": 90,
+                "outliers": "90;80",
+                "ld15iqr": 0.0008004509999999243,
+                "hd15iqr": 0.001074018999998927,
+                "ops": 1093.4053449061498,
+                "total": 0.7106239270000021,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-10-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-10-10000]",
+            "params": {
+                "method": 0,
+                "k": 10,
+                "n": 10000
+            },
+            "param": "0-10-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.009014529999999965,
+                "max": 0.012120916000000648,
+                "mean": 0.01002614048181811,
+                "stddev": 0.0007433317525858969,
+                "rounds": 110,
+                "median": 0.009848041499999738,
+                "iqr": 0.0011541639999972375,
+                "q1": 0.009424755000001284,
+                "q3": 0.010578918999998521,
+                "iqr_outliers": 0,
+                "stddev_outliers": 38,
+                "outliers": "38;0",
+                "ld15iqr": 0.009014529999999965,
+                "hd15iqr": 0.012120916000000648,
+                "ops": 99.7392767250218,
+                "total": 1.1028754529999922,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-10-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-10-100000]",
+            "params": {
+                "method": 0,
+                "k": 10,
+                "n": 100000
+            },
+            "param": "0-10-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.093217156999998,
+                "max": 0.09775399399999785,
+                "mean": 0.09579391027272716,
+                "stddev": 0.001518838554799556,
+                "rounds": 11,
+                "median": 0.09583863900000011,
+                "iqr": 0.0024861869999988073,
+                "q1": 0.09441082075000118,
+                "q3": 0.09689700774999999,
+                "iqr_outliers": 0,
+                "stddev_outliers": 3,
+                "outliers": "3;0",
+                "ld15iqr": 0.093217156999998,
+                "hd15iqr": 0.09775399399999785,
+                "ops": 10.43907694291819,
+                "total": 1.0537330129999987,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-20-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-20-10]",
+            "params": {
+                "method": 0,
+                "k": 20,
+                "n": 10
+            },
+            "param": "0-20-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.3734999999570618e-05,
+                "max": 0.00013567300000261184,
+                "mean": 1.563437742338471e-05,
+                "stddev": 4.504362451435474e-06,
+                "rounds": 38376,
+                "median": 1.4919999998141975e-05,
+                "iqr": 6.309999989184689e-07,
+                "q1": 1.4653000000919292e-05,
+                "q3": 1.528399999983776e-05,
+                "iqr_outliers": 1383,
+                "stddev_outliers": 1064,
+                "outliers": "1064;1383",
+                "ld15iqr": 1.3734999999570618e-05,
+                "hd15iqr": 1.6235000000364153e-05,
+                "ops": 63961.61311190276,
+                "total": 0.5999848679998117,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-20-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-20-100]",
+            "params": {
+                "method": 0,
+                "k": 20,
+                "n": 100
+            },
+            "param": "0-20-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.825599999795486e-05,
+                "max": 0.0002988780000023894,
+                "mean": 9.8325816169393e-05,
+                "stddev": 1.7888541942585164e-05,
+                "rounds": 8312,
+                "median": 9.342100000075959e-05,
+                "iqr": 4.59199999980342e-06,
+                "q1": 9.21590000011463e-05,
+                "q3": 9.675100000094972e-05,
+                "iqr_outliers": 717,
+                "stddev_outliers": 495,
+                "outliers": "495;717",
+                "ld15iqr": 8.825599999795486e-05,
+                "hd15iqr": 0.00010384200000146393,
+                "ops": 10170.268999112375,
+                "total": 0.8172841839999947,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-20-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-20-1000]",
+            "params": {
+                "method": 0,
+                "k": 20,
+                "n": 1000
+            },
+            "param": "0-20-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.000800515000001667,
+                "max": 0.001350770000001944,
+                "mean": 0.0008836511147929595,
+                "stddev": 7.965655749798855e-05,
+                "rounds": 845,
+                "median": 0.0008611119999990535,
+                "iqr": 7.869499999824114e-05,
+                "q1": 0.0008254807500005512,
+                "q3": 0.0009041757499987924,
+                "iqr_outliers": 61,
+                "stddev_outliers": 133,
+                "outliers": "133;61",
+                "ld15iqr": 0.000800515000001667,
+                "hd15iqr": 0.001022391999999428,
+                "ops": 1131.6683510712269,
+                "total": 0.7466851920000508,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-20-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-20-10000]",
+            "params": {
+                "method": 0,
+                "k": 20,
+                "n": 10000
+            },
+            "param": "0-20-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.008948444999997918,
+                "max": 0.01312104399999825,
+                "mean": 0.009590515219047512,
+                "stddev": 0.0006165440362118495,
+                "rounds": 105,
+                "median": 0.009469199000001538,
+                "iqr": 0.0005033530000000397,
+                "q1": 0.009230407499999593,
+                "q3": 0.009733760499999633,
+                "iqr_outliers": 10,
+                "stddev_outliers": 16,
+                "outliers": "16;10",
+                "ld15iqr": 0.008948444999997918,
+                "hd15iqr": 0.010506648999999868,
+                "ops": 104.2696849084731,
+                "total": 1.0070040979999888,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-20-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-20-100000]",
+            "params": {
+                "method": 0,
+                "k": 20,
+                "n": 100000
+            },
+            "param": "0-20-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.09276260499999722,
+                "max": 0.09787322900000106,
+                "mean": 0.09542273945454482,
+                "stddev": 0.0018012095072524816,
+                "rounds": 11,
+                "median": 0.09540493300000108,
+                "iqr": 0.0035556845000010995,
+                "q1": 0.09362376524999938,
+                "q3": 0.09717944975000048,
+                "iqr_outliers": 0,
+                "stddev_outliers": 6,
+                "outliers": "6;0",
+                "ld15iqr": 0.09276260499999722,
+                "hd15iqr": 0.09787322900000106,
+                "ops": 10.479682366238876,
+                "total": 1.049650133999993,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-40-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-40-10]",
+            "params": {
+                "method": 0,
+                "k": 40,
+                "n": 10
+            },
+            "param": "0-40-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.379099999989421e-05,
+                "max": 0.00020364000000228089,
+                "mean": 3.7650290830375184e-05,
+                "stddev": 8.66619288873681e-06,
+                "rounds": 2541,
+                "median": 3.5832000001789766e-05,
+                "iqr": 1.5460000009070995e-06,
+                "q1": 3.5261999999924853e-05,
+                "q3": 3.680800000083195e-05,
+                "iqr_outliers": 150,
+                "stddev_outliers": 136,
+                "outliers": "136;150",
+                "ld15iqr": 3.379099999989421e-05,
+                "hd15iqr": 3.92960000006326e-05,
+                "ops": 26560.219800300412,
+                "total": 0.09566938899998334,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-40-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-40-100]",
+            "params": {
+                "method": 0,
+                "k": 40,
+                "n": 100
+            },
+            "param": "0-40-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00010866200000236859,
+                "max": 0.00032719299999683926,
+                "mean": 0.00012152326894864516,
+                "stddev": 1.5674387235172885e-05,
+                "rounds": 6953,
+                "median": 0.0001190239999999676,
+                "iqr": 6.227250002766027e-06,
+                "q1": 0.00011551174999802072,
+                "q3": 0.00012173900000078675,
+                "iqr_outliers": 526,
+                "stddev_outliers": 327,
+                "outliers": "327;526",
+                "ld15iqr": 0.00010866200000236859,
+                "hd15iqr": 0.00013120199999860915,
+                "ops": 8228.876729958545,
+                "total": 0.8449512889999298,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-40-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-40-1000]",
+            "params": {
+                "method": 0,
+                "k": 40,
+                "n": 1000
+            },
+            "param": "0-40-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0008189709999975037,
+                "max": 0.001467287000000539,
+                "mean": 0.0009148337539215218,
+                "stddev": 6.280977270799995e-05,
+                "rounds": 1020,
+                "median": 0.000906067499998997,
+                "iqr": 4.254649999957394e-05,
+                "q1": 0.0008846614999988844,
+                "q3": 0.0009272079999984584,
+                "iqr_outliers": 66,
+                "stddev_outliers": 197,
+                "outliers": "197;66",
+                "ld15iqr": 0.000822775999999692,
+                "hd15iqr": 0.0009915420000012887,
+                "ops": 1093.0947789294012,
+                "total": 0.9331304289999522,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-40-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-40-10000]",
+            "params": {
+                "method": 0,
+                "k": 40,
+                "n": 10000
+            },
+            "param": "0-40-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.008996085999999792,
+                "max": 0.011351233999999266,
+                "mean": 0.009985547547169989,
+                "stddev": 0.0005606537226712885,
+                "rounds": 106,
+                "median": 0.009795794500000454,
+                "iqr": 0.0007962170000013202,
+                "q1": 0.00956502900000089,
+                "q3": 0.010361246000002211,
+                "iqr_outliers": 0,
+                "stddev_outliers": 33,
+                "outliers": "33;0",
+                "ld15iqr": 0.008996085999999792,
+                "hd15iqr": 0.011351233999999266,
+                "ops": 100.14473370400312,
+                "total": 1.0584680400000188,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-40-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-40-100000]",
+            "params": {
+                "method": 0,
+                "k": 40,
+                "n": 100000
+            },
+            "param": "0-40-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0939652879999997,
+                "max": 0.10137621699999855,
+                "mean": 0.09858744963636341,
+                "stddev": 0.0023553299749401314,
+                "rounds": 11,
+                "median": 0.09954166200000003,
+                "iqr": 0.0037322167499986847,
+                "q1": 0.09695679925000089,
+                "q3": 0.10068901599999958,
+                "iqr_outliers": 0,
+                "stddev_outliers": 4,
+                "outliers": "4;0",
+                "ld15iqr": 0.0939652879999997,
+                "hd15iqr": 0.10137621699999855,
+                "ops": 10.143278923315973,
+                "total": 1.0844619459999976,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-100-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-100-10]",
+            "params": {
+                "method": 0,
+                "k": 100,
+                "n": 10
+            },
+            "param": "0-100-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00020830600000110167,
+                "max": 0.0004353670000014631,
+                "mean": 0.00023317160124629159,
+                "stddev": 3.9308513589686876e-05,
+                "rounds": 321,
+                "median": 0.00021501899999876173,
+                "iqr": 2.4228749999188892e-05,
+                "q1": 0.00021238800000134006,
+                "q3": 0.00023661675000052895,
+                "iqr_outliers": 43,
+                "stddev_outliers": 43,
+                "outliers": "43;43",
+                "ld15iqr": 0.00020830600000110167,
+                "hd15iqr": 0.0002731750000002364,
+                "ops": 4288.6869355232175,
+                "total": 0.0748480840000596,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-100-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-100-100]",
+            "params": {
+                "method": 0,
+                "k": 100,
+                "n": 100
+            },
+            "param": "0-100-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00026740299999872263,
+                "max": 0.0006759760000001336,
+                "mean": 0.00029557565063986763,
+                "stddev": 3.665855293039183e-05,
+                "rounds": 2891,
+                "median": 0.0002854180000007034,
+                "iqr": 2.2947750001556244e-05,
+                "q1": 0.0002777404999987354,
+                "q3": 0.00030068825000029165,
+                "iqr_outliers": 216,
+                "stddev_outliers": 223,
+                "outliers": "223;216",
+                "ld15iqr": 0.00026740299999872263,
+                "hd15iqr": 0.0003355370000015512,
+                "ops": 3383.2286179026637,
+                "total": 0.8545092059998574,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-100-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-100-1000]",
+            "params": {
+                "method": 0,
+                "k": 100,
+                "n": 1000
+            },
+            "param": "0-100-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0010381030000026215,
+                "max": 0.0019134290000017984,
+                "mean": 0.001184768218888929,
+                "stddev": 0.00012878127050262528,
+                "rounds": 900,
+                "median": 0.0011442884999990355,
+                "iqr": 8.103150000238202e-05,
+                "q1": 0.0011133304999990656,
+                "q3": 0.0011943620000014477,
+                "iqr_outliers": 112,
+                "stddev_outliers": 146,
+                "outliers": "146;112",
+                "ld15iqr": 0.0010381030000026215,
+                "hd15iqr": 0.0013220710000005909,
+                "ops": 844.0469486409722,
+                "total": 1.066291397000036,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-100-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-100-10000]",
+            "params": {
+                "method": 0,
+                "k": 100,
+                "n": 10000
+            },
+            "param": "0-100-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.009349345000000397,
+                "max": 0.011438369000000392,
+                "mean": 0.01002606764356458,
+                "stddev": 0.000481371597636304,
+                "rounds": 101,
+                "median": 0.009906428000000744,
+                "iqr": 0.0004175602499980613,
+                "q1": 0.009718361750000959,
+                "q3": 0.01013592199999902,
+                "iqr_outliers": 12,
+                "stddev_outliers": 26,
+                "outliers": "26;12",
+                "ld15iqr": 0.009349345000000397,
+                "hd15iqr": 0.01077353999999886,
+                "ops": 99.74000131964686,
+                "total": 1.0126328320000226,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[0-100-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[0-100-100000]",
+            "params": {
+                "method": 0,
+                "k": 100,
+                "n": 100000
+            },
+            "param": "0-100-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.09360453100000043,
+                "max": 0.10400153500000187,
+                "mean": 0.09910694450000009,
+                "stddev": 0.0034687219399422743,
+                "rounds": 10,
+                "median": 0.09890165899999914,
+                "iqr": 0.005321168999998349,
+                "q1": 0.09642225400000015,
+                "q3": 0.1017434229999985,
+                "iqr_outliers": 0,
+                "stddev_outliers": 3,
+                "outliers": "3;0",
+                "ld15iqr": 0.09360453100000043,
+                "hd15iqr": 0.10400153500000187,
+                "ops": 10.090110284854955,
+                "total": 0.9910694450000008,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-2-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-2-10]",
+            "params": {
+                "method": 1,
+                "k": 2,
+                "n": 10
+            },
+            "param": "1-2-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.3983000002326662e-05,
+                "max": 0.00015088800000029323,
+                "mean": 1.631932271824968e-05,
+                "stddev": 5.04586844656436e-06,
+                "rounds": 29769,
+                "median": 1.534900000166317e-05,
+                "iqr": 5.84999999553304e-07,
+                "q1": 1.5130000001306598e-05,
+                "q3": 1.5715000000859902e-05,
+                "iqr_outliers": 2812,
+                "stddev_outliers": 1335,
+                "outliers": "1335;2812",
+                "ld15iqr": 1.4252999996244853e-05,
+                "hd15iqr": 1.6594999998176263e-05,
+                "ops": 61277.05280818507,
+                "total": 0.48580991799957474,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-2-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-2-100]",
+            "params": {
+                "method": 1,
+                "k": 2,
+                "n": 100
+            },
+            "param": "1-2-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 2.1465999999747964e-05,
+                "max": 0.0002841250000003015,
+                "mean": 2.5515231294842425e-05,
+                "stddev": 8.078252465112714e-06,
+                "rounds": 34683,
+                "median": 2.4219999993135843e-05,
+                "iqr": 1.7369999980587636e-06,
+                "q1": 2.2696999998572664e-05,
+                "q3": 2.4433999996631428e-05,
+                "iqr_outliers": 2780,
+                "stddev_outliers": 2466,
+                "outliers": "2466;2780",
+                "ld15iqr": 2.1465999999747964e-05,
+                "hd15iqr": 2.7051000003552872e-05,
+                "ops": 39192.27650513743,
+                "total": 0.8849447669990198,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-2-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-2-1000]",
+            "params": {
+                "method": 1,
+                "k": 2,
+                "n": 1000
+            },
+            "param": "1-2-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 2.241299999639068e-05,
+                "max": 0.00025932399999817335,
+                "mean": 2.7070748760586767e-05,
+                "stddev": 9.030750581720856e-06,
+                "rounds": 29450,
+                "median": 2.5223000001517448e-05,
+                "iqr": 1.3419999973507402e-06,
+                "q1": 2.4138000000561988e-05,
+                "q3": 2.5479999997912728e-05,
+                "iqr_outliers": 2841,
+                "stddev_outliers": 2346,
+                "outliers": "2346;2841",
+                "ld15iqr": 2.241299999639068e-05,
+                "hd15iqr": 2.7494000001127006e-05,
+                "ops": 36940.241618138556,
+                "total": 0.7972335509992803,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-2-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-2-10000]",
+            "params": {
+                "method": 1,
+                "k": 2,
+                "n": 10000
+            },
+            "param": "1-2-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 2.510299999869403e-05,
+                "max": 0.0001639649999987114,
+                "mean": 3.0194756714648474e-05,
+                "stddev": 6.99496692902484e-06,
+                "rounds": 21185,
+                "median": 2.9225999995219354e-05,
+                "iqr": 1.531250001463036e-06,
+                "q1": 2.8237999998736996e-05,
+                "q3": 2.976925000020003e-05,
+                "iqr_outliers": 1380,
+                "stddev_outliers": 970,
+                "outliers": "970;1380",
+                "ld15iqr": 2.5942000000611642e-05,
+                "hd15iqr": 3.207500000002028e-05,
+                "ops": 33118.33274400475,
+                "total": 0.639675920999828,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-2-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-2-100000]",
+            "params": {
+                "method": 1,
+                "k": 2,
+                "n": 100000
+            },
+            "param": "1-2-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.4453999994354945e-05,
+                "max": 0.0002436100000053898,
+                "mean": 4.373756820797159e-05,
+                "stddev": 9.913644400710001e-06,
+                "rounds": 19118,
+                "median": 4.1719000002160556e-05,
+                "iqr": 3.1339999964075105e-06,
+                "q1": 4.016500000147971e-05,
+                "q3": 4.329899999788722e-05,
+                "iqr_outliers": 1423,
+                "stddev_outliers": 1268,
+                "outliers": "1268;1423",
+                "ld15iqr": 3.546500000339847e-05,
+                "hd15iqr": 4.801600000092776e-05,
+                "ops": 22863.639680308985,
+                "total": 0.8361748290000008,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-4-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-4-10]",
+            "params": {
+                "method": 1,
+                "k": 4,
+                "n": 10
+            },
+            "param": "1-4-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 9.010499999817512e-05,
+                "max": 0.00036346000000264667,
+                "mean": 0.0001054632214285459,
+                "stddev": 2.1872470440139843e-05,
+                "rounds": 8400,
+                "median": 9.895950000071707e-05,
+                "iqr": 5.35300000237271e-06,
+                "q1": 9.710399999818264e-05,
+                "q3": 0.00010245700000055535,
+                "iqr_outliers": 1183,
+                "stddev_outliers": 762,
+                "outliers": "762;1183",
+                "ld15iqr": 9.010499999817512e-05,
+                "hd15iqr": 0.00011051199999911887,
+                "ops": 9481.978517767222,
+                "total": 0.8858910599997856,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-4-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-4-100]",
+            "params": {
+                "method": 1,
+                "k": 4,
+                "n": 100
+            },
+            "param": "1-4-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0001726409999989187,
+                "max": 0.0006430630000053839,
+                "mean": 0.000206954769839217,
+                "stddev": 4.518696823265322e-05,
+                "rounds": 3793,
+                "median": 0.00019032600000201683,
+                "iqr": 5.817999998214418e-06,
+                "q1": 0.0001894390000032331,
+                "q3": 0.00019525700000144752,
+                "iqr_outliers": 978,
+                "stddev_outliers": 445,
+                "outliers": "445;978",
+                "ld15iqr": 0.00018072900000021264,
+                "hd15iqr": 0.0002040399999998499,
+                "ops": 4831.973676068927,
+                "total": 0.7849794420001501,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-4-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-4-1000]",
+            "params": {
+                "method": 1,
+                "k": 4,
+                "n": 1000
+            },
+            "param": "1-4-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00018339399999689476,
+                "max": 0.0004783360000004677,
+                "mean": 0.00019908987691635215,
+                "stddev": 2.655818438011074e-05,
+                "rounds": 4631,
+                "median": 0.00019238499999829628,
+                "iqr": 8.97049999970534e-06,
+                "q1": 0.0001880209999995941,
+                "q3": 0.00019699149999929944,
+                "iqr_outliers": 403,
+                "stddev_outliers": 289,
+                "outliers": "289;403",
+                "ld15iqr": 0.00018339399999689476,
+                "hd15iqr": 0.00021052499999996144,
+                "ops": 5022.8570909215605,
+                "total": 0.9219852199996268,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-4-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-4-10000]",
+            "params": {
+                "method": 1,
+                "k": 4,
+                "n": 10000
+            },
+            "param": "1-4-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00020221300000144993,
+                "max": 0.0005415430000041965,
+                "mean": 0.00022245654632866942,
+                "stddev": 2.6925234271960857e-05,
+                "rounds": 4576,
+                "median": 0.00021783299999711403,
+                "iqr": 1.5741500000387987e-05,
+                "q1": 0.00020921649999650072,
+                "q3": 0.0002249579999968887,
+                "iqr_outliers": 289,
+                "stddev_outliers": 284,
+                "outliers": "284;289",
+                "ld15iqr": 0.00020221300000144993,
+                "hd15iqr": 0.00024877500000286545,
+                "ops": 4495.259935046126,
+                "total": 1.0179611559999913,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-4-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-4-100000]",
+            "params": {
+                "method": 1,
+                "k": 4,
+                "n": 100000
+            },
+            "param": "1-4-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00026553800000073124,
+                "max": 0.0007359900000025732,
+                "mean": 0.0003113655351868571,
+                "stddev": 5.384027472271644e-05,
+                "rounds": 3453,
+                "median": 0.00029368599999912703,
+                "iqr": 1.9242749999648368e-05,
+                "q1": 0.0002874202499985046,
+                "q3": 0.00030666299999815294,
+                "iqr_outliers": 511,
+                "stddev_outliers": 367,
+                "outliers": "367;511",
+                "ld15iqr": 0.00026553800000073124,
+                "hd15iqr": 0.0003355420000019649,
+                "ops": 3211.6592461008204,
+                "total": 1.0751451930002176,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-10-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-10-10]",
+            "params": {
+                "method": 1,
+                "k": 10,
+                "n": 10
+            },
+            "param": "1-10-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0003052170000046317,
+                "max": 0.0009198960000063039,
+                "mean": 0.0003698532761341123,
+                "stddev": 5.87982951909057e-05,
+                "rounds": 2535,
+                "median": 0.0003480940000031296,
+                "iqr": 2.5179500006800026e-05,
+                "q1": 0.0003439224999972623,
+                "q3": 0.00036910200000406235,
+                "iqr_outliers": 370,
+                "stddev_outliers": 279,
+                "outliers": "279;370",
+                "ld15iqr": 0.0003081489999985365,
+                "hd15iqr": 0.0004072159999992664,
+                "ops": 2703.774887307989,
+                "total": 0.9375780549999746,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-10-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-10-100]",
+            "params": {
+                "method": 1,
+                "k": 10,
+                "n": 100
+            },
+            "param": "1-10-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.001206226000000754,
+                "max": 0.0023667390000028377,
+                "mean": 0.001372295260254584,
+                "stddev": 0.0001619143811769502,
+                "rounds": 707,
+                "median": 0.0013191050000003202,
+                "iqr": 7.90727499975219e-05,
+                "q1": 0.0012910317500036683,
+                "q3": 0.0013701045000011902,
+                "iqr_outliers": 103,
+                "stddev_outliers": 96,
+                "outliers": "96;103",
+                "ld15iqr": 0.001206226000000754,
+                "hd15iqr": 0.001491377999997212,
+                "ops": 728.7061530872612,
+                "total": 0.970212748999991,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-10-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-10-1000]",
+            "params": {
+                "method": 1,
+                "k": 10,
+                "n": 1000
+            },
+            "param": "1-10-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.001574607000002004,
+                "max": 0.0026724809999976173,
+                "mean": 0.0017135310694443974,
+                "stddev": 0.00010828255292900547,
+                "rounds": 576,
+                "median": 0.0016871654999981445,
+                "iqr": 0.00011814550000366353,
+                "q1": 0.0016462304999969035,
+                "q3": 0.001764376000000567,
+                "iqr_outliers": 25,
+                "stddev_outliers": 100,
+                "outliers": "100;25",
+                "ld15iqr": 0.001574607000002004,
+                "hd15iqr": 0.0019525180000030673,
+                "ops": 583.5902352936292,
+                "total": 0.9869938959999729,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-10-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-10-10000]",
+            "params": {
+                "method": 1,
+                "k": 10,
+                "n": 10000
+            },
+            "param": "1-10-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0016684180000012816,
+                "max": 0.002454297999996413,
+                "mean": 0.0017902172558559451,
+                "stddev": 0.0001016705851163996,
+                "rounds": 555,
+                "median": 0.0017841499999988741,
+                "iqr": 8.84452500002908e-05,
+                "q1": 0.0017241670000007758,
+                "q3": 0.0018126122500010666,
+                "iqr_outliers": 42,
+                "stddev_outliers": 101,
+                "outliers": "101;42",
+                "ld15iqr": 0.0016684180000012816,
+                "hd15iqr": 0.0019453439999992383,
+                "ops": 558.5914205267094,
+                "total": 0.9935705770000496,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-10-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-10-100000]",
+            "params": {
+                "method": 1,
+                "k": 10,
+                "n": 100000
+            },
+            "param": "1-10-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0019603490000008605,
+                "max": 0.0033747780000012995,
+                "mean": 0.0021190967890110297,
+                "stddev": 0.00016270796471930677,
+                "rounds": 455,
+                "median": 0.002095761000006746,
+                "iqr": 0.0001243997499944527,
+                "q1": 0.002016828000003912,
+                "q3": 0.0021412277499983645,
+                "iqr_outliers": 30,
+                "stddev_outliers": 37,
+                "outliers": "37;30",
+                "ld15iqr": 0.0019603490000008605,
+                "hd15iqr": 0.0023280460000023595,
+                "ops": 471.89916250436784,
+                "total": 0.9641890390000185,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-20-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-20-10]",
+            "params": {
+                "method": 1,
+                "k": 20,
+                "n": 10
+            },
+            "param": "1-20-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0005304329999944457,
+                "max": 0.0010701870000033864,
+                "mean": 0.0006070394474375189,
+                "stddev": 5.268775100811827e-05,
+                "rounds": 1522,
+                "median": 0.0006022950000037497,
+                "iqr": 3.891699999769571e-05,
+                "q1": 0.0005814940000021807,
+                "q3": 0.0006204109999998764,
+                "iqr_outliers": 68,
+                "stddev_outliers": 251,
+                "outliers": "251;68",
+                "ld15iqr": 0.0005304329999944457,
+                "hd15iqr": 0.0006793649999963236,
+                "ops": 1647.3394014528646,
+                "total": 0.9239140389999037,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-20-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-20-100]",
+            "params": {
+                "method": 1,
+                "k": 20,
+                "n": 100
+            },
+            "param": "1-20-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.004636198999996566,
+                "max": 0.006154725999998334,
+                "mean": 0.005095603890710475,
+                "stddev": 0.00022901895309919537,
+                "rounds": 183,
+                "median": 0.005110756000000549,
+                "iqr": 0.00025993250000055923,
+                "q1": 0.004957273749999658,
+                "q3": 0.005217206250000217,
+                "iqr_outliers": 5,
+                "stddev_outliers": 48,
+                "outliers": "48;5",
+                "ld15iqr": 0.004636198999996566,
+                "hd15iqr": 0.005628956999998991,
+                "ops": 196.2475933074482,
+                "total": 0.9324955120000169,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-20-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-20-1000]",
+            "params": {
+                "method": 1,
+                "k": 20,
+                "n": 1000
+            },
+            "param": "1-20-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.006795992000000695,
+                "max": 0.010183968999996296,
+                "mean": 0.007656460628787281,
+                "stddev": 0.0005208844504192573,
+                "rounds": 132,
+                "median": 0.007569973999999036,
+                "iqr": 0.0006920085000032827,
+                "q1": 0.007259200000000021,
+                "q3": 0.007951208500003304,
+                "iqr_outliers": 1,
+                "stddev_outliers": 39,
+                "outliers": "39;1",
+                "ld15iqr": 0.006795992000000695,
+                "hd15iqr": 0.010183968999996296,
+                "ops": 130.6086517626868,
+                "total": 1.010652802999921,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-20-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-20-10000]",
+            "params": {
+                "method": 1,
+                "k": 20,
+                "n": 10000
+            },
+            "param": "1-20-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.007239724999998032,
+                "max": 0.009353875000002176,
+                "mean": 0.007689635092436744,
+                "stddev": 0.0003279606189619497,
+                "rounds": 119,
+                "median": 0.0076417750000032925,
+                "iqr": 0.0002593032500044501,
+                "q1": 0.0074956384999946835,
+                "q3": 0.0077549417499991335,
+                "iqr_outliers": 9,
+                "stddev_outliers": 21,
+                "outliers": "21;9",
+                "ld15iqr": 0.007239724999998032,
+                "hd15iqr": 0.008243192000001898,
+                "ops": 130.04518263598294,
+                "total": 0.9150665759999725,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-20-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-20-100000]",
+            "params": {
+                "method": 1,
+                "k": 20,
+                "n": 100000
+            },
+            "param": "1-20-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.007944143999999653,
+                "max": 0.0099834529999967,
+                "mean": 0.008495367172414201,
+                "stddev": 0.00036224828632976547,
+                "rounds": 116,
+                "median": 0.008451581999999291,
+                "iqr": 0.0002862750000005576,
+                "q1": 0.008291797500000087,
+                "q3": 0.008578072500000644,
+                "iqr_outliers": 8,
+                "stddev_outliers": 24,
+                "outliers": "24;8",
+                "ld15iqr": 0.007944143999999653,
+                "hd15iqr": 0.009235724999996364,
+                "ops": 117.71121597276667,
+                "total": 0.9854625920000473,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-40-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-40-10]",
+            "params": {
+                "method": 1,
+                "k": 40,
+                "n": 10
+            },
+            "param": "1-40-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.0008383190000031959,
+                "max": 0.0017606020000044964,
+                "mean": 0.0009657379810067708,
+                "stddev": 6.836132564582868e-05,
+                "rounds": 1053,
+                "median": 0.0009634639999944739,
+                "iqr": 6.442075000201442e-05,
+                "q1": 0.0009301354999973199,
+                "q3": 0.0009945562499993343,
+                "iqr_outliers": 35,
+                "stddev_outliers": 202,
+                "outliers": "202;35",
+                "ld15iqr": 0.0008383190000031959,
+                "hd15iqr": 0.001095692999996345,
+                "ops": 1035.4775515378524,
+                "total": 1.0169220940001296,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-40-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-40-100]",
+            "params": {
+                "method": 1,
+                "k": 40,
+                "n": 100
+            },
+            "param": "1-40-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.016094606999999428,
+                "max": 0.01838525799999502,
+                "mean": 0.017038619366666553,
+                "stddev": 0.0004392220844561283,
+                "rounds": 60,
+                "median": 0.0170168509999975,
+                "iqr": 0.0004912580000073774,
+                "q1": 0.016766161499997878,
+                "q3": 0.017257419500005255,
+                "iqr_outliers": 1,
+                "stddev_outliers": 18,
+                "outliers": "18;1",
+                "ld15iqr": 0.016094606999999428,
+                "hd15iqr": 0.01838525799999502,
+                "ops": 58.69020127043549,
+                "total": 1.0223171619999931,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-40-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-40-1000]",
+            "params": {
+                "method": 1,
+                "k": 40,
+                "n": 1000
+            },
+            "param": "1-40-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.025611156000003632,
+                "max": 0.028331252000000973,
+                "mean": 0.0264821758648656,
+                "stddev": 0.0006805523975829068,
+                "rounds": 37,
+                "median": 0.02630011599999449,
+                "iqr": 0.0007331827499985621,
+                "q1": 0.026055559000001338,
+                "q3": 0.0267887417499999,
+                "iqr_outliers": 2,
+                "stddev_outliers": 11,
+                "outliers": "11;2",
+                "ld15iqr": 0.025611156000003632,
+                "hd15iqr": 0.028228126999998437,
+                "ops": 37.761247606799515,
+                "total": 0.9798405070000271,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-40-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-40-10000]",
+            "params": {
+                "method": 1,
+                "k": 40,
+                "n": 10000
+            },
+            "param": "1-40-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.030337012999993362,
+                "max": 0.034052418000001694,
+                "mean": 0.031346568212121034,
+                "stddev": 0.0008575263783774671,
+                "rounds": 33,
+                "median": 0.031204807000001722,
+                "iqr": 0.0008327012500046749,
+                "q1": 0.030805687999999165,
+                "q3": 0.03163838925000384,
+                "iqr_outliers": 3,
+                "stddev_outliers": 6,
+                "outliers": "6;3",
+                "ld15iqr": 0.030337012999993362,
+                "hd15iqr": 0.03312163100000021,
+                "ops": 31.901418784762598,
+                "total": 1.034436750999994,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-40-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-40-100000]",
+            "params": {
+                "method": 1,
+                "k": 40,
+                "n": 100000
+            },
+            "param": "1-40-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.032393141999996544,
+                "max": 0.035586145999999985,
+                "mean": 0.03370020130000005,
+                "stddev": 0.0008830804626419782,
+                "rounds": 30,
+                "median": 0.03348642199999574,
+                "iqr": 0.0012477050000043732,
+                "q1": 0.03304476399999601,
+                "q3": 0.03429246900000038,
+                "iqr_outliers": 0,
+                "stddev_outliers": 11,
+                "outliers": "11;0",
+                "ld15iqr": 0.032393141999996544,
+                "hd15iqr": 0.035586145999999985,
+                "ops": 29.673413256436497,
+                "total": 1.0110060390000015,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-100-10]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-100-10]",
+            "params": {
+                "method": 1,
+                "k": 100,
+                "n": 10
+            },
+            "param": "1-100-10",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00445577400000019,
+                "max": 0.0074656939999968586,
+                "mean": 0.005151302298969138,
+                "stddev": 0.0007326129862974039,
+                "rounds": 194,
+                "median": 0.0048301025000014874,
+                "iqr": 0.00031444699999383374,
+                "q1": 0.004757553000004577,
+                "q3": 0.005071999999998411,
+                "iqr_outliers": 35,
+                "stddev_outliers": 28,
+                "outliers": "28;35",
+                "ld15iqr": 0.00445577400000019,
+                "hd15iqr": 0.005601710999997067,
+                "ops": 194.12566802769794,
+                "total": 0.9993526460000126,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-100-100]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-100-100]",
+            "params": {
+                "method": 1,
+                "k": 100,
+                "n": 100
+            },
+            "param": "1-100-100",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.06485040099999395,
+                "max": 0.07195467599999716,
+                "mean": 0.06757484093333233,
+                "stddev": 0.0018211192918866467,
+                "rounds": 15,
+                "median": 0.06746571700000459,
+                "iqr": 0.002142619999995432,
+                "q1": 0.06631614300000166,
+                "q3": 0.06845876299999709,
+                "iqr_outliers": 1,
+                "stddev_outliers": 4,
+                "outliers": "4;1",
+                "ld15iqr": 0.06485040099999395,
+                "hd15iqr": 0.07195467599999716,
+                "ops": 14.79840701344122,
+                "total": 1.0136226139999849,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-100-1000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-100-1000]",
+            "params": {
+                "method": 1,
+                "k": 100,
+                "n": 1000
+            },
+            "param": "1-100-1000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.14359546000000023,
+                "max": 0.14796010300000262,
+                "mean": 0.14637641900000123,
+                "stddev": 0.0015704933036816326,
+                "rounds": 7,
+                "median": 0.1468284040000043,
+                "iqr": 0.002286542999998531,
+                "q1": 0.1453765485000016,
+                "q3": 0.14766309150000012,
+                "iqr_outliers": 0,
+                "stddev_outliers": 2,
+                "outliers": "2;0",
+                "ld15iqr": 0.14359546000000023,
+                "hd15iqr": 0.14796010300000262,
+                "ops": 6.831701491481299,
+                "total": 1.0246349330000086,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-100-10000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-100-10000]",
+            "params": {
+                "method": 1,
+                "k": 100,
+                "n": 10000
+            },
+            "param": "1-100-10000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.17327480499999837,
+                "max": 0.1828108149999963,
+                "mean": 0.17668871533333194,
+                "stddev": 0.0032614038552766333,
+                "rounds": 6,
+                "median": 0.17595239599999957,
+                "iqr": 0.0017140859999997815,
+                "q1": 0.175213896999999,
+                "q3": 0.1769279829999988,
+                "iqr_outliers": 1,
+                "stddev_outliers": 2,
+                "outliers": "2;1",
+                "ld15iqr": 0.17327480499999837,
+                "hd15iqr": 0.1828108149999963,
+                "ops": 5.65967101019129,
+                "total": 1.0601322919999916,
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_rcont[1-100-100000]",
+            "fullname": "benchmarks/test_rcont.py::test_rcont[1-100-100000]",
+            "params": {
+                "method": 1,
+                "k": 100,
+                "n": 100000
+            },
+            "param": "1-100-100000",
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.2035350660000006,
+                "max": 0.237129920000001,
+                "mean": 0.22058466739999857,
+                "stddev": 0.015455137771867895,
+                "rounds": 5,
+                "median": 0.22281538200000028,
+                "iqr": 0.02919805625000471,
+                "q1": 0.20527520849999448,
+                "q3": 0.2344732647499992,
+                "iqr_outliers": 0,
+                "stddev_outliers": 2,
+                "outliers": "2;0",
+                "ld15iqr": 0.2035350660000006,
+                "hd15iqr": 0.237129920000001,
+                "ops": 4.533406658707805,
+                "total": 1.102923336999993,
+                "iterations": 1
+            }
+        }
+    ],
+    "datetime": "2022-02-16T13:27:07.542390",
+    "version": "3.4.1"
+}

@@ -4,11 +4,15 @@ import pytest
 from resample.permutation import usp
 
 
-@pytest.mark.parametrize("m", (2, 10, 100, 1000))
-@pytest.mark.parametrize("n", (2, 10, 100, 1000))
-def test_usp(m, n, benchmark):
+@pytest.mark.parametrize("n", (10, 100, 1000, 10000))
+@pytest.mark.parametrize("k", (2, 10, 100))
+@pytest.mark.parametrize("method", ("patefield", "shuffle"))
+def test_usp(k, n, method, benchmark):
+    w = np.zeros((k, k))
     rng = np.random.default_rng(1)
-    x = rng.normal(0, 1, size=10000)
-    y = rng.normal(0, 1, size=10000)
-    w = np.histogram2d(x, y, bins=(m, n))[0]
-    benchmark(lambda: usp(w, precision=0, max_size=100))
+    for _ in range(n):
+        i = rng.integers(k)
+        j = rng.integers(k)
+        w[i, j] += 1
+    assert np.sum(w) == n
+    benchmark(lambda: usp(w, method=method, precision=0, max_size=100, random_state=1))
