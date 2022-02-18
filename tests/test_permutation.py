@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 from resample import permutation as perm
+from resample import _util
 from scipy import stats
 import pytest
 
@@ -28,26 +29,6 @@ def test_TestResult():
         "statistic=1 pvalue=2 interval=(1, 3) "
         "samples=[0, 1, 2, ..., 7, 8, 9]>"
     )
-
-
-def test_wilson_score_interval():
-    n = 100
-    for n1 in (10, 50, 90):
-        p, lh = perm._wilson_score_interval(n1, n, 1)
-        s = np.sqrt(p * (1 - p) / n)
-        assert_allclose(p, n1 / n)
-        assert_allclose(lh, (p - s, p + s), atol=0.01)
-
-    n = 10
-    n1 = 0
-    p, lh = perm._wilson_score_interval(n1, n, 1)
-    assert_allclose(p, 0.0)
-    assert_allclose(lh, (0, 0.1), atol=0.01)
-
-    n1 = 10
-    p, lh = perm._wilson_score_interval(n1, n, 1)
-    assert_allclose(p, 1.0)
-    assert_allclose(lh, (0.9, 1.0), atol=0.01)
 
 
 class Scipy:
@@ -221,7 +202,7 @@ def test_usp_4(method):
     # according to paper, pvalue is 0.001, but USP R package gives correct value
     expected = 0.0024  # computed from USP R package with b=99999
     assert_allclose(r1.pvalue, expected, atol=0.001)
-    _, interval = perm._wilson_score_interval(
+    _, interval = _util.wilson_score_interval(
         r1.pvalue * len(r1.samples), len(r1.samples), 1
     )
     assert_allclose(r1.interval, interval, atol=0.003)
@@ -235,6 +216,14 @@ def test_usp_5(method, rng):
             w[i, j] = (i + j) % 2
     r = perm.usp(w, method=method, max_size=100, random_state=1)
     assert r.pvalue > 0.1
+
+
+def test_usp_unbiased(rng):
+    got = [
+        perm.usp(rng.poisson(1000, size=(2, 2)), max_size=1, random_state=i).pvalue
+        for i in range(1000)
+    ]
+    assert_allclose(np.mean(got), 0.5, atol=0.05)
 
 
 def test_usp_bad_input():
