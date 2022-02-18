@@ -27,7 +27,7 @@ Features
 - Apply parametric bootstrap (Gaussian, Poisson, gamma, etc.) on samples
 - Compute bootstrap confidence intervals (percentile or BCa) for any estimator
 - Jackknife estimates of bias and variance of any estimator
-- Permutation-based variants of traditional statistical tests (t-test, K-S test, etc.)
+- Permutation-based variants of traditional statistical tests (**USP test of independence** and others)
 - Tools for working with empirical distributions (CDF, quantile, etc.)
 - Depends only on `numpy`_ and `scipy`_
 - Optional code acceleration with `numba`_
