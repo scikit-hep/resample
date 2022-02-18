@@ -130,13 +130,14 @@ def usp(
     max_size : int, optional
         Maximum number of permutations. Default 10000.
     method : str, optional
-        Method used to generate the 2D histogram under the null hypothesis.
-        'auto': Uses the fastest algorithm based on the structure of the table.
-        'shuffle': A shuffling algorithm, which requires extra space to store
-            N integers for N entries in total and has O(N) time complexity. It performs
-            poorly when N is large, but is insensitve to the number of table cells.
+        Method used to generate random tables under the null hypothesis.
+        'auto': Uses a heuristic to select the fastest algorithm for the given table.
+        'shuffle': A shuffling algorithm, which requires extra space to store N + 1
+            integers for N entries in total and has O(N) time complexity. It performs
+            poorly when N is large, but does not depend on the number of table cells.
         'patefield': Patefield's algorithm, which does not require extra space and
-            has O(K log(N)) time complexity. It performs well even if N is huge.
+            has O(K log(N)) time complexity. It performs well even if N is huge. For
+            small N and large K, the shuffling algorithm is faster.
         Default is 'auto'.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
@@ -189,7 +190,11 @@ def usp(
     for b, w in enumerate(_util.rcont(n, r, c, imethod - 1, rng)):
         # m stays the same, since r and c remain unchanged
         ts[b] = _usp(f1, f2, w, m)
-    pvalue, interval = _wilson_score_interval(np.sum(t < ts), n, 1.0)
+
+    # Thomas B. Berrett, Ioannis Kontoyiannis, Richard J. Samworth
+    # Ann. Statist. 49(5): 2457-2490 (October 2021). DOI: 10.1214/20-AOS2041
+    # Eq. 5 says we need to add 1 to n_pass and n_total, but my tests suggest we do not
+    pvalue, interval = _util.wilson_score_interval(np.sum(t <= ts), n, 1.0)
 
     return TestResult(t, pvalue, interval, ts)
 
@@ -298,7 +303,7 @@ def same_population(
     else:
         u = transform(t)
         us = transform(ts)
-    pvalue, interval = _wilson_score_interval(np.sum(u < us), n, 1.0)
+    pvalue, interval = _util.wilson_score_interval(np.sum(u <= us), n, 1.0)
 
     return TestResult(t, pvalue, interval, ts)
 
@@ -524,11 +529,3 @@ class _ANOVA:
         self.km1 = k - 1
         self.nmk = n - k
         self.a_bar = np.mean(np.concatenate(args))
-
-
-def _wilson_score_interval(n1, n, z):
-    p = n1 / n
-    norm = 1 / (1 + z**2 / n)
-    a = p + 0.5 * z**2 / n
-    b = z * np.sqrt(p * (1 - p) / n + 0.25 * (z / n) ** 2)
-    return p, ((a - b) * norm, (a + b) * norm)
