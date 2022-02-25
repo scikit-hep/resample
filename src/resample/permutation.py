@@ -52,19 +52,12 @@ class TestResult:
     pvalue: float
         Estimated chance probability (aka Type I error) for rejecting the null
         hypothesis. See https://en.wikipedia.org/wiki/P-value for details.
-    interval: (float, float)
-        Standard interval (approximately 68 % coverage) for the p-value. This interval
-        reflects the statistical uncertainty from doing only a finite number of random
-        permutations instead of infinitely many. The interval can be narrowed down by
-        running the test with more permutations. This interval does not have exact
-        coverage for finite samples.
     samples: array
         Values of the test statistic from the permutated samples.
     """
 
     statistic: float
     pvalue: float
-    interval: _tp.Tuple[float, float]
     samples: np.ndarray
 
     def __repr__(self) -> str:
@@ -76,8 +69,8 @@ class TestResult:
             s = "[{0}, {1}, {2}, ..., {3}, {4}, {5}]".format(
                 *self.samples[:3], *self.samples[-3:]
             )
-        return "<TestResult statistic={0} pvalue={1} interval={2} samples={3}>".format(
-            self.statistic, self.pvalue, self.interval, s
+        return (
+            f"<TestResult statistic={self.statistic} pvalue={self.pvalue} samples={s}>"
         )
 
     def __len__(self):
@@ -193,10 +186,10 @@ def usp(
 
     # Thomas B. Berrett, Ioannis Kontoyiannis, Richard J. Samworth
     # Ann. Statist. 49(5): 2457-2490 (October 2021). DOI: 10.1214/20-AOS2041
-    # Eq. 5 says we need to add 1 to n_pass and n_total, but my tests suggest we do not
-    pvalue, interval = _util.wilson_score_interval(np.sum(t <= ts), n, 1.0)
+    # Eq. 5 says we need to add 1 to n_pass and n_total
+    pvalue = (np.sum(t <= ts) + 1) / (n + 1)
 
-    return TestResult(t, pvalue, interval, ts)
+    return TestResult(t, pvalue, ts)
 
 
 def _usp(f1, f2, w, m):
@@ -303,9 +296,10 @@ def same_population(
     else:
         u = transform(t)
         us = transform(ts)
-    pvalue, interval = _util.wilson_score_interval(np.sum(u <= us), n, 1.0)
+    # see usp for why we need to add 1 to both numerator and denominator
+    pvalue = (np.sum(u <= us) + 1) / (n + 1)
 
-    return TestResult(t, pvalue, interval, ts)
+    return TestResult(t, pvalue, ts)
 
 
 def anova(
