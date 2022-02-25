@@ -28,6 +28,5 @@ jobs:
       # workaround to avoid having different numpy versions during build/test
       run: |
         python -m pip install --upgrade pip
-        python -m pip install numpy setuptools setuptools_scm[toml]
-        python -m pip install --no-build-isolation -e .[test]
+        python -m pip install -e .[test]
     - run: python -m pytest
