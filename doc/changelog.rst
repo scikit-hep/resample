@@ -1,6 +1,17 @@
 Changelog
 =========
 
+1.2.0 (February 25, 2022)
+-------------------------
+
+This is an API breaking release. It was discovered that all the tests implemented in
+`resample.permutation` had various issues, so any results obtained with these tests
+should be reviewed. 
+
+-
+- Added USP test of independence
+
+
 1.1.0
 -----
 
