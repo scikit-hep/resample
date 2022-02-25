@@ -75,7 +75,7 @@ class TestResult:
 
     def __len__(self):
         """Return length of tuple."""
-        return 4
+        return 3
 
     def __getitem__(self, idx):
         """Return fields by index."""
@@ -84,8 +84,6 @@ class TestResult:
         elif idx == 1:
             return self.pvalue
         elif idx == 2:
-            return self.interval
-        elif idx == 3:
             return self.samples
         raise IndexError
 
@@ -94,7 +92,7 @@ def usp(
     w: _ArrayLike,
     *,
     precision: float = 0.01,
-    max_size: int = 10000,
+    max_size: int = 9999,
     method: str = "auto",
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ):
@@ -121,7 +119,7 @@ def usp(
         estimate and max_size is used. If precision is zero, max_size permutations are
         used. Default 0.01.
     max_size : int, optional
-        Maximum number of permutations. Default 10000.
+        Maximum number of permutations. Default 9999.
     method : str, optional
         Method used to generate random tables under the null hypothesis.
         'auto': Uses a heuristic to select the fastest algorithm for the given table.
@@ -204,7 +202,7 @@ def same_population(
     *args: _ArrayLike,
     transform: _tp.Optional[_tp.Callable] = None,
     precision: float = 0.01,
-    max_size: int = 10000,
+    max_size: int = 9999,
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ) -> np.ndarray:
     """
@@ -241,7 +239,7 @@ def same_population(
         estimate and max_size is used. If precision is zero, max_size permutations are
         used. Default 0.01.
     max_size : int, optional
-        Maximum number of permutations. Default 10000.
+        Maximum number of permutations. Default 9999.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
