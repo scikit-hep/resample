@@ -12,22 +12,19 @@ def rng():
 
 
 def test_TestResult():
-    p = perm.TestResult(1, 2, (1, 3), [3, 4])
+    p = perm.TestResult(1, 2, [3, 4])
     assert p.statistic == 1
     assert p.pvalue == 2
-    assert p.interval == (1, 3)
     assert p.samples == [3, 4]
-    assert repr(p) == "<TestResult statistic=1 pvalue=2 interval=(1, 3) samples=[3, 4]>"
-    assert len(p) == 4
+    assert repr(p) == "<TestResult statistic=1 pvalue=2 samples=[3, 4]>"
+    assert len(p) == 3
     first, *rest = p
     assert first == 1
-    assert rest == [2, (1, 3), [3, 4]]
+    assert rest == [2, [3, 4]]
 
-    p2 = perm.TestResult(1, 2, (1, 3), np.arange(10))
+    p2 = perm.TestResult(1, 2, np.arange(10))
     assert repr(p2) == (
-        "<TestResult "
-        "statistic=1 pvalue=2 interval=(1, 3) "
-        "samples=[0, 1, 2, ..., 7, 8, 9]>"
+        "<TestResult " "statistic=1 pvalue=2 " "samples=[0, 1, 2, ..., 7, 8, 9]>"
     )
 
 
@@ -169,8 +166,8 @@ def test_usp_2(method, rng):
 
     w = np.histogram2d(x, x, range=((-5, 5), (-5, 5)))[0]
 
-    r = perm.usp(w, method=method, max_size=100, random_state=1)
-    assert r.pvalue == 0
+    r = perm.usp(w, method=method, max_size=99, random_state=1)
+    assert r.pvalue == 0.01
 
 
 @pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
@@ -187,7 +184,7 @@ def test_usp_3(method, rng):
     w = np.histogram2d(*xy.T)[0]
 
     r = perm.usp(w, method=method, random_state=1)
-    assert r.pvalue < 0.001
+    assert r.pvalue < 0.0012
 
 
 @pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
@@ -202,10 +199,6 @@ def test_usp_4(method):
     # according to paper, pvalue is 0.001, but USP R package gives correct value
     expected = 0.0024  # computed from USP R package with b=99999
     assert_allclose(r1.pvalue, expected, atol=0.001)
-    _, interval = _util.wilson_score_interval(
-        r1.pvalue * len(r1.samples), len(r1.samples), 1
-    )
-    assert_allclose(r1.interval, interval, atol=0.003)
 
 
 @pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
@@ -218,12 +211,15 @@ def test_usp_5(method, rng):
     assert r.pvalue > 0.1
 
 
-def test_usp_unbiased(rng):
+def test_usp_bias(rng):
+    # We compute the p-value as an upper limit to the type I error rate.
+    # Therefore, the p-value is not unbiased. For max_size=1, we expect
+    # an average p-value = (1 + 0.5) / (1 + 1) = 0.75
     got = [
         perm.usp(rng.poisson(1000, size=(2, 2)), max_size=1, random_state=i).pvalue
         for i in range(1000)
     ]
-    assert_allclose(np.mean(got), 0.5, atol=0.05)
+    assert_allclose(np.mean(got), 0.75, atol=0.05)
 
 
 def test_usp_bad_input():
@@ -275,5 +271,7 @@ def test_precision(test, prec, rng):
     if prec == 0:
         assert len(r.samples) == 123
     else:
-        actual_precision = (r.interval[1] - r.interval[0]) / 2
+        n = len(r.samples)
+        _, interval = _util.wilson_score_interval(r.pvalue * n, n, 1)
+        actual_precision = (interval[1] - interval[0]) / 2
         assert_allclose(actual_precision, prec, atol=0.5 * prec)
