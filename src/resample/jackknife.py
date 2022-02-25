@@ -7,9 +7,10 @@ the bootstrap module, so that you can easily switch between bootstrapping and
 jackknifing bias and variance of an estimator.
 
 The jackknife is an approximation to the bootstrap, so in general bootstrapping is
-preferred. The computational cost also increases quadratically with the sample size,
-but only linearly for the bootstrap. An advantage of the jackknife can be the
-deterministic outcome, since no random sampling is involved.
+preferred, especially when the sample is small. The computational cost of the jackknife
+increases quadratically with the sample size, but only linearly for the bootstrap. An
+advantage of the jackknife can be the deterministic outcome, since no random sampling
+is involved.
 """
 import typing as _tp
 
@@ -51,6 +52,8 @@ def resample(
 
     Notes
     -----
+    On performance:
+
     The generator interally keeps a single array to the replicates, which is updated
     on each iteration of the generator. The safe default is to return copies of this
     internal state. To increase performance, it also possible to return a view into
@@ -156,6 +159,16 @@ def jackknife(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     -------
     ndarray
         Jackknife samples.
+
+    Examples
+    --------
+    >>> from resample.jackknife import jackknife
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> fx = np.mean(x)
+    >>> fb = jackknife(np.mean, x)
+    >>> print(f"f(x) = {fx:.1f} +/- {np.std(fb):.1f}")
+    f(x) = 4.5 +/- 0.3
     """
     gen = resample(sample, *args, copy=False)
     if args:
@@ -187,6 +200,18 @@ def bias(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     -------
     ndarray
         Jackknife estimate of bias (= expectation of estimator - true value).
+
+    Examples
+    --------
+    Compute bias of numpy.var with and without bias-correction.
+
+    >>> from resample.jackknife import bias
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> round(bias(np.var, x), 1)
+    -0.9
+    >>> round(bias(lambda x: np.var(x, ddof=1), x), 1)
+    0.0
     """
     sample = np.atleast_1d(sample)
     n = len(sample)
@@ -220,6 +245,18 @@ def bias_corrected(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.nda
     -------
     ndarray
         Estimate with O(1/n) bias removed.
+
+    Examples
+    --------
+    Compute bias-corrected estimate of numpy.var.
+
+    >>> from resample.jackknife import bias_corrected
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> round(np.var(x), 1)
+    8.2
+    >>> round(bias_corrected(np.var, x), 1)
+    9.2
     """
     sample = np.atleast_1d(sample)
     n = len(sample)
@@ -249,6 +286,16 @@ def variance(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     -------
     ndarray
         Jackknife estimate of variance.
+
+    Examples
+    --------
+    Compute variance of arithmetic mean.
+
+    >>> from resample.jackknife import variance
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> round(variance(np.mean, x), 1)
+    0.9
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
     #   = np.var(fj, ddof=0) * (n - 1)
