@@ -2,13 +2,14 @@
 Bootstrap resampling tools.
 
 Compute estimator bias, variance, confidence intervals with bootstrap resampling.
+
 Several forms of bootstrapping on N-dimensional data are supported: ordinary, balanced,
-parametric, and stratified sampling. Parametric bootstrapping fits a user-specified
-distribution to the data and samples from the parametric distribution. The distributions
-are taken from scipy.stats.
+extended, parametric, and stratified sampling, see :func:`resample` for details.
+Parametric bootstrapping fits a user-specified distribution to the data and samples
+from the parametric distribution. The distributions are taken from scipy.stats.
 
 Confidence intervals can be computed with the ordinary percentile method and with the
-more efficient BCa method.
+more efficient BCa method, see :func:`confidence_interval` for details.
 """
 import typing as _tp
 
@@ -45,7 +46,7 @@ def resample(
         Number of bootstrap samples to generate. Default is 100.
     method : str or None, optional
         How to generate bootstrap samples. Supported are 'ordinary', 'balanced',
-        'poisson', or a distribution name for a parametric bootstrap.
+        'extended', or a distribution name for a parametric bootstrap.
         Default is 'balanced'. Supported distribution names: 'normal' (also:
         'gaussian', 'norm'), 'student' (also: 't'), 'laplace', 'logistic',
         'F' (also: 'f'), 'beta', 'gamma', 'log-normal' (also: 'lognorm',
@@ -61,13 +62,71 @@ def resample(
     ndarray
         Bootstrap sample.
 
+    Examples
+    --------
+    Compute uncertainty of arithmetic mean.
+
+    >>> from resample.bootstrap import resample
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> fx = np.mean(x)
+    >>> fb = []
+    >>> for b in resample(x, size=10000, random_state=1):
+    ...     fb.append(np.mean(b))
+    >>> print(f"f(x) = {fx:.1f} +/- {np.std(fb):.1f}")
+    f(x) = 4.5 +/- 0.9
+
+    Compute uncertainty of function applied to multivariate data.
+
+    >>> from resample.bootstrap import resample
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> y = np.arange(10, 20)
+    >>> fx = np.mean((x, y))
+    >>> fb = []
+    >>> for bx, by in resample(x, y, size=10000, random_state=1):
+    ...     fb.append(np.mean((bx, by)))
+    >>> print(f"f(x, y) = {fx:.1f} +/- {np.std(fb):.1f}")
+    f(x, y) = 9.5 +/- 0.9
+
     Notes
     -----
-    If data is not i.i.d. but consists of several distinct classes, stratification
+    Balanced vs. ordinary bootstrap:
+
+    The balanced bootstrap produces more accurate results for the same number of
+    bootstrap samples than the ordinary bootstrap, but needs to allocate memory for
+    B integers, where B is the number of bootstrap samples. Since values of B larger
+    than 10000 are rarely needed, this is usually not an issue.
+
+    Non-parametric vs. parametric bootstrap:
+
+    If you know that the data follow a particular parametric distribution, it is
+    better to sample from this parametric distribution, but in most cases it is
+    sufficient and more convenient to do a non-parametric bootstrap (using "balanced",
+    "ordinary", "extended"). The parametric bootstrap is essential for estimators
+    sensitive to the tails of a distribution (for example, a quantile close to 0 or 1).
+    In this case, only a parametric bootstrap will give reasonable answers, since the
+    non-parametric bootstrap cannot include rare events in the tail if the original
+    sample did not have them.
+
+    Extended bootstrap:
+
+    In particle physics and perhaps also in other fields, estimators are used which are
+    that are a function of both the size and shape of a sample (for example, fit of a
+    peak over smooth background to the mass distribution of decay candidates). In this
+    case, the normal bootstrap (parametric or non-parametric) is not correct, since the
+    sample size is kept constant. For such cases, one needs the "extended" bootstrap.
+    The name alludes to the so-called extended maximum-likelihood (EML) method in
+    particle physics. Estimates obtained with the EML need to be bootstrapped with the
+    "extended" bootstrap.
+
+    Stratification:
+
+    If the sample consists of several distinct classes, stratification
     ensures that the relative proportions of each class are maintained in each
     replicated sample. This is a stricter constraint than that offered by the
     balanced bootstrap, which only guarantees that classes have the original
-    proportions over all replicates.
+    proportions over all replicates, but not within each one replicate.
     """
     sample_np = np.atleast_1d(sample)
     n_sample = len(sample_np)
@@ -172,6 +231,9 @@ def bootstrap(
     """
     Calculate function values from bootstrap samples.
 
+    This is equivalent to ``numpy.array([fn(b) for b in resample(sample)])`` and
+    implemented for convenience.
+
     Parameters
     ----------
     fn : Callable
@@ -187,11 +249,153 @@ def bootstrap(
     -------
     np.array
         Results of `fn` applied to each bootstrap sample.
+
+    Examples
+    --------
+    >>> from resample.bootstrap import bootstrap
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> fx = np.mean(x)
+    >>> fb = bootstrap(np.mean, x, size=10000, random_state=1)
+    >>> print(f"f(x) = {fx:.1f} +/- {np.std(fb):.1f}")
+    f(x) = 4.5 +/- 0.9
     """
     gen = resample(sample, *args, **kwargs)
     if args:
         return np.array([fn(*b) for b in gen])
     return np.array([fn(x) for x in gen])
+
+
+def bias(
+    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
+) -> np.ndarray:
+    """
+    Calculate bias of the function estimate with the bootstrap.
+
+    Parameters
+    ----------
+    fn : callable
+        Function to be bootstrapped.
+    sample : array-like
+        Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of bias (= expectation of estimator - true value).
+
+    Examples
+    --------
+    Compute bias of numpy.var with and without bias-correction.
+
+    >>> from resample.bootstrap import bias
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> round(bias(np.var, x, size=10000, random_state=1), 1)
+    -0.8
+    >>> round(bias(lambda x: np.var(x, ddof=1), x, size=10000, random_state=1), 1)
+    0.0
+
+    Notes
+    -----
+    This function has special space requirements, it needs to hold `size` replicates of
+    the original sample in memory at once. The balanced bootstrap is recommended over
+    the ordinary bootstrap for bias estimation, it tends to converge faster.
+    """
+    thetas = []
+    if args:
+        replicates: _tp.List[_tp.List] = [[] for _ in range(len(args) + 1)]
+        for b in resample(sample, *args, **kwargs):
+            for ri, bi in zip(replicates, b):
+                ri.append(bi)
+            thetas.append(fn(*b))
+        population_theta = fn(*(np.concatenate(r) for r in replicates))
+    else:
+        replicates = []
+        for b in resample(sample, *args, **kwargs):
+            replicates.append(b)
+            thetas.append(fn(b))
+        population_theta = fn(np.concatenate(replicates))
+    return np.mean(thetas, axis=0) - population_theta
+
+
+def bias_corrected(
+    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
+) -> np.ndarray:
+    """
+    Calculate bias-corrected estimate of the function with the bootstrap.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Estimate with some bias removed.
+
+    Examples
+    --------
+    Compute bias-corrected estimate of numpy.var.
+
+    >>> from resample.bootstrap import bias_corrected
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> round(np.var(x), 1)
+    8.2
+    >>> round(bias_corrected(np.var, x, size=10000, random_state=1), 1)
+    9.1
+    """
+    return fn(sample, *args) - bias(fn, sample, *args, **kwargs)
+
+
+def variance(
+    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
+) -> np.ndarray:
+    """
+    Calculate bootstrap estimate of variance.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of variance.
+
+    Examples
+    --------
+    Compute variance of arithmetic mean.
+
+    >>> from resample.bootstrap import variance
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> round(variance(np.mean, x, size=10000, random_state=1), 1)
+    0.8
+    """
+    thetas = bootstrap(fn, sample, *args, **kwargs)
+    return np.var(thetas, ddof=1, axis=0)
 
 
 def confidence_interval(
@@ -225,6 +429,17 @@ def confidence_interval(
     -------
     (float, float)
         Upper and lower confidence limits.
+
+    Examples
+    --------
+    Compute confidence interval for arithmetic mean.
+
+    >>> from resample.bootstrap import confidence_interval
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> a, b = confidence_interval(np.mean, x, size=10000, random_state=1)
+    >>> round(a, 1), round(b, 1)
+    (2.6, 6.2)
 
     Notes
     -----
@@ -275,104 +490,6 @@ def confidence_interval(
     raise ValueError(
         f"ci_method must be 'percentile' or 'bca', but '{ci_method}' was supplied"
     )
-
-
-def bias(
-    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
-) -> np.ndarray:
-    """
-    Calculate bias of the function estimate with the bootstrap.
-
-    Parameters
-    ----------
-    fn : callable
-        Function to be bootstrapped.
-    sample : array-like
-        Original sample.
-    *args : array-like
-        Optional additional arrays of the same length to resample.
-    **kwargs
-        Keyword arguments forwarded to :func:`resample`.
-
-    Returns
-    -------
-    ndarray
-        Bootstrap estimate of bias (= expectation of estimator - true value).
-
-    Notes
-    -----
-    This function has special space requirements, it needs to hold `size` replicates of
-    the original sample in memory at once. The balanced bootstrap is recommended over
-    the ordinary bootstrap for bias estimation, it tends to converge faster.
-    """
-    thetas = []
-    if args:
-        replicates: _tp.List[_tp.List] = [[] for _ in range(len(args) + 1)]
-        for b in resample(sample, *args, **kwargs):
-            for ri, bi in zip(replicates, b):
-                ri.append(bi)
-            thetas.append(fn(*b))
-        population_theta = fn(*(np.concatenate(r) for r in replicates))
-    else:
-        replicates = []
-        for b in resample(sample, *args, **kwargs):
-            replicates.append(b)
-            thetas.append(fn(b))
-        population_theta = fn(np.concatenate(replicates))
-    return np.mean(thetas, axis=0) - population_theta
-
-
-def bias_corrected(
-    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
-) -> np.ndarray:
-    """
-    Calculate bias-corrected estimate of the function with the bootstrap.
-
-    Parameters
-    ----------
-    fn : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
-        and k is the length of the output array.
-    sample : array-like
-        Original sample.
-    *args : array-like
-        Optional additional arrays of the same length to resample.
-    **kwargs
-        Keyword arguments forwarded to :func:`resample`.
-
-    Returns
-    -------
-    ndarray
-        Estimate with some bias removed.
-    """
-    return fn(sample, *args) - bias(fn, sample, *args, **kwargs)
-
-
-def variance(
-    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
-) -> np.ndarray:
-    """
-    Calculate bootstrap estimate of variance.
-
-    Parameters
-    ----------
-    fn : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
-        and k is the length of the output array.
-    sample : array-like
-        Original sample.
-    *args : array-like
-        Optional additional arrays of the same length to resample.
-    **kwargs
-        Keyword arguments forwarded to :func:`resample`.
-
-    Returns
-    -------
-    ndarray
-        Bootstrap estimate of variance.
-    """
-    thetas = bootstrap(fn, sample, *args, **kwargs)
-    return np.var(thetas, ddof=1, axis=0)
 
 
 def _resample_stratified(
