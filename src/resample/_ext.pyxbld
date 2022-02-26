@@ -1,0 +1,19 @@
+def make_ext(modname, pyxfilename):
+    import numpy
+    import os
+    from pathlib import Path
+    from distutils.extension import Extension
+
+    libs = ["npyrandom", "npymath"]
+    if os.name == "posix":
+        libs.append("m")
+
+    numpy_root = Path(numpy.get_include()).parent.parent
+
+    return Extension(name = modname,
+                     sources=[pyxfilename, "src/rcont.c"],
+                     include_dirs=[numpy.get_include()],
+                     libraries=libs,
+                     library_dirs=[str(numpy_root / "core" / "lib"),
+                                   str(numpy_root / "random" / "lib")],
+                     )
