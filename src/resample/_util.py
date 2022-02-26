@@ -1,8 +1,13 @@
 import typing as _tp
 
 import numpy as np
+import pyximport
 
-from ._ext import rcont  # noqa type: ignore
+pyximport.install()
+
+from . import _ext  # type:ignore
+
+rcont = _ext.rcont  # noqa
 
 
 def normalize_rng(
