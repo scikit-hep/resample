@@ -36,7 +36,7 @@ API changes in submodule ``resample.permutation``
 - ``corr_test`` was replaced by two separate functions ``pearsonr`` and ``spearmanr``
 - ``kruskal_wallis`` was renamed to ``kruskal`` to follow SciPy naming
 - ``anova`` and ``kruskal`` now accept multiple samples directly instead of using a list
-  of samples; example: ``anove(x, y)`` instead of ``anove([x, y])``
+  of samples; example: ``anova(x, y)`` instead of ``anova([x, y])``
 - ``wilcoxon`` and ``ks_test`` were removed, since the corresponding tests in Scipy
   (``wilcoxon`` and ``ks_2samp``) compute exact p-values for small samples and use
   asymptotic formulas only when the same size is large; we cannot do better than that
