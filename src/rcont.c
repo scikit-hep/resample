@@ -55,6 +55,10 @@ int rcont1(double* matrix, int nr, const double* r, int nc, const double* c,
 
     int n = (int)nd;
     *work = (int*)malloc(sizeof(int) * (n + 1));
+    if (!*work) {
+      status = 1;
+      return status;
+    }
     *work[0] = n;
     int* ymap = *work + 1;
     for (int i = 0; i < nc; ++i) {

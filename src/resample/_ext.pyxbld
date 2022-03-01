@@ -10,10 +10,11 @@ def make_ext(modname, pyxfilename):
 
     numpy_root = Path(numpy.get_include()).parent.parent
 
+    # one can use extra_compile_args=['-Wno-#warnings'] to avoid the warning, but it is
+    # not platform independent
     return Extension(name = modname,
-                     sources=[pyxfilename, "src/rcont.c"],
-                     include_dirs=[numpy.get_include()],
+                     sources=[pyxfilename, str(Path("..") / "rcont.c")],
+                     include_dirs=[numpy.get_include(), "src"],
                      libraries=libs,
                      library_dirs=[str(numpy_root / "core" / "lib"),
-                                   str(numpy_root / "random" / "lib")],
-                     )
+                                   str(numpy_root / "random" / "lib")])

@@ -1,13 +1,6 @@
 import typing as _tp
 
 import numpy as np
-import pyximport
-
-pyximport.install()
-
-from . import _ext  # type:ignore
-
-rcont = _ext.rcont  # noqa
 
 
 def normalize_rng(
@@ -28,3 +21,28 @@ def wilson_score_interval(n1, n, z):
     a = p + 0.5 * z**2 / n
     b = z * np.sqrt(p * (1 - p) / n + 0.25 * (z / n) ** 2)
     return p, ((a - b) * norm, (a + b) * norm)
+
+
+def rcont(n, r, c, method, rng):
+    """Return random two-way tables with given marginal totals."""
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        # hide pyximport.py:51: DeprecationWarning, that we cannot fix
+        try:
+            import pyximport
+        except ModuleNotFoundError as err:
+            err.msg = "please install Cython to use this functionality"
+            raise
+
+        pyximport.install()
+
+    from . import _ext  # type:ignore
+
+    if r.dtype != np.double:
+        r = r.astype(np.double)
+    if c.dtype != np.double:
+        c = c.astype(np.double)
+
+    return _ext.rcont(n, r, c, method, rng)
