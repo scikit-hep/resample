@@ -32,9 +32,12 @@ def rcont(int n, np.ndarray[double, ndim=1] r, np.ndarray[double, ndim=1] c, int
         if method == 0:
             status = rcont1(&ma[i,0,0], m_shape[1], &r[0], m_shape[2], &c[0], &work, rstate)
         elif method == 1:
+            print(ntot, i, r, c)
             status = rcont2(&ma[i,0,0], m_shape[1], &r[0], m_shape[2], &c[0], &ntot, rstate)
         else:
             raise ValueError("method must be 0 or 1")
+        if status != 0:
+            break
 
     if work:
         free(work)

@@ -36,9 +36,11 @@ def rcont(n, r, c, method, rng):
             err.msg = "please install Cython to use this functionality"
             raise
 
-        pyximport.install()
+    importer = pyximport.install(language_level=3)
 
-    from . import _ext  # type:ignore
+    from . import _ext
+
+    pyximport.uninstall(None, importer)
 
     if r.dtype != np.double:
         r = r.astype(np.double)
