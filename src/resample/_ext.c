@@ -9,9 +9,8 @@ int rcont2(double*, int, const double*, int, const double*, double*, bitgen_t*);
 
 static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
   int n = -1, method = -1;
-  PyObject *r = NULL, *c = NULL, *rng = NULL,
-    *ra = NULL, *ca = NULL, *ma = NULL,
-    *bitgen = NULL, *cap = NULL;
+  PyObject *r = NULL, *c = NULL, *rng = NULL, *bitgen = NULL, *cap = NULL;
+  PyArrayObject *ra = NULL, *ca = NULL, *ma = NULL;
   int* work = 0; // pointer to workspace for rcont_naive, allocated by rcont_naive
 
   if(!PyArg_ParseTuple(args, "iO!O!iO",
@@ -22,9 +21,9 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     &rng))
     return NULL;
 
-  ra = PyArray_FROM_OTF(r, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  ra = (PyArrayObject*)PyArray_FROM_OTF(r, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ra) goto fail;
-  ca = PyArray_FROM_OTF(c, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  ca = (PyArrayObject*)PyArray_FROM_OTF(c, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ca) goto fail;
 
   if (PyArray_NDIM(ra) != 1) {
@@ -41,7 +40,7 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
   npy_intp* c_shape = PyArray_DIMS(ca);
 
   npy_intp m_shape[3] = {n, *r_shape, *c_shape};
-  ma = PyArray_SimpleNew(3, m_shape, NPY_DOUBLE);
+  ma = (PyArrayObject*)PyArray_SimpleNew(3, m_shape, NPY_DOUBLE);
 
   bitgen = PyObject_GetAttrString(rng, "_bit_generator");
   if (!bitgen) goto fail;
@@ -100,7 +99,7 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
   if (work)
     free(work);
 
-  return ma;
+  return (PyObject*)ma;
 
 fail:
   Py_XDECREF(ra);
