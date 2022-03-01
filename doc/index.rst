@@ -9,5 +9,6 @@
 .. toctree::
    :maxdepth: 2
 
-   reference.rst
-   changelog.rst
+   reference
+   tutorials
+   changelog
