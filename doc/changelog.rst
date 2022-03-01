@@ -1,8 +1,13 @@
 Changelog
 =========
 
+1.5.1 (March 1, 2022)
+---------------------
+
+- Documentation improvements
+
 1.5.0 (March 1, 2022)
--------------------------
+---------------------
 
 This is an API breaking release. The backward-incompatible changes are limited to the
 ``resample.permutation`` submodule. Other modules are not affected.
