@@ -55,6 +55,6 @@ Installation
 ------------
 You can install with `pip`, but you need a C compiler on the target machine.
 
-```sh
-pip install resample
-```
+.. code-block:: shell
+
+      pip install resample
