@@ -2,7 +2,7 @@ def make_ext(modname, pyxfilename):
     import numpy
     import os
     from pathlib import Path
-    from distutils.extension import Extension
+    from setuptools import Extension
 
     libs = ["npyrandom", "npymath"]
     if os.name == "posix":
