@@ -31,8 +31,7 @@ API changes in submodule ``resample.permutation``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - All functions now only accept keyword arguments for their configuration and return a
   tuple-like ``TestResult`` object instead of a dictionary
-- Keyword ``b`` in all tests was replaced by ``max_size``
-- Keyword ``precision`` was added to all tests
+- Keyword ``b`` in all tests was replaced by ``size``
 - p-values computed by all tests are now upper limits to the true Type I error rate
 - ``corr_test`` was replaced by two separate functions ``pearsonr`` and ``spearmanr``
 - ``kruskal_wallis`` was renamed to ``kruskal`` to follow SciPy naming
