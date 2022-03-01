@@ -53,7 +53,7 @@ Example
 
 Installation
 ------------
-You can install with `pip`, but you need a C compiler on the target machine.
+You can install with pip, but you need a C compiler on the target machine.
 
 .. code-block:: shell
 
