@@ -36,10 +36,10 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     goto fail;
   }
 
-  npy_intp* r_shape = PyArray_DIMS(ra);
-  npy_intp* c_shape = PyArray_DIMS(ca);
+  npy_intp nr = *PyArray_DIMS(ra);
+  npy_intp nc = *PyArray_DIMS(ca);
 
-  npy_intp m_shape[3] = {n, *r_shape, *c_shape};
+  npy_intp m_shape[3] = {n, nr, nc};
   ma = (PyArrayObject*)PyArray_SimpleNew(3, m_shape, NPY_DOUBLE);
 
   bitgen = PyObject_GetAttrString(rng, "_bit_generator");
@@ -60,10 +60,10 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     double* m_ptr = (double*)PyArray_GETPTR3(ma, i, 0, 0);
     switch (method) {
     case 0:
-      status = rcont1(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &work, rstate);
+      status = rcont1(m_ptr, nr, r_ptr, nc, c_ptr, &work, rstate);
       break;
     case 1:
-      status = rcont2(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &ntot, rstate);
+      status = rcont2(m_ptr, nr, r_ptr, nc, c_ptr, &ntot, rstate);
       break;
     default:
       PyErr_SetString(PyExc_ValueError, "method must be 0 or 1");
@@ -71,8 +71,7 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     }
     switch(status) {
       case 1:
-        // this should never happen and is only listed for completeness
-        PyErr_SetString(PyExc_RuntimeError, "null pointer encountered");
+        PyErr_SetString(PyExc_RuntimeError, "null pointer encountered in memory access");
         goto fail;
       case 2:
         PyErr_SetString(PyExc_ValueError, "number of rows or columns < 2");
