@@ -50,3 +50,11 @@ Example
 .. _numpy: http://www.numpy.org
 .. _scipy: https://www.scipy.org
 .. _numba: https://numba.pydata.org
+
+Installation
+------------
+You can install with `pip`, but you need a C compiler on the target machine.
+
+```sh
+pip install resample
+```
