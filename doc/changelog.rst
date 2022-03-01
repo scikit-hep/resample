@@ -1,21 +1,22 @@
 Changelog
 =========
 
-1.5.0 (February 25, 2022)
+1.5.0 (March 1, 2022)
 -------------------------
 
 This is an API breaking release. The backward-incompatible changes are limited to the
 ``resample.permutation`` submodule. Other modules are not affected.
 
-Warning: It was discovered that most tests implemented in ``resample.permutation`` had
+Warning: It was discovered that the tests implemented in ``resample.permutation`` had
 various issues and gave wrong results, so any results obtained with these tests should
 be revised. Since the old implementations were broken anyway, the API of
-``resample.permutation`` was altered to fix some design issues.
+``resample.permutation`` was altered to fix some design issues as well.
 
-This package now requires compiling a C extension. This is needed for the computation
-of the new USP test. This makes the installation of this package less convenient, since
-now a C compiler is required on the target machine. The plan is to move the compiled
-code to SciPy, which would allows us to drop the C extension again in the future.
+Installing resample now requires compiling a C extension. This is needed for the
+computation of the new USP test. This makes the installation of this package less
+convenient, since now a C compiler is required on the target machine (or we have to
+start building binary wheels). The plan is to move the compiled code to SciPy, which
+would allows us to drop the C extension again in the future.
 
 New features
 ~~~~~~~~~~~~

@@ -1,2 +1,0 @@
-.. automodule:: resample.empirical
-    :members:

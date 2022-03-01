@@ -1,2 +1,0 @@
-.. automodule:: resample.permutation
-    :members:
