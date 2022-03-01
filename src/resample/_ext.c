@@ -9,9 +9,8 @@ int rcont2(double*, int, const double*, int, const double*, double*, bitgen_t*);
 
 static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
   int n = -1, method = -1;
-  PyObject *r = NULL, *c = NULL, *rng = NULL,
-    *ra = NULL, *ca = NULL, *ma = NULL,
-    *bitgen = NULL, *cap = NULL;
+  PyObject *r = NULL, *c = NULL, *rng = NULL, *bitgen = NULL, *cap = NULL;
+  PyArrayObject *ra = NULL, *ca = NULL, *ma = NULL;
   int* work = 0; // pointer to workspace for rcont_naive, allocated by rcont_naive
 
   if(!PyArg_ParseTuple(args, "iO!O!iO",
@@ -22,9 +21,9 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     &rng))
     return NULL;
 
-  ra = PyArray_FROM_OTF(r, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  ra = (PyArrayObject*)PyArray_FROM_OTF(r, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ra) goto fail;
-  ca = PyArray_FROM_OTF(c, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+  ca = (PyArrayObject*)PyArray_FROM_OTF(c, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
   if (!ca) goto fail;
 
   if (PyArray_NDIM(ra) != 1) {
@@ -37,11 +36,11 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     goto fail;
   }
 
-  npy_intp* r_shape = PyArray_DIMS(ra);
-  npy_intp* c_shape = PyArray_DIMS(ca);
+  npy_intp nr = *PyArray_DIMS(ra);
+  npy_intp nc = *PyArray_DIMS(ca);
 
-  npy_intp m_shape[3] = {n, *r_shape, *c_shape};
-  ma = PyArray_SimpleNew(3, m_shape, NPY_DOUBLE);
+  npy_intp m_shape[3] = {n, nr, nc};
+  ma = (PyArrayObject*)PyArray_SimpleNew(3, m_shape, NPY_DOUBLE);
 
   bitgen = PyObject_GetAttrString(rng, "_bit_generator");
   if (!bitgen) goto fail;
@@ -61,10 +60,10 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     double* m_ptr = (double*)PyArray_GETPTR3(ma, i, 0, 0);
     switch (method) {
     case 0:
-      status = rcont1(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &work, rstate);
+      status = rcont1(m_ptr, nr, r_ptr, nc, c_ptr, &work, rstate);
       break;
     case 1:
-      status = rcont2(m_ptr, r_shape[0], r_ptr, c_shape[0], c_ptr, &ntot, rstate);
+      status = rcont2(m_ptr, nr, r_ptr, nc, c_ptr, &ntot, rstate);
       break;
     default:
       PyErr_SetString(PyExc_ValueError, "method must be 0 or 1");
@@ -72,8 +71,7 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
     }
     switch(status) {
       case 1:
-        // this should never happen and is only listed for completeness
-        PyErr_SetString(PyExc_RuntimeError, "null pointer encountered");
+        PyErr_SetString(PyExc_RuntimeError, "null pointer encountered in memory access");
         goto fail;
       case 2:
         PyErr_SetString(PyExc_ValueError, "number of rows or columns < 2");
@@ -100,7 +98,7 @@ static PyObject* rcont_wrap(PyObject *self, PyObject *args) {
   if (work)
     free(work);
 
-  return ma;
+  return (PyObject*)ma;
 
 fail:
   Py_XDECREF(ra);
