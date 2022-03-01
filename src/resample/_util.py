@@ -36,7 +36,7 @@ def rcont(n, r, c, method, rng):
             err.msg = "please install Cython to use this functionality"
             raise
 
-    importer = pyximport.install(language_level=3, inplace=True)
+    importer = pyximport.install(language_level=3)
 
     from . import _ext
 
