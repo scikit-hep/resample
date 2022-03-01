@@ -1,13 +1,45 @@
 Changelog
 =========
 
-1.1.0
------
+1.5.0 (March 1, 2022)
+-------------------------
 
-- Added logo and improved docstrings everywhere, removed redundancy in documentation
-- Modernised CI, use pre-commit CI to run black, mypy, flake8, isort
-- Modernise setup.cfg and setup.py, remove now obsolete requirements files
-- Moved tests out of package to standard place in repository
+This is an API breaking release. The backward-incompatible changes are limited to the
+``resample.permutation`` submodule. Other modules are not affected.
+
+Warning: It was discovered that the tests implemented in ``resample.permutation`` had
+various issues and gave wrong results, so any results obtained with these tests should
+be revised. Since the old implementations were broken anyway, the API of
+``resample.permutation`` was altered to fix some design issues as well.
+
+Installing resample now requires compiling a C extension. This is needed for the
+computation of the new USP test. This makes the installation of this package less
+convenient, since now a C compiler is required on the target machine (or we have to
+start building binary wheels). The plan is to move the compiled code to SciPy, which
+would allows us to drop the C extension again in the future.
+
+New features
+~~~~~~~~~~~~
+- ``resample`` functions in ``resample.bootstrap`` and ``resample.jackknife``, and all
+  convenience functions which depend on them, can now resample from several arrays of
+  equal length, example: ``for ai, bi in resample(a, b): ...``
+- USP test of independence for binned data was added to ``resample.permutation``
+- ``resample.permutation.same_population`` was added as a generic permutation-based test
+  to compute the p-value that two or more samples were drawn from the same population
+
+API changes in submodule ``resample.permutation``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- All functions now only accept keyword arguments for their configuration and return a
+  tuple-like ``TestResult`` object instead of a dictionary
+- Keyword ``b`` in all tests was replaced by ``size``
+- p-values computed by all tests are now upper limits to the true Type I error rate
+- ``corr_test`` was replaced by two separate functions ``pearsonr`` and ``spearmanr``
+- ``kruskal_wallis`` was renamed to ``kruskal`` to follow SciPy naming
+- ``anova`` and ``kruskal`` now accept multiple samples directly instead of using a list
+  of samples; example: ``anova(x, y)`` instead of ``anova([x, y])``
+- ``wilcoxon`` and ``ks_test`` were removed, since the corresponding tests in Scipy
+  (``wilcoxon`` and ``ks_2samp``) compute exact p-values for small samples and use
+  asymptotic formulas only when the same size is large; we cannot do better than that
 
 1.0.1 (August 23, 2020)
 -----------------------

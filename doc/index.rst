@@ -7,11 +7,8 @@
   :start-after: skip-marker-do-not-remove
 
 .. toctree::
-   :hidden:
-   :maxdepth: 1
+   :maxdepth: 2
 
-   bootstrap.rst
-   jackknife.rst
-   permutation.rst
-   empirical.rst
-   changelog.rst
+   reference
+   tutorials
+   changelog

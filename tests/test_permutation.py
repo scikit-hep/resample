@@ -64,7 +64,7 @@ def test_two_sample_same_size(test_name, size, rng):
 
     for a, b in ((x, y), (y, x)):
         expected = scipy_test(a, b)
-        got = test(a, b, max_size=500, random_state=1)
+        got = test(a, b, size=999, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol={10: 0.2, 100: 0.02}[size])
 
@@ -94,7 +94,7 @@ def test_two_sample_different_size(test_name, size, rng):
 
     for a, b in ((x, y), (y, x)):
         expected = scipy_test(a, b)
-        got = test(a, b, max_size=500, random_state=1)
+        got = test(a, b, size=999, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol=5e-2)
 
@@ -117,7 +117,7 @@ def test_three_sample_same_size(test_name, size, rng):
 
     for a, b, c in ((x, y, z), (z, y, x)):
         expected = scipy_test(a, b, c)
-        got = test(a, b, c, max_size=500, random_state=1)
+        got = test(a, b, c, size=999, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol=5e-2)
 
@@ -140,7 +140,7 @@ def test_three_sample_different_size(test_name, size, rng):
 
     for a, b, c in ((x, y, z), (z, y, x)):
         expected = scipy_test(a, b, c)
-        got = test(a, b, c, max_size=500, random_state=1)
+        got = test(a, b, c, size=500, random_state=1)
         assert_allclose(expected[0], got[0])
         assert_allclose(expected[1], got[1], atol=5e-2)
 
@@ -156,7 +156,7 @@ def test_usp_1(method, rng):
     y = rng.normal(1, 3, size=100)
 
     w = np.histogram2d(x, y, bins=(5, 10))[0]
-    r = perm.usp(w, max_size=100, random_state=1)
+    r = perm.usp(w, size=100, random_state=1)
     assert r.pvalue > 0.05
 
 
@@ -166,7 +166,7 @@ def test_usp_2(method, rng):
 
     w = np.histogram2d(x, x, range=((-5, 5), (-5, 5)))[0]
 
-    r = perm.usp(w, method=method, max_size=99, random_state=1)
+    r = perm.usp(w, method=method, size=99, random_state=1)
     assert r.pvalue == 0.01
 
 
@@ -191,8 +191,8 @@ def test_usp_3(method, rng):
 def test_usp_4(method):
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
-    r1 = perm.usp(w, precision=0, method=method, max_size=10000, random_state=1)
-    r2 = perm.usp(np.transpose(w), method=method, max_size=1, random_state=1)
+    r1 = perm.usp(w, method=method, size=9999, random_state=1)
+    r2 = perm.usp(np.transpose(w), method=method, size=1, random_state=1)
     assert_allclose(r1.statistic, r2.statistic)
     expected = 0.004106  # checked against USP R package
     assert_allclose(r1.statistic, expected, atol=1e-6)
@@ -207,16 +207,16 @@ def test_usp_5(method, rng):
     for i in range(100):
         for j in range(100):
             w[i, j] = (i + j) % 2
-    r = perm.usp(w, method=method, max_size=100, random_state=1)
+    r = perm.usp(w, method=method, size=99, random_state=1)
     assert r.pvalue > 0.1
 
 
 def test_usp_bias(rng):
     # We compute the p-value as an upper limit to the type I error rate.
-    # Therefore, the p-value is not unbiased. For max_size=1, we expect
+    # Therefore, the p-value is not unbiased. For size=1, we expect
     # an average p-value = (1 + 0.5) / (1 + 1) = 0.75
     got = [
-        perm.usp(rng.poisson(1000, size=(2, 2)), max_size=1, random_state=i).pvalue
+        perm.usp(rng.poisson(1000, size=(2, 2)), size=1, random_state=i).pvalue
         for i in range(1000)
     ]
     assert_allclose(np.mean(got), 0.75, atol=0.05)
@@ -224,13 +224,10 @@ def test_usp_bias(rng):
 
 def test_usp_bad_input():
     with pytest.raises(ValueError):
-        perm.usp([[1, 2], [3, 4]], precision=-1)
+        perm.usp([[1, 2], [3, 4]], size=0)
 
     with pytest.raises(ValueError):
-        perm.usp([[1, 2], [3, 4]], max_size=0)
-
-    with pytest.raises(ValueError):
-        perm.usp([[1, 2], [3, 4]], max_size=-1)
+        perm.usp([[1, 2], [3, 4]], size=-1)
 
     with pytest.raises(ValueError):
         perm.usp([1, 2])
@@ -241,37 +238,13 @@ def test_usp_bad_input():
 
 def test_ttest_bad_input():
     with pytest.raises(ValueError):
-        perm.ttest([1, 2], [3, 4], precision=-1)
+        perm.ttest([1, 2], [3, 4], size=0)
 
     with pytest.raises(ValueError):
-        perm.ttest([1, 2], [3, 4], max_size=0)
-
-    with pytest.raises(ValueError):
-        perm.ttest([1, 2], [3, 4], max_size=-1)
+        perm.ttest([1, 2], [3, 4], size=-1)
 
     with pytest.raises(ValueError):
         perm.ttest(1, 2)
 
     with pytest.raises(ValueError):
         perm.ttest([1], [2])
-
-
-@pytest.mark.parametrize("test", (perm.ttest, perm.usp))
-@pytest.mark.parametrize("prec", (0, 0.05, 0.005))
-def test_precision(test, prec, rng):
-    x = rng.normal(0, 1, size=100)
-    y = rng.normal(0, 2, size=100)
-    if test is perm.ttest:
-        args = (x, y)
-    else:
-        w = np.histogram2d(x, y)[0]
-        args = (w,)
-
-    r = test(*args, precision=prec, max_size=10000 if prec > 0 else 123, random_state=1)
-    if prec == 0:
-        assert len(r.samples) == 123
-    else:
-        n = len(r.samples)
-        _, interval = _util.wilson_score_interval(r.pvalue * n, n, 1)
-        actual_precision = (interval[1] - interval[0]) / 2
-        assert_allclose(actual_precision, prec, atol=0.5 * prec)

@@ -91,8 +91,7 @@ class TestResult:
 def usp(
     w: _ArrayLike,
     *,
-    precision: float = 0.01,
-    max_size: int = 9999,
+    size: int = 9999,
     method: str = "auto",
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ):
@@ -113,36 +112,28 @@ def usp(
     w : array-like
         Two-dimensional array which represents the counts in a histogram. The counts
         can be of floating point type, but must have integral values.
-    precision : float, optional
-        Target precision (statistical) for the p-value. Used to compute the minimum
-        number of permutations needed to reach the target precision. The minimum of this
-        estimate and max_size is used. If precision is zero, max_size permutations are
-        used. Default 0.01.
-    max_size : int, optional
-        Maximum number of permutations. Default 9999.
+    size : int, optional
+        Number of permutations. Default 9999.
     method : str, optional
         Method used to generate random tables under the null hypothesis.
         'auto': Uses a heuristic to select the fastest algorithm for the given table.
         'shuffle': A shuffling algorithm, which requires extra space to store N + 1
-            integers for N entries in total and has O(N) time complexity. It performs
-            poorly when N is large, but does not depend on the number of table cells.
+        integers for N entries in total and has O(N) time complexity. It performs
+        poorly when N is large, but does not depend on the number of K table cells.
         'patefield': Patefield's algorithm, which does not require extra space and
-            has O(K log(N)) time complexity. It performs well even if N is huge. For
-            small N and large K, the shuffling algorithm is faster.
+        has O(K log(N)) time complexity. It performs well even if N is huge. For
+        small N and large K, the shuffling algorithm is faster.
         Default is 'auto'.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
-        default generator with it. Default is to use `numpy.random.default_rng()`.
+        default generator with it. Default is to use ``numpy.random.default_rng()``.
 
     Returns
     -------
     TestResult
     """
-    if precision < 0:
-        raise ValueError("precision cannot be negative")
-
-    if max_size <= 0:
-        raise ValueError("max_size must be positive")
+    if size <= 0:
+        raise ValueError("size must be positive")
 
     methods = {"auto": 0, "shuffle": 1, "patefield": 2}
     imethod = methods.get(method, -1)
@@ -173,19 +164,15 @@ def usp(
 
     t = _usp(f1, f2, w, m)
 
-    # For Type I error probabilities to hold theoretically, the number of permutation
-    # samples drawn may not depend on the data (comment by Richard Samworth).
-    # So we compute the required number of samples with the worst-case p=0.5.
-    n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
-    ts = np.empty(n)
-    for b, w in enumerate(_util.rcont(n, r, c, imethod - 1, rng)):
+    ts = np.empty(size)
+    for b, w in enumerate(_util.rcont(size, r, c, imethod - 1, rng)):
         # m stays the same, since r and c remain unchanged
         ts[b] = _usp(f1, f2, w, m)
 
     # Thomas B. Berrett, Ioannis Kontoyiannis, Richard J. Samworth
     # Ann. Statist. 49(5): 2457-2490 (October 2021). DOI: 10.1214/20-AOS2041
     # Eq. 5 says we need to add 1 to n_pass and n_total
-    pvalue = (np.sum(t <= ts) + 1) / (n + 1)
+    pvalue = (np.sum(t <= ts) + 1) / (size + 1)
 
     return TestResult(t, pvalue, ts)
 
@@ -201,8 +188,7 @@ def same_population(
     y: _ArrayLike,
     *args: _ArrayLike,
     transform: _tp.Optional[_tp.Callable] = None,
-    precision: float = 0.01,
-    max_size: int = 9999,
+    size: int = 9999,
     random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
 ) -> np.ndarray:
     """
@@ -233,13 +219,8 @@ def same_population(
     transform : Callable, optional
         Function with signature f(x) for the test statistic to turn it into a measure of
         deviation. Must be vectorised.
-    precision : float, optional
-        Target precision (statistical) for the p-value. Used to compute the minimum
-        number of permutations needed to reach the target precision. The minimum of this
-        estimate and max_size is used. If precision is zero, max_size permutations are
-        used. Default 0.01.
-    max_size : int, optional
-        Maximum number of permutations. Default 9999.
+    size : int, optional
+        Number of permutations. Default 9999.
     random_state : numpy.random.Generator or int, optional
         Random number generator instance. If an integer is passed, seed the numpy
         default generator with it. Default is to use `numpy.random.default_rng()`.
@@ -248,10 +229,7 @@ def same_population(
     -------
     TestResult
     """
-    if precision < 0:
-        raise ValueError("precision cannot be negative")
-
-    if max_size <= 0:
+    if size <= 0:
         raise ValueError("max_size must be positive")
 
     rng = _util.normalize_rng(random_state)
@@ -283,9 +261,8 @@ def same_population(
     joined_sample = np.concatenate(args)
 
     # For algorithm below, see comment in usp function.
-    n = min(max_size, int(0.25 / precision**2)) if precision > 0 else max_size
-    ts = np.empty(n)
-    for b in range(n):
+    ts = np.empty(size)
+    for b in range(size):
         rng.shuffle(joined_sample)
         ts[b] = fn(*(joined_sample[sl] for sl in slices))
     if transform is None:
@@ -295,7 +272,7 @@ def same_population(
         u = transform(t)
         us = transform(ts)
     # see usp for why we need to add 1 to both numerator and denominator
-    pvalue = (np.sum(u <= us) + 1) / (n + 1)
+    pvalue = (np.sum(u <= us) + 1) / (size + 1)
 
     return TestResult(t, pvalue, ts)
 
