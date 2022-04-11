@@ -15,6 +15,9 @@
    :target: https://resample.readthedocs.io/en/stable
 .. image:: https://img.shields.io/pypi/l/resample
 
+`Link to full documentation`_
+
+.. _Documentation: http://resample.readthedocs.io
 
 .. skip-marker-do-not-remove
 
