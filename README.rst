@@ -17,7 +17,7 @@
 
 `Link to full documentation`_
 
-.. _Documentation: http://resample.readthedocs.io
+.. _Link to full documentation: http://resample.readthedocs.io
 
 .. skip-marker-do-not-remove
 
