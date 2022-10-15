@@ -12,17 +12,18 @@ increases quadratically with the sample size, but only linearly for the bootstra
 advantage of the jackknife can be the deterministic outcome, since no random sampling
 is involved.
 """
-import typing as _tp
+
+__all__ = ["resample", "jackknife", "bias", "bias_corrected", "variance"]
+
+from typing import Any, Callable, Collection, Generator, List
 
 import numpy as np
-
-_Args = _tp.Any
-_ArrayLike = _tp.Collection
+from numpy.typing import ArrayLike
 
 
 def resample(
-    sample: _ArrayLike, *args: _Args, copy: bool = True
-) -> _tp.Generator[np.ndarray, None, None]:
+    sample: "ArrayLike", *args: "ArrayLike", copy: bool = True
+) -> Generator[Any, None, None]:
     """
     Generate jackknifed samples.
 
@@ -80,7 +81,7 @@ def resample(
 
     args_np = []
     if args:
-        if not isinstance(args[0], _tp.Collection):
+        if not isinstance(args[0], Collection):
             import warnings
 
             from numpy import VisibleDeprecationWarning
@@ -110,7 +111,7 @@ def resample(
     return _resample_1(sample_np, copy)
 
 
-def _resample_1(sample: np.ndarray, copy: bool):
+def _resample_1(sample: np.ndarray, copy: bool) -> Generator[np.ndarray, None, None]:
     # yield x0
     x = sample[1:].copy()
     yield x.copy() if copy else x
@@ -126,7 +127,7 @@ def _resample_1(sample: np.ndarray, copy: bool):
         yield x.copy() if copy else x
 
 
-def _resample_n(samples: _tp.List[np.ndarray], copy: bool):
+def _resample_n(samples: List[np.ndarray], copy: bool) -> Generator[Any, None, None]:
     x = [a[1:].copy() for a in samples]
     yield (xi.copy() for xi in x)
     for i in range(len(samples[0]) - 1):
@@ -135,7 +136,11 @@ def _resample_n(samples: _tp.List[np.ndarray], copy: bool):
         yield (xi.copy() for xi in x)
 
 
-def jackknife(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
+def jackknife(
+    fn: Callable[..., np.ndarray],
+    sample: "ArrayLike",
+    *args: "ArrayLike",
+) -> np.ndarray:
     """
     Calculate jackknife estimates for a given sample and estimator.
 
@@ -176,7 +181,9 @@ def jackknife(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     return np.asarray([fn(b) for b in gen])
 
 
-def bias(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
+def bias(
+    fn: Callable[..., np.ndarray], sample: "ArrayLike", *args: "ArrayLike"
+) -> np.ndarray:
     """
     Calculate jackknife estimate of bias.
 
@@ -220,7 +227,9 @@ def bias(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
     return (n - 1) * (mean_theta - theta)
 
 
-def bias_corrected(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
+def bias_corrected(
+    fn: Callable[..., np.ndarray], sample: "ArrayLike", *args: "ArrayLike"
+) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the jackknife.
 
@@ -265,7 +274,9 @@ def bias_corrected(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.nda
     return n * theta - (n - 1) * mean_theta
 
 
-def variance(fn: _tp.Callable, sample: _ArrayLike, *args: _Args) -> np.ndarray:
+def variance(
+    fn: Callable[..., np.ndarray], sample: "ArrayLike", *args: "ArrayLike"
+) -> np.ndarray:
     """
     Calculate jackknife estimate of variance.
 

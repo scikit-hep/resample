@@ -4,16 +4,18 @@ Empirical functions.
 Empirical functions based on a data sample instead of a parameteric density function,
 like the empirical CDF. Implemented here are mostly tools used internally.
 """
-import typing as _tp
+
+__all__ = ["cdf_gen", "quantile_function_gen", "influence"]
+
+from typing import Callable, Union
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from .jackknife import jackknife
 
-_ArrayLike = _tp.Collection
 
-
-def cdf_gen(sample: _ArrayLike) -> _tp.Callable:
+def cdf_gen(sample: "ArrayLike") -> Callable[[np.ndarray], np.ndarray]:
     """
     Return the empirical distribution function for the given sample.
 
@@ -32,7 +34,9 @@ def cdf_gen(sample: _ArrayLike) -> _tp.Callable:
     return lambda x: np.searchsorted(sample_np, x, side="right", sorter=None) / n
 
 
-def quantile_function_gen(sample: _ArrayLike) -> _tp.Callable:
+def quantile_function_gen(
+    sample: "ArrayLike",
+) -> Callable[[Union[float, "ArrayLike"]], Union[float, np.ndarray]]:
     """
     Return the empirical quantile function for the given sample.
 
@@ -48,12 +52,10 @@ def quantile_function_gen(sample: _ArrayLike) -> _tp.Callable:
     """
 
     class QuantileFn:
-        def __init__(self, sample: _ArrayLike):
+        def __init__(self, sample: "ArrayLike"):
             self._sorted = np.sort(sample, axis=0)
 
-        def __call__(
-            self, p: _tp.Union[float, _ArrayLike]
-        ) -> _tp.Union[float, np.ndarray]:
+        def __call__(self, p: Union[float, "ArrayLike"]) -> Union[float, np.ndarray]:
             ndim = np.ndim(p)  # must come before atleast_1d
             p = np.atleast_1d(p)
             result = np.empty(len(p))
@@ -69,7 +71,9 @@ def quantile_function_gen(sample: _ArrayLike) -> _tp.Callable:
     return QuantileFn(sample)
 
 
-def influence(fn: _tp.Callable, sample: _ArrayLike) -> np.ndarray:
+def influence(
+    fn: Callable[["ArrayLike"], np.ndarray], sample: "ArrayLike"
+) -> np.ndarray:
     """
     Calculate the empirical influence function for a given sample and estimator.
 

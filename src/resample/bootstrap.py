@@ -11,28 +11,45 @@ from the parametric distribution. The distributions are taken from scipy.stats.
 Confidence intervals can be computed with the ordinary percentile method and with the
 more efficient BCa method, see :func:`confidence_interval` for details.
 """
-import typing as _tp
+
+__all__ = [
+    "resample",
+    "bootstrap",
+    "bias",
+    "bias_corrected",
+    "variance",
+    "confidence_interval",
+]
+
+from typing import (
+    Any,
+    Callable,
+    Collection,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy import stats
 
 from . import _util
 from .empirical import quantile_function_gen
 from .jackknife import jackknife
 
-_Kwargs = _tp.Any
-_Args = _tp.Any
-_ArrayLike = _tp.Collection
-
 
 def resample(
-    sample: _ArrayLike,
-    *args: _Args,
+    sample: "ArrayLike",
+    *args: "ArrayLike",
     size: int = 100,
     method: str = "balanced",
-    strata: _tp.Optional[_ArrayLike] = None,
-    random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
-) -> _tp.Generator[np.ndarray, None, None]:
+    strata: Optional["ArrayLike"] = None,
+    random_state: Optional[Union[np.random.Generator, int]] = None,
+) -> Generator[np.ndarray, None, None]:
     """
     Return generator of bootstrap samples.
 
@@ -130,10 +147,10 @@ def resample(
     """
     sample_np = np.atleast_1d(sample)
     n_sample = len(sample_np)
-    args_np: _tp.List[np.ndarray] = []
+    args_np: List[np.ndarray] = []
 
     if args:
-        if not isinstance(args[0], _tp.Collection):
+        if not isinstance(args[0], Collection):
             import warnings
 
             from numpy import VisibleDeprecationWarning
@@ -143,7 +160,7 @@ def resample(
                 "deprecated",
                 VisibleDeprecationWarning,
             )
-            kwargs: _tp.Dict[str, _tp.Any] = {
+            kwargs: Dict[str, Any] = {
                 "size": size,
                 "method": method,
                 "strata": strata,
@@ -226,7 +243,10 @@ def resample(
 
 
 def bootstrap(
-    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
+    fn: Callable[..., np.ndarray],
+    sample: "ArrayLike",
+    *args: "ArrayLike",
+    **kwargs: Any,
 ) -> np.ndarray:
     """
     Calculate function values from bootstrap samples.
@@ -267,7 +287,10 @@ def bootstrap(
 
 
 def bias(
-    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
+    fn: Callable[..., np.ndarray],
+    sample: "ArrayLike",
+    *args: "ArrayLike",
+    **kwargs: Any,
 ) -> np.ndarray:
     """
     Calculate bias of the function estimate with the bootstrap.
@@ -308,7 +331,7 @@ def bias(
     """
     thetas = []
     if args:
-        replicates: _tp.List[_tp.List] = [[] for _ in range(len(args) + 1)]
+        replicates: List[List[np.ndarray]] = [[] for _ in range(len(args) + 1)]
         for b in resample(sample, *args, **kwargs):
             for ri, bi in zip(replicates, b):
                 ri.append(bi)
@@ -324,7 +347,10 @@ def bias(
 
 
 def bias_corrected(
-    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
+    fn: Callable[..., np.ndarray],
+    sample: "ArrayLike",
+    *args: "ArrayLike",
+    **kwargs: Any,
 ) -> np.ndarray:
     """
     Calculate bias-corrected estimate of the function with the bootstrap.
@@ -362,7 +388,10 @@ def bias_corrected(
 
 
 def variance(
-    fn: _tp.Callable, sample: _ArrayLike, *args: _Args, **kwargs: _Kwargs
+    fn: Callable[..., np.ndarray],
+    sample: "ArrayLike",
+    *args: "ArrayLike",
+    **kwargs: Any,
 ) -> np.ndarray:
     """
     Calculate bootstrap estimate of variance.
@@ -399,13 +428,13 @@ def variance(
 
 
 def confidence_interval(
-    fn: _tp.Callable,
-    sample: _ArrayLike,
-    *args: _Args,
+    fn: Callable[..., np.ndarray],
+    sample: "ArrayLike",
+    *args: "ArrayLike",
     cl: float = 0.95,
     ci_method: str = "bca",
-    **kwargs: _Kwargs,
-) -> _tp.Tuple[float, float]:
+    **kwargs: Any,
+) -> Tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
 
@@ -454,7 +483,7 @@ def confidence_interval(
     result that less bootstrap replicas are needed overall to achieve the same accuracy.
     """
     if args:
-        if not isinstance(args[0], _tp.Collection):
+        if not isinstance(args[0], Collection):
             import warnings
 
             from numpy import VisibleDeprecationWarning
@@ -498,7 +527,7 @@ def _resample_stratified(
     method: str,
     strata: np.ndarray,
     rng: np.random.Generator,
-) -> _tp.Generator[np.ndarray, None, None]:
+) -> Generator[np.ndarray, None, None]:
     # call resample on sub-samples and merge the replicates
     sub_samples = [sample[strata == x] for x in np.unique(strata)]
     for sub_replicates in zip(
@@ -509,7 +538,7 @@ def _resample_stratified(
 
 def _resample_ordinary_1(
     sample: np.ndarray, size: int, rng: np.random.Generator
-) -> _tp.Generator[np.ndarray, None, None]:
+) -> Generator[np.ndarray, None, None]:
     # i.i.d. sampling from empirical cumulative distribution of sample
     n = len(sample)
     for _ in range(size):
@@ -517,8 +546,8 @@ def _resample_ordinary_1(
 
 
 def _resample_ordinary_n(
-    samples: _tp.List[np.ndarray], size: int, rng: np.random.Generator
-) -> _tp.Generator[np.ndarray, None, None]:
+    samples: List[np.ndarray], size: int, rng: np.random.Generator
+) -> Generator[np.ndarray, None, None]:
     n = len(samples[0])
     indices = np.arange(n)
     for _ in range(size):
@@ -528,7 +557,7 @@ def _resample_ordinary_n(
 
 def _resample_balanced_1(
     sample: np.ndarray, size: int, rng: np.random.Generator
-) -> _tp.Generator[np.ndarray, None, None]:
+) -> Generator[np.ndarray, None, None]:
     # effectively computes a random permutation of `size` concatenated
     # copies of `sample` and returns `size` equal chunks of that
     n = len(sample)
@@ -539,8 +568,8 @@ def _resample_balanced_1(
 
 
 def _resample_balanced_n(
-    samples: _tp.List[np.ndarray], size: int, rng: np.random.Generator
-) -> _tp.Generator[np.ndarray, None, None]:
+    samples: List[np.ndarray], size: int, rng: np.random.Generator
+) -> Generator[np.ndarray, None, None]:
     n = len(samples[0])
     indices = rng.permutation(n * size)
     for i in range(size):
@@ -550,7 +579,7 @@ def _resample_balanced_n(
 
 def _resample_extended_1(
     sample: np.ndarray, size: int, rng: np.random.Generator
-) -> _tp.Generator[np.ndarray, None, None]:
+) -> Generator[np.ndarray, None, None]:
     # randomly generates the sample size from a Poisson distribution
     n = len(sample)
     for i in range(size):
@@ -559,8 +588,8 @@ def _resample_extended_1(
 
 
 def _resample_extended_n(
-    samples: _tp.List[np.ndarray], size: int, rng: np.random.Generator
-) -> _tp.Generator[np.ndarray, None, None]:
+    samples: List[np.ndarray], size: int, rng: np.random.Generator
+) -> Generator[np.ndarray, None, None]:
     n = len(samples[0])
     for i in range(size):
         k = rng.poisson(1, size=n)
@@ -569,7 +598,7 @@ def _resample_extended_n(
 
 def _fit_parametric_family(
     dist: stats.rv_continuous, sample: np.ndarray
-) -> _tp.Tuple[float, ...]:
+) -> Tuple[float, ...]:
     if dist == stats.multivariate_normal:
         # has no fit method...
         return np.mean(sample, axis=0), np.cov(sample.T, ddof=1)
@@ -586,7 +615,7 @@ def _fit_parametric_family(
 
 def _resample_parametric(
     sample: np.ndarray, size: int, dist: stats.rv_continuous, rng: np.random.Generator
-) -> _tp.Generator[np.ndarray, None, None]:
+) -> Generator[np.ndarray, None, None]:
     n = len(sample)
 
     # fit parameters by maximum likelihood and sample from that
@@ -605,14 +634,14 @@ def _resample_parametric(
 
 def _confidence_interval_percentile(
     thetas: np.ndarray, alpha_half: float
-) -> _tp.Tuple[float, float]:
+) -> Tuple[float, float]:
     quant = quantile_function_gen(thetas)
     return quant(alpha_half), quant(1 - alpha_half)
 
 
 def _confidence_interval_bca(
     theta: float, thetas: np.ndarray, j_thetas: np.ndarray, alpha_half: float
-) -> _tp.Tuple[float, float]:
+) -> Tuple[float, float]:
     norm = stats.norm
 
     # bias correction; implementation notes:

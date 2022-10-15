@@ -1,12 +1,15 @@
-import typing as _tp
+from typing import Optional, Tuple, Union
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from ._ext import rcont  # noqa type: ignore
 
+__all__ = ["rcont", "normalize_rng", "wilson_score_interval"]
+
 
 def normalize_rng(
-    random_state: _tp.Optional[_tp.Union[int, np.random.Generator]]
+    random_state: Optional[Union[int, np.random.Generator]]
 ) -> np.random.Generator:
     """Return normalized RNG object."""
     if random_state is None:
@@ -16,7 +19,9 @@ def normalize_rng(
     return np.random.default_rng(random_state)
 
 
-def wilson_score_interval(n1, n, z):
+def wilson_score_interval(
+    n1: "ArrayLike", n: "ArrayLike", z: float
+) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """Return binomial fraction and Wilson score interval."""
     p = n1 / n
     norm = 1 / (1 + z**2 / n)
