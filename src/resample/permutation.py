@@ -20,11 +20,24 @@ Further reading:
 - https://en.wikipedia.org/wiki/Test_statistic
 - https://en.wikipedia.org/wiki/Paired_difference_test
 """
+
+__all__ = [
+    "TestResult",
+    "usp",
+    "same_population",
+    "anova",
+    "kruskal",
+    "pearsonr",
+    "spearmanr",
+    "ttest",
+]
+
 import sys
-import typing as _tp
 from dataclasses import dataclass as dataclass
+from typing import Any, Callable, Optional, Tuple, Union
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy import stats as _stats
 
 from . import _util
@@ -32,9 +45,6 @@ from . import _util
 _dataclass_kwargs = {"frozen": True, "repr": False}
 if sys.version_info >= (3, 10):
     _dataclass_kwargs["slots"] = True  # pragma: no cover
-
-_Kwargs = _tp.Any
-_ArrayLike = _tp.Collection
 
 
 @dataclass(**_dataclass_kwargs)
@@ -73,11 +83,11 @@ class TestResult:
             f"<TestResult statistic={self.statistic} pvalue={self.pvalue} samples={s}>"
         )
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return length of tuple."""
         return 3
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Union[float, np.ndarray]:
         """Return fields by index."""
         if idx == 0:
             return self.statistic
@@ -89,12 +99,12 @@ class TestResult:
 
 
 def usp(
-    w: _ArrayLike,
+    w: "ArrayLike",
     *,
     size: int = 9999,
     method: str = "auto",
-    random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
-):
+    random_state: Optional[Union[np.random.Generator, int]] = None,
+) -> TestResult:
     """
     Test independence of two discrete data sets with the U-statistic.
 
@@ -177,20 +187,20 @@ def usp(
     return TestResult(t, pvalue, ts)
 
 
-def _usp(f1, f2, w, m):
+def _usp(f1: float, f2: float, w: np.ndarray, m: np.ndarray) -> np.ndarray:
     # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
     return f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
 
 def same_population(
-    fn: _tp.Callable,
-    x: _ArrayLike,
-    y: _ArrayLike,
-    *args: _ArrayLike,
-    transform: _tp.Optional[_tp.Callable] = None,
+    fn: Callable[..., float],
+    x: "ArrayLike",
+    y: "ArrayLike",
+    *args: "ArrayLike",
+    transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
     size: int = 9999,
-    random_state: _tp.Optional[_tp.Union[np.random.Generator, int]] = None,
-) -> np.ndarray:
+    random_state: Optional[Union[np.random.Generator, int]] = None,
+) -> TestResult:
     """
     Compute p-value for null hypothesis that samples are drawn from the same population.
 
@@ -278,7 +288,7 @@ def same_population(
 
 
 def anova(
-    x: _ArrayLike, y: _ArrayLike, *args: _ArrayLike, **kwargs: _Kwargs
+    x: "ArrayLike", y: "ArrayLike", *args: "ArrayLike", **kwargs: Any
 ) -> TestResult:
     """
     Test whether the means of two or more samples are compatible.
@@ -313,7 +323,7 @@ def anova(
 
 
 def kruskal(
-    x: _ArrayLike, y: _ArrayLike, *args: _ArrayLike, **kwargs: _Kwargs
+    x: "ArrayLike", y: "ArrayLike", *args: "ArrayLike", **kwargs: Any
 ) -> TestResult:
     """
     Test whether two or more samples have the same mean rank.
@@ -345,7 +355,7 @@ def kruskal(
     return same_population(_kruskal, x, y, *args, **kwargs)
 
 
-def pearsonr(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
+def pearsonr(x: "ArrayLike", y: "ArrayLike", **kwargs: Any) -> TestResult:
     """
     Test whether two samples are drawn from the same population using the correlation.
 
@@ -374,7 +384,7 @@ def pearsonr(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     return same_population(_pearson, x, y, **kwargs)
 
 
-def spearmanr(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
+def spearmanr(x: "ArrayLike", y: "ArrayLike", **kwargs: Any) -> TestResult:
     """
     Test whether two samples are drawn from the same population using rank correlation.
 
@@ -400,7 +410,7 @@ def spearmanr(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
     return same_population(_spearman, x, y, **kwargs)
 
 
-def ttest(x: _ArrayLike, y: _ArrayLike, **kwargs: _Kwargs) -> TestResult:
+def ttest(x: "ArrayLike", y: "ArrayLike", **kwargs: Any) -> TestResult:
     """
     Test whether the means of two samples are compatible with Welch's t-test.
 
@@ -492,7 +502,7 @@ class _ANOVA:
         within_group_variability = sum(len(a) * np.var(a) for a in args) / (self.nmk)
         return between_group_variability / within_group_variability
 
-    def _init(self, args: _tp.Tuple[np.ndarray, ...]) -> None:
+    def _init(self, args: Tuple[np.ndarray, ...]) -> None:
         n = sum(len(a) for a in args)
         k = len(args)
         self.km1 = k - 1
