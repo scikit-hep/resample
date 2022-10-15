@@ -37,4 +37,5 @@ jobs:
     - run: coverage run -m pytest
     - run: python -m pip uninstall --yes numba
     - run: coverage run --append -m pytest
-    - uses: AndreMiras/coveralls-python-action@develop
+    # - uses: AndreMiras/coveralls-python-action@develop
+    - uses: coverallsapp/github-action@1.1.3
