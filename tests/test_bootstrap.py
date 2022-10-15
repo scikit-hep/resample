@@ -510,3 +510,36 @@ def test_resample_extended_3():
         assert_equal(bi - ai, 5)
         ns.append(len(ai))
     assert_allclose(np.var(ns), 10, rtol=0.05)
+
+
+def test_resample_extended_4():
+    x = np.ones(10)
+    a = np.transpose((x, 3 * x))
+
+    ts = []
+    for b in resample(a, size=1000, method="extended", random_state=1):
+        ts.append(np.sum(b, axis=0))
+
+    t = np.var(ts, axis=0)
+
+    mu = np.sum(x, axis=0)
+    assert_allclose(t, (mu, 3**2 * mu), rtol=0.05)
+
+
+def test_resample_extended_5():
+    x = np.ones(10)
+    a = np.transpose((x, 3 * x))
+
+    ts1 = []
+    ts2 = []
+    for b1, b2 in resample(a, 3 * a, size=1000, method="extended", random_state=1):
+        ts1.append(np.sum(b1, axis=0))
+        ts2.append(np.sum(b2, axis=0))
+
+    t1 = np.var(ts1, axis=0)
+    t2 = np.var(ts2, axis=0)
+
+    mu1 = np.sum(x, axis=0)
+    mu2 = 3**2 * np.sum(x, axis=0)
+    assert_allclose(t1, (mu1, 3**2 * mu1), rtol=0.05)
+    assert_allclose(t2, (mu2, 3**2 * mu2), rtol=0.05)

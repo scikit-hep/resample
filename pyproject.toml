@@ -17,3 +17,21 @@ write_to = "src/resample/_version.py"
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+
+[tool.mypy]
+strict = true
+no_implicit_optional = false
+allow_redefinition = true
+ignore_missing_imports = true
+show_error_codes = true
+files = "src/resample/*.py"
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules --strict-config --strict-markers -q -ra --ff"
+testpaths = ["src/resample", "tests"]
+log_cli_level = "INFO"
+xfail_strict = true
+filterwarnings = [
+    "error::DeprecationWarning",
+    "error::numpy.VisibleDeprecationWarning",
+]
