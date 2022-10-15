@@ -14,6 +14,7 @@
 .. image:: https://readthedocs.org/projects/resample/badge/?version=stable
    :target: https://resample.readthedocs.io/en/stable
 .. image:: https://img.shields.io/pypi/l/resample
+   :target: https://pypi.org/project/resample
 
 `Link to full documentation`_
 
