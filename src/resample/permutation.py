@@ -477,9 +477,9 @@ def _kruskal(*args: np.ndarray) -> float:
         start += len(a)
 
     # method 3 (assuming no ties)
-    h = 12.0 / (n * (n + 1)) * sum(len(r) * np.mean(r) ** 2 for r in r_args) - 3 * (
-        n + 1
-    )
+    h: float = 12.0 / (n * (n + 1)) * sum(
+        len(r) * np.mean(r) ** 2 for r in r_args
+    ) - 3 * (n + 1)
 
     # apply tie correction
     h /= _stats.tiecorrect(r)
@@ -496,10 +496,12 @@ class _ANOVA:
         if self.km1 == -2:
             self._init(args)
 
-        between_group_variability = (
+        between_group_variability: float = (
             sum(len(a) * (np.mean(a) - self.a_bar) ** 2 for a in args) / self.km1
         )
-        within_group_variability = sum(len(a) * np.var(a) for a in args) / (self.nmk)
+        within_group_variability: float = sum(len(a) * np.var(a) for a in args) / (
+            self.nmk
+        )
         return between_group_variability / within_group_variability
 
     def _init(self, args: Tuple[np.ndarray, ...]) -> None:
