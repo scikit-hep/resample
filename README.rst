@@ -15,6 +15,8 @@
    :target: https://resample.readthedocs.io/en/stable
 .. image:: https://img.shields.io/pypi/l/resample
    :target: https://pypi.org/project/resample
+.. image:: https://zenodo.org/badge/145776396.svg
+   :target: https://zenodo.org/badge/latestdoi/145776396
 
 `Link to full documentation`_
 
