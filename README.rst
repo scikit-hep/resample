@@ -50,8 +50,8 @@ Example
 
       d = [1, 2, 6, 3, 5]
 
-      variance_of_mean = variance(np.mean, d)
-      print(f"bootstrap {variance_of_mean ** 0.5:.2f} exact {(np.var(d) / len(d)) ** 0.5:.2f}")
+      stdev_of_mean = variance(np.mean, d) ** 0.5
+      print(f"bootstrap {stdev_of_mean:.2f} exact {np.std(d) / len(d) ** 0.5:.2f}")
       # bootstrap 0.82 exact 0.83
 
 .. _numpy: http://www.numpy.org
