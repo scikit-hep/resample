@@ -44,6 +44,6 @@ repos:
 
 # Python sort imports
 - repo: https://github.com/pycqa/pydocstyle
-  rev: 6.1.1  # pick a git hash / tag to point to
+  rev: 6.2.3  # pick a git hash / tag to point to
   hooks:
   - id: pydocstyle
