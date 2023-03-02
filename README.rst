@@ -7,6 +7,8 @@
 
 .. image:: https://img.shields.io/pypi/v/resample.svg
    :target: https://pypi.org/project/resample
+.. image:: https://img.shields.io/conda/vn/conda-forge/resample.svg
+   :target: https://github.com/conda-forge/resample-feedstock
 .. image:: https://github.com/resample-project/resample/actions/workflows/test.yml/badge.svg
    :target: https://github.com/resample-project/resample/actions/workflows/tests.yml
 .. image:: https://coveralls.io/repos/github/resample-project/resample/badge.svg
