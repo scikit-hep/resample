@@ -1,18 +1,62 @@
 [build-system]
 requires = [
-    "setuptools >= 42",
-    "setuptools_scm[toml] >= 3.4",
-    # numpy 1.19 is first to support C-API for random
-    # use oldest numpy for given Python version to ensure compatible Numpy C-API
-    "numpy == 1.19; python_version == '3.7'",
-    "numpy == 1.19; python_version == '3.8'",
-    "numpy == 1.20; python_version == '3.9'",
-    "numpy == 1.21.2; python_version == '3.10'",
+    "setuptools >= 61",
+    "setuptools_scm[toml] >= 6.2",
+    "wheel",
+    "numpy >= 1.21",
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "resample"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy >= 1.21",
+    "scipy >= 1.10"
+]
+authors = [
+    { name = "Hans Dembinski" },
+    { email = "hans.dembinski@gmail.com" },
+    # { name = "Daniel Saxton" }
+]
+readme = "README.rst"
+description = "Resampling-based inference in Python"
+license = { text = "BSD-3-Clause" }
+classifiers = [
+    'Development Status :: 5 - Production',
+    'Intended Audience :: Science/Research',
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Programming Language :: Python :: Implementation :: PyPy',
+]
+dynamic = ["version"]
+
+[project.urls]
+repository = "http://github.com/resample-project/resample"
+documentation = "https://resample.readthedocs.io/en/stable/"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov"
+]
+doc = [
+    "ipython",
+    "nbsphinx"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.setuptools_scm]
-write_to = "src/resample/_version.py"
 
 [tool.isort]
 profile = "black"
