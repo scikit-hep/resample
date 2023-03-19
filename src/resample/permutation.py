@@ -37,7 +37,7 @@ from dataclasses import dataclass as dataclass
 from typing import Any, Callable, Optional, Tuple, Union
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from scipy import stats as _stats
 
 from . import _util
@@ -68,7 +68,7 @@ class TestResult:
 
     statistic: float
     pvalue: float
-    samples: np.ndarray
+    samples: NDArray
 
     def __repr__(self) -> str:
         """Return (potentially shortened) representation."""
@@ -87,7 +87,7 @@ class TestResult:
         """Return length of tuple."""
         return 3
 
-    def __getitem__(self, idx: int) -> Union[float, np.ndarray]:
+    def __getitem__(self, idx: int) -> Union[float, NDArray]:
         """Return fields by index."""
         if idx == 0:
             return self.statistic
@@ -145,10 +145,10 @@ def usp(
     if size <= 0:
         raise ValueError("size must be positive")
 
-    methods = {"auto": 0, "shuffle": 1, "patefield": 2}
-    imethod = methods.get(method, -1)
-    if imethod == -1:
+    methods = {"auto": None, "shuffle": "boyett", "patefield": "patefield"}
+    if method not in methods:
         raise ValueError(f"method '{method}' not one of {methods}")
+    imethod = methods[method]
 
     rng = _util.normalize_rng(random_state)
 
@@ -160,13 +160,6 @@ def usp(
     c = np.sum(w, axis=0)
     ntot = np.sum(r)
 
-    if imethod == 0:
-        # TODO refine this
-        if ntot < len(r) * len(c):
-            imethod = 1
-        else:
-            imethod = 2
-
     m = np.outer(r, c) / ntot
 
     f1 = 1.0 / (ntot * (ntot - 3))
@@ -175,7 +168,9 @@ def usp(
     t = _usp(f1, f2, w, m)
 
     ts = np.empty(size)
-    for b, w in enumerate(_util.rcont(size, r, c, imethod - 1, rng)):
+    for b, w in enumerate(
+        _stats.random_table(r, c).rvs(size, method=imethod, random_state=rng)
+    ):
         # m stays the same, since r and c remain unchanged
         ts[b] = _usp(f1, f2, w, m)
 
@@ -187,7 +182,7 @@ def usp(
     return TestResult(t, pvalue, ts)
 
 
-def _usp(f1: float, f2: float, w: np.ndarray, m: np.ndarray) -> np.ndarray:
+def _usp(f1: float, f2: float, w: NDArray, m: NDArray) -> NDArray:
     # Eq. 2.1 from https://doi.org/10.1098/rspa.2021.0549
     return f1 * np.sum((w - m) ** 2) - f2 * np.sum(w * m)
 
@@ -197,7 +192,7 @@ def same_population(
     x: "ArrayLike",
     y: "ArrayLike",
     *args: "ArrayLike",
-    transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+    transform: Optional[Callable[[NDArray], NDArray]] = None,
     size: int = 9999,
     random_state: Optional[Union[np.random.Generator, int]] = None,
 ) -> TestResult:
@@ -437,7 +432,7 @@ def ttest(x: "ArrayLike", y: "ArrayLike", **kwargs: Any) -> TestResult:
     return same_population(_ttest, x, y, **kwargs)
 
 
-def _ttest(x: np.ndarray, y: np.ndarray) -> float:
+def _ttest(x: NDArray, y: NDArray) -> float:
     n1 = len(x)
     n2 = len(y)
     m1 = np.mean(x)
@@ -448,7 +443,7 @@ def _ttest(x: np.ndarray, y: np.ndarray) -> float:
     return r
 
 
-def _pearson(x: np.ndarray, y: np.ndarray) -> float:
+def _pearson(x: NDArray, y: NDArray) -> float:
     m1 = np.mean(x)
     m2 = np.mean(y)
     s1 = np.mean((x - m1) ** 2)
@@ -457,13 +452,13 @@ def _pearson(x: np.ndarray, y: np.ndarray) -> float:
     return r
 
 
-def _spearman(x: np.ndarray, y: np.ndarray) -> float:
+def _spearman(x: NDArray, y: NDArray) -> float:
     x = _stats.rankdata(x)
     y = _stats.rankdata(y)
     return _pearson(x, y)
 
 
-def _kruskal(*args: np.ndarray) -> float:
+def _kruskal(*args: NDArray) -> float:
     # see https://en.wikipedia.org/wiki/
     #           Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
     # method 3 and 4
@@ -492,7 +487,7 @@ class _ANOVA:
     nmk: int = 0
     a_bar: float = 0.0
 
-    def __call__(self, *args: np.ndarray) -> float:
+    def __call__(self, *args: NDArray) -> float:
         if self.km1 == -2:
             self._init(args)
 
@@ -504,7 +499,7 @@ class _ANOVA:
         )
         return between_group_variability / within_group_variability
 
-    def _init(self, args: Tuple[np.ndarray, ...]) -> None:
+    def _init(self, args: Tuple[NDArray, ...]) -> None:
         n = sum(len(a) for a in args)
         k = len(args)
         self.km1 = k - 1
