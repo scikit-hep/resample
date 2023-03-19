@@ -3,9 +3,7 @@ from typing import Optional, Tuple, Union
 import numpy as np
 from numpy.typing import ArrayLike
 
-from ._ext import rcont  # noqa type: ignore
-
-__all__ = ["rcont", "normalize_rng", "wilson_score_interval"]
+__all__ = ["normalize_rng", "wilson_score_interval"]
 
 
 def normalize_rng(

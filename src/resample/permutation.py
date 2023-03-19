@@ -145,10 +145,10 @@ def usp(
     if size <= 0:
         raise ValueError("size must be positive")
 
-    methods = {"auto": 0, "shuffle": 1, "patefield": 2}
-    imethod = methods.get(method, -1)
-    if imethod == -1:
+    methods = {"auto": None, "shuffle": "boyett", "patefield": "patefield"}
+    if method not in methods:
         raise ValueError(f"method '{method}' not one of {methods}")
+    imethod = methods[method]
 
     rng = _util.normalize_rng(random_state)
 
@@ -160,13 +160,6 @@ def usp(
     c = np.sum(w, axis=0)
     ntot = np.sum(r)
 
-    if imethod == 0:
-        # TODO refine this
-        if ntot < len(r) * len(c):
-            imethod = 1
-        else:
-            imethod = 2
-
     m = np.outer(r, c) / ntot
 
     f1 = 1.0 / (ntot * (ntot - 3))
@@ -175,7 +168,9 @@ def usp(
     t = _usp(f1, f2, w, m)
 
     ts = np.empty(size)
-    for b, w in enumerate(_util.rcont(size, r, c, imethod - 1, rng)):
+    for b, w in enumerate(
+        _stats.random_table(r, c).rvs(size, method=imethod, random_state=rng)
+    ):
         # m stays the same, since r and c remain unchanged
         ts[b] = _usp(f1, f2, w, m)
 
