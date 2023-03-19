@@ -8,7 +8,7 @@ from resample.jackknife import resample
 def run_resample(n, copy):
     x = np.arange(n)
     r = []
-    for b in resample(x, copy):
+    for b in resample(x, copy=copy):
         r.append(np.mean(b))
     return r
 

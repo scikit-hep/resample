@@ -15,4 +15,4 @@ def test_usp(k, n, method, benchmark):
         j = rng.integers(k)
         w[i, j] += 1
     assert np.sum(w) == n
-    benchmark(lambda: usp(w, method=method, precision=0, max_size=100, random_state=1))
+    benchmark(lambda: usp(w, method=method, size=100, random_state=1))
