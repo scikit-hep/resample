@@ -15,9 +15,8 @@ dependencies = [
     "scipy >= 1.10"
 ]
 authors = [
-    { name = "Hans Dembinski" },
-    { email = "hans.dembinski@gmail.com" },
-    # { name = "Daniel Saxton" }
+    { name = "Hans Dembinski", email = "hans.dembinski@gmail.com" },
+    { name = "Daniel Saxton" }
 ]
 readme = "README.rst"
 description = "Resampling-based inference in Python"
