@@ -13,9 +13,8 @@ dependencies = [
     "scipy >= 1.10"
 ]
 authors = [
-    { name = "Hans Dembinski"},
-    { email = "hans.dembinski@gmail.com" },
-    { name = "Daniel Saxton" }
+    { name = "Hans Dembinski", email = "hans.dembinski@gmail.com" },
+    { name = "Daniel Saxton", email= "dsaxton@pm.me" }
 ]
 readme = "README.rst"
 description = "Resampling-based inference in Python"
@@ -78,3 +77,7 @@ filterwarnings = [
     "error::DeprecationWarning",
     "error::numpy.VisibleDeprecationWarning",
 ]
+
+[tool.coverage.run]
+source = "src/resample"
+relative_files = true
