@@ -1,0 +1,35 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: scikit-hep/resample
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Hans
+    family-names: Dembinski
+    email: hans.dembinski@gmail.com
+    affiliation: TU Dortmund
+    orcid: 'https://orcid.org/0000-0003-3337-3850'
+  - given-names: Daniel
+    family-names: Saxton
+  - given-names: Henry
+    family-names: Schreiner
+  - given-names: Joshua
+    family-names: Adelman
+  - given-names: Eduardo
+    family-names: Rodrigues
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7750255
+repository-code: 'https://github.com/scikit-hep/resample'
+url: 'https://resample.readthedocs.io/en/stable/'
+abstract: 'Randomization-based inference in Python '
+keywords:
+  - Python
+  - statistics
+  - data analysis
+  - Scikit-HEP
+license: BSD-3-Clause
