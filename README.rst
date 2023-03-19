@@ -28,6 +28,8 @@
 
 Resampling-based inference in Python based on data resampling and permutation.
 
+This package was created by Daniel Saxton and is now maintained by Hans Dembinski.
+
 Features
 --------
 
