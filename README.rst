@@ -43,9 +43,10 @@ Features
 Example
 -------
 
+We bootstrap the uncertainty of the arithmetic mean, an estimator for the expectation. In this case, we know the formula to compute this uncertainty and can compare it to the bootstrap result.
+
 .. code-block:: python
 
-      # bootstrap uncertainty of arithmetic mean
       from resample.bootstrap import variance
       import numpy as np
 
@@ -54,6 +55,8 @@ Example
       stdev_of_mean = variance(np.mean, d) ** 0.5
       print(f"bootstrap {stdev_of_mean:.2f} exact {np.std(d) / len(d) ** 0.5:.2f}")
       # bootstrap 0.82 exact 0.83
+
+The amazing thing is that the bootstrap works as well for arbitrarily complex estimators.
 
 .. _numpy: http://www.numpy.org
 .. _scipy: https://www.scipy.org
