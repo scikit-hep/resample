@@ -26,20 +26,19 @@
 
 .. skip-marker-do-not-remove
 
-Randomisation-based inference in Python based on data resampling and permutation.
+Resampling-based inference in Python based on data resampling and permutation.
 
 Features
 --------
 
-- Bootstrap samples (ordinary or balanced with optional stratification)
-- Support for parametric (Gaussian, Poisson, gamma, etc.) and extended
-  bootstrapping (also varies sample size)
-- Compute bootstrap confidence intervals (percentile or BCa) for any estimator
+- Bootstrap resampling: ordinary or balanced with optional stratification
+- Extended bootstrap resampling: also varies sample size
+- Parametric resampling: Gaussian, Poisson, gamma, etc.)
 - Jackknife estimates of bias and variance of any estimator
+- Compute bootstrap confidence intervals (percentile or BCa) for any estimator
 - Permutation-based variants of traditional statistical tests (**USP test of independence** and others)
 - Tools for working with empirical distributions (CDF, quantile, etc.)
 - Depends only on `numpy`_ and `scipy`_
-- Optional code acceleration with `numba`_
 
 Example
 -------
@@ -58,11 +57,10 @@ Example
 
 .. _numpy: http://www.numpy.org
 .. _scipy: https://www.scipy.org
-.. _numba: https://numba.pydata.org
 
 Installation
 ------------
-You can install with pip, but you need a C compiler on the target machine.
+You can install with pip.
 
 .. code-block:: shell
 
