@@ -20,7 +20,8 @@ readme = "README.rst"
 description = "Resampling-based inference in Python"
 license = { text = "BSD-3-Clause" }
 classifiers = [
-    'Development Status :: 5 - Production',
+    # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Science/Research',
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
