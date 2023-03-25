@@ -52,13 +52,19 @@ We bootstrap the uncertainty of the arithmetic mean, an estimator for the expect
       from resample.bootstrap import variance
       import numpy as np
 
+      # data
       d = [1, 2, 6, 3, 5]
 
+      # this call is all you need to do
       stdev_of_mean = variance(np.mean, d) ** 0.5
-      print(f"bootstrap {stdev_of_mean:.2f} exact {np.std(d) / len(d) ** 0.5:.2f}")
-      # bootstrap 0.82 exact 0.83
+      
+      print(f"bootstrap {stdev_of_mean:.2f}")
+      print(f"exact {np.std(d) / len(d) ** 0.5:.2f}")
+      # bootstrap 0.82
+      # exact 0.83
 
 The amazing thing is that the bootstrap works as well for arbitrarily complex estimators.
+The bootstrap often provides good results even when the sample size is small.
 
 .. _numpy: http://www.numpy.org
 .. _scipy: https://www.scipy.org
