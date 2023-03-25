@@ -45,7 +45,7 @@ Features
 Example
 -------
 
-We bootstrap the uncertainty of the arithmetic mean, an estimator for the expectation. In this case, we know the formula to compute this uncertainty and can compare it to the bootstrap result.
+We bootstrap the uncertainty of the arithmetic mean, an estimator for the expectation. In this case, we know the formula to compute this uncertainty and can compare it to the bootstrap result. More complex examples can be found `in the documentation <https://resample.readthedocs.io/en/stable/tutorials.html>`_.
 
 .. code-block:: python
 
