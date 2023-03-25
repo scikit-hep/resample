@@ -55,7 +55,7 @@ We bootstrap the uncertainty of the arithmetic mean, an estimator for the expect
       # data
       d = [1, 2, 6, 3, 5]
 
-      # this call is all you need to do
+      # this call is all you need
       stdev_of_mean = variance(np.mean, d) ** 0.5
       
       print(f"bootstrap {stdev_of_mean:.2f}")
