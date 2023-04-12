@@ -83,7 +83,3 @@ filterwarnings = [
     "error::DeprecationWarning",
     "error::numpy.VisibleDeprecationWarning",
 ]
-
-[tool.coverage.run]
-source = ["src/resample"]
-relative_files = true
