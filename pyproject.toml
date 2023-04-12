@@ -84,5 +84,5 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = "src/resample"
+source = ["src/resample"]
 relative_files = true
