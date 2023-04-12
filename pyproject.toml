@@ -44,7 +44,8 @@ documentation = "https://resample.readthedocs.io/en/stable/"
 [project.optional-dependencies]
 test = [
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
+    "coverage[toml]"
 ]
 doc = [
     "ipython",
