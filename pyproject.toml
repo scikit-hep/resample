@@ -60,6 +60,11 @@ where = ["src"]
 profile = "black"
 multi_line_output = 3
 
+[tool.ruff]
+select = ["E", "F", "W", "D"]
+ignore = ["D212", "D203"]
+unfixable = ["ERA"]
+
 [tool.mypy]
 strict = true
 no_implicit_optional = false

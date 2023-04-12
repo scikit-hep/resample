@@ -223,7 +223,7 @@ def resample(
         "log-gaussian": stats.lognorm,
         "inverse-gaussian": stats.invgauss,
         "student": stats.t,
-    }.get(method, None)
+    }.get(method)
 
     # fallback to scipy.stats name
     if dist is None:
@@ -482,25 +482,24 @@ def confidence_interval(
     'percentile'. However the increase in accuracy should compensate for this, with the
     result that less bootstrap replicas are needed overall to achieve the same accuracy.
     """
-    if args:
-        if not isinstance(args[0], Collection):
-            import warnings
+    if args and not isinstance(args[0], Collection):
+        import warnings
 
-            from numpy import VisibleDeprecationWarning
+        from numpy import VisibleDeprecationWarning
 
-            warnings.warn(
-                "Calling confidence_interval with positional instead of keyword "
-                "arguments is deprecated",
-                VisibleDeprecationWarning,
-            )
+        warnings.warn(
+            "Calling confidence_interval with positional instead of keyword "
+            "arguments is deprecated",
+            VisibleDeprecationWarning,
+        )
 
-            if len(args) == 1:
-                (cl,) = args
-            elif len(args) == 2:
-                cl, ci_method = args
-            else:
-                raise ValueError("too many arguments")
-            args = ()
+        if len(args) == 1:
+            (cl,) = args
+        elif len(args) == 2:
+            cl, ci_method = args
+        else:
+            raise ValueError("too many arguments")
+        args = ()
 
     if not 0 < cl < 1:
         raise ValueError("cl must be between zero and one")

@@ -59,7 +59,7 @@ def quantile_function_gen(
             ndim = np.ndim(p)  # must come before atleast_1d
             p = np.atleast_1d(p)
             result = np.empty(len(p))
-            valid = (0 <= p) & (p <= 1)
+            valid = (p >= 0) & (p <= 1)
             n = len(self._sorted)
             idx = np.maximum(np.ceil(p[valid] * n).astype(int) - 1, 0)
             result[valid] = self._sorted[idx]
