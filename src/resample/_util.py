@@ -12,7 +12,7 @@ def normalize_rng(
     """Return normalized RNG object."""
     if random_state is None:
         return np.random.default_rng()
-    elif isinstance(random_state, np.random.Generator):
+    if isinstance(random_state, np.random.Generator):
         return random_state
     return np.random.default_rng(random_state)
 

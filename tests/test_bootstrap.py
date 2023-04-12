@@ -1,3 +1,4 @@
+# ruff: noqa: D100 D103
 import numpy as np
 import pytest
 from numpy.testing import assert_equal, assert_allclose

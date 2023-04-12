@@ -1,3 +1,4 @@
+# ruff: noqa: D100 D103
 from resample import _util as u
 import numpy as np
 from numpy.testing import assert_allclose

@@ -1,12 +1,12 @@
+# ruff: noqa: D100 D101 D103 D105 D107
 import numpy as np
 from numpy.testing import assert_allclose
 from resample import permutation as perm
-from resample import _util
 from scipy import stats
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture()
 def rng():
     return np.random.Generator(np.random.PCG64(1))
 
@@ -24,7 +24,7 @@ def test_TestResult():
 
     p2 = perm.TestResult(1, 2, np.arange(10))
     assert repr(p2) == (
-        "<TestResult " "statistic=1 pvalue=2 " "samples=[0, 1, 2, ..., 7, 8, 9]>"
+        "<TestResult statistic=1 pvalue=2 samples=[0, 1, 2, ..., 7, 8, 9]>"
     )
 
 
@@ -150,17 +150,17 @@ def test_bad_input():
         perm.ttest([1, 2, 3], [1.0, np.nan, 2.0])
 
 
-@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+@pytest.mark.parametrize("method", ("auto", "patefield", "boyett"))
 def test_usp_1(method, rng):
     x = rng.normal(0, 2, size=100)
     y = rng.normal(1, 3, size=100)
 
     w = np.histogram2d(x, y, bins=(5, 10))[0]
-    r = perm.usp(w, size=100, random_state=1)
+    r = perm.usp(w, method=method, size=100, random_state=1)
     assert r.pvalue > 0.05
 
 
-@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+@pytest.mark.parametrize("method", ("auto", "patefield", "boyett"))
 def test_usp_2(method, rng):
     x = rng.normal(0, 2, size=100).astype(int)
 
@@ -170,11 +170,11 @@ def test_usp_2(method, rng):
     assert r.pvalue == 0.01
 
 
-@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+@pytest.mark.parametrize("method", ("auto", "patefield", "boyett"))
 def test_usp_3(method, rng):
     cov = np.empty((2, 2))
-    cov[0, 0] = 2 ** 2
-    cov[1, 1] = 3 ** 2
+    cov[0, 0] = 2**2
+    cov[1, 1] = 3**2
     rho = 0.5
     cov[0, 1] = rho * np.sqrt(cov[0, 0] * cov[1, 1])
     cov[1, 0] = cov[0, 1]
@@ -187,7 +187,7 @@ def test_usp_3(method, rng):
     assert r.pvalue < 0.0012
 
 
-@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+@pytest.mark.parametrize("method", ("auto", "patefield", "boyett"))
 def test_usp_4(method):
     # table1 from https://doi.org/10.1098/rspa.2021.0549
     w = [[18, 36, 21, 9, 6], [12, 36, 45, 36, 21], [6, 9, 9, 3, 3], [3, 9, 9, 6, 3]]
@@ -201,7 +201,7 @@ def test_usp_4(method):
     assert_allclose(r1.pvalue, expected, atol=0.001)
 
 
-@pytest.mark.parametrize("method", ("auto", "patefield", "shuffle"))
+@pytest.mark.parametrize("method", ("auto", "patefield", "boyett"))
 def test_usp_5(method, rng):
     w = np.empty((100, 100))
     for i in range(100):
@@ -234,6 +234,14 @@ def test_usp_bad_input():
 
     with pytest.raises(ValueError):
         perm.usp([[1, 2], [3, 4]], method="foo")
+
+
+def test_usp_deprecrated():
+    w = [[1, 2, 3], [4, 5, 6]]
+    r1 = perm.usp(w, method="boyett", size=100, random_state=1)
+    with pytest.warns(np.VisibleDeprecationWarning):
+        r2 = perm.usp(w, method="shuffle", size=100, random_state=1)
+    assert r1.statistic == r2.statistic
 
 
 def test_ttest_bad_input():
