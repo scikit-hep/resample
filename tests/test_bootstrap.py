@@ -6,8 +6,6 @@ from scipy import stats
 
 from resample.bootstrap import (
     _fit_parametric_family,
-    bias,
-    bias_corrected,
     bootstrap,
     confidence_interval,
     resample,
@@ -214,9 +212,7 @@ def test_bootstrap_2d_balanced(rng):
     assert_allclose(mean(data), mean(r))
 
 
-@pytest.mark.parametrize(
-    "action", [bootstrap, bias, bias_corrected, variance, confidence_interval]
-)
+@pytest.mark.parametrize("action", [bootstrap, variance, confidence_interval])
 def test_bootstrap_several_args(action):
     x = [1, 2, 3]
     y = [4, 5, 6]
@@ -288,60 +284,6 @@ def test_bca_confidence_interval_bounded_estimator(ci_method, rng):
     data = (-3, -2, -1)
     ci = confidence_interval(fn, data, ci_method=ci_method, size=5, random_state=rng)
     assert_allclose((0.0, 0.0), ci)
-
-
-@pytest.mark.parametrize("method", NON_PARAMETRIC)
-def test_bias_on_unbiased(method, rng):
-    data = (0, 1, 2, 3)
-    r = bias(np.mean, data, method=method, random_state=rng)
-
-    if method == "balanced":
-        # bias is exactly zero for linear functions with the balanced bootstrap
-        assert r == 0
-    else:
-        # bias is not exactly zero for ordinary bootstrap
-        assert r == pytest.approx(0)
-
-
-@pytest.mark.parametrize("method", NON_PARAMETRIC)
-def test_bias_on_biased(method, rng):
-    def biased(x):
-        return np.var(x, ddof=0)
-
-    data = np.arange(100)
-    bad = biased(data)
-    correct = np.var(data, ddof=1)
-
-    r = bias(biased, data, method=method, size=10000, random_state=rng)
-    sample_bias = bad - correct
-    assert r == pytest.approx(sample_bias, rel=0.05)
-
-
-@pytest.mark.parametrize("method", NON_PARAMETRIC)
-def test_bias_on_biased_2(method, rng):
-    def biased(x):
-        n = len(x)
-        return (np.sum(x) + 2) / n
-
-    data = np.arange(100)
-    bad = biased(data)
-    correct = np.mean(data)
-
-    r = bias(biased, data, method=method, size=10000, random_state=rng)
-    sample_bias = bad - correct
-    assert r == pytest.approx(sample_bias, rel=0.1)
-
-
-@pytest.mark.parametrize("method", NON_PARAMETRIC)
-def test_bias_corrected(method, rng):
-    def fn(x):
-        return np.var(x, ddof=0)
-
-    data = np.arange(100)
-    correct = np.var(data, ddof=1)
-
-    r = bias_corrected(fn, data, size=10000, method=method, random_state=rng)
-    assert r == pytest.approx(correct, rel=0.001)
 
 
 @pytest.mark.parametrize("method", NON_PARAMETRIC)
