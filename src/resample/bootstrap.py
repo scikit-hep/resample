@@ -15,8 +15,6 @@ more efficient BCa method, see :func:`confidence_interval` for details.
 __all__ = [
     "resample",
     "bootstrap",
-    "bias",
-    "bias_corrected",
     "variance",
     "confidence_interval",
 ]
@@ -40,6 +38,7 @@ from scipy import stats
 from . import _util
 from .empirical import quantile_function_gen
 from .jackknife import jackknife
+from ._deprecated import deprecated
 
 
 def resample(
@@ -286,6 +285,10 @@ def bootstrap(
     return np.array([fn(x) for x in gen])
 
 
+@deprecated(
+    "bootstrap.bias is deprecated and will be removed in a future revision, "
+    "use jackknife.bias instead"
+)
 def bias(
     fn: Callable[..., np.ndarray],
     sample: "ArrayLike",
@@ -346,6 +349,10 @@ def bias(
     return np.mean(thetas, axis=0) - population_theta
 
 
+@deprecated(
+    "bootstrap.bias is deprecated and will be removed in a future revision, "
+    "use jackknife.bias instead"
+)
 def bias_corrected(
     fn: Callable[..., np.ndarray],
     sample: "ArrayLike",
