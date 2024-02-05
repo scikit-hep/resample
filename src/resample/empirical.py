@@ -28,6 +28,7 @@ def cdf_gen(sample: "ArrayLike") -> Callable[[np.ndarray], np.ndarray]:
     -------
     callable
         Empirical distribution function.
+
     """
     sample_np = np.sort(sample)
     n = len(sample_np)
@@ -49,6 +50,7 @@ def quantile_function_gen(
     -------
     callable
         Empirical quantile function.
+
     """
 
     class QuantileFn:
@@ -89,6 +91,7 @@ def influence(
     -------
     ndarray
         Empirical influence values.
+
     """
     sample = np.atleast_1d(sample)
     n = len(sample)
