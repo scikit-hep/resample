@@ -11,6 +11,7 @@ and permutation. The following functionality is implemented.
 - Permutation-based variants of traditional statistical tests (t-test, K-S test, etc.)
 - Tools for working with empirical distributions (CDF, quantile, etc.)
 """
+
 from importlib.metadata import version
 
 from resample import bootstrap, empirical, jackknife, permutation

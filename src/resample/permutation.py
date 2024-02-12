@@ -65,6 +65,7 @@ class TestResult:
         hypothesis. See https://en.wikipedia.org/wiki/P-value for details.
     samples: array
         Values of the test statistic from the permutated samples.
+
     """
 
     statistic: float
@@ -142,6 +143,7 @@ def usp(
     Returns
     -------
     TestResult
+
     """
     if size <= 0:
         raise ValueError("size must be positive")
@@ -238,6 +240,7 @@ def same_population(
     Returns
     -------
     TestResult
+
     """
     if size <= 0:
         raise ValueError("max_size must be positive")
@@ -317,6 +320,7 @@ def anova(
     -----
     https://en.wikipedia.org/wiki/One-way_analysis_of_variance
     https://en.wikipedia.org/wiki/F-test
+
     """
     kwargs["transform"] = None
     return same_population(_ANOVA(), x, y, *args, **kwargs)
@@ -350,6 +354,7 @@ def kruskal(
     Notes
     -----
     https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
+
     """
     kwargs["transform"] = None
     return same_population(_kruskal, x, y, *args, **kwargs)
@@ -377,6 +382,7 @@ def pearsonr(x: "ArrayLike", y: "ArrayLike", **kwargs: Any) -> TestResult:
     Returns
     -------
     TestResult
+
     """
     if len(x) != len(y):
         raise ValueError("x and y must have have the same length")
@@ -403,6 +409,7 @@ def spearmanr(x: "ArrayLike", y: "ArrayLike", **kwargs: Any) -> TestResult:
     Returns
     -------
     TestResult
+
     """
     if len(x) != len(y):
         raise ValueError("x and y must have have the same length")
@@ -432,6 +439,7 @@ def ttest(x: "ArrayLike", y: "ArrayLike", **kwargs: Any) -> TestResult:
     Returns
     -------
     TestResult
+
     """
     kwargs["transform"] = np.abs
     return same_population(_ttest, x, y, **kwargs)
