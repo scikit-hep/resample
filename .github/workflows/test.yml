@@ -17,10 +17,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version:
-        - "3.8"
-        - "3.12"
-
+        include:
+          # version number must be string, otherwise 3.10 becomes 3.1
+          - os: windows-latest
+            python-version: "3.12"
+          - os: macos-latest
+            python-version: "3.8"
+          - os: ubuntu-latest
+            python-version: "pypy-3.8"
+      fail-fast: false
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
