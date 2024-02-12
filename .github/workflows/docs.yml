@@ -1,0 +1,47 @@
+name: Docs
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    # must come after checkout
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - run: sudo apt-get install pandoc
+    - run: pip install .[doc]
+    - run: cd doc; make html
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: 'doc/_build/html'
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.ref_name == 'main'
+    needs: build
+    # Set permissions to allow deployment to GitHub Pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/configure-pages@v4
+    - uses: actions/deploy-pages@v4
