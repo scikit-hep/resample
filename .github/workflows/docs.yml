@@ -16,6 +16,7 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: "3.11"
+    - run: sudo apt-get install pandoc
     - run: pip install .[doc]
     - run: cd doc; make html
     - uses: actions/upload-pages-artifact@v3
