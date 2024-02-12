@@ -486,3 +486,13 @@ def test_resample_extended_5():
     mu2 = 3**2 * np.sum(x, axis=0)
     assert_allclose(t1, (mu1, 3**2 * mu1), rtol=0.05)
     assert_allclose(t2, (mu2, 3**2 * mu2), rtol=0.05)
+
+
+def test_bias_error():
+    with pytest.raises(NotImplementedError):
+        from resample.bootstrap import bias  # noqa
+
+    with pytest.raises(NotImplementedError):
+        import resample.bootstrap as b
+
+        b.bias_corrected  # noqa

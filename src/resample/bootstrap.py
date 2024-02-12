@@ -38,7 +38,6 @@ from scipy import stats
 from . import _util
 from .empirical import quantile_function_gen
 from .jackknife import jackknife
-from ._deprecated import deprecated
 
 
 def resample(
@@ -283,115 +282,6 @@ def bootstrap(
     if args:
         return np.array([fn(*b) for b in gen])
     return np.array([fn(x) for x in gen])
-
-
-@deprecated(
-    "bootstrap.bias is deprecated and will be removed in a future revision, "
-    "use jackknife.bias instead"
-)
-def bias(
-    fn: Callable[..., np.ndarray],
-    sample: "ArrayLike",
-    *args: "ArrayLike",
-    **kwargs: Any,
-) -> np.ndarray:
-    """
-    Calculate bias of the function estimate with the bootstrap.
-
-    Parameters
-    ----------
-    fn : callable
-        Function to be bootstrapped.
-    sample : array-like
-        Original sample.
-    *args : array-like
-        Optional additional arrays of the same length to resample.
-    **kwargs
-        Keyword arguments forwarded to :func:`resample`.
-
-    Returns
-    -------
-    ndarray
-        Bootstrap estimate of bias (= expectation of estimator - true value).
-
-    Examples
-    --------
-    Compute bias of numpy.var with and without bias-correction.
-
-    >>> from resample.bootstrap import bias
-    >>> import numpy as np
-    >>> x = np.arange(10)
-    >>> round(bias(np.var, x, size=10000, random_state=1), 1)
-    -0.8
-    >>> round(bias(lambda x: np.var(x, ddof=1), x, size=10000, random_state=1), 1)
-    0.0
-
-    Notes
-    -----
-    This function has special space requirements, it needs to hold `size` replicates of
-    the original sample in memory at once. The balanced bootstrap is recommended over
-    the ordinary bootstrap for bias estimation, it tends to converge faster.
-    """
-    thetas = []
-    if args:
-        replicates: List[List[np.ndarray]] = [[] for _ in range(len(args) + 1)]
-        for b in resample(sample, *args, **kwargs):
-            for ri, bi in zip(replicates, b):
-                ri.append(bi)
-            thetas.append(fn(*b))
-        population_theta = fn(*(np.concatenate(r) for r in replicates))
-    else:
-        replicates = []
-        for b in resample(sample, *args, **kwargs):
-            replicates.append(b)
-            thetas.append(fn(b))
-        population_theta = fn(np.concatenate(replicates))
-    return np.mean(thetas, axis=0) - population_theta
-
-
-@deprecated(
-    "bootstrap.bias is deprecated and will be removed in a future revision, "
-    "use jackknife.bias instead"
-)
-def bias_corrected(
-    fn: Callable[..., np.ndarray],
-    sample: "ArrayLike",
-    *args: "ArrayLike",
-    **kwargs: Any,
-) -> np.ndarray:
-    """
-    Calculate bias-corrected estimate of the function with the bootstrap.
-
-    Parameters
-    ----------
-    fn : callable
-        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
-        and k is the length of the output array.
-    sample : array-like
-        Original sample.
-    *args : array-like
-        Optional additional arrays of the same length to resample.
-    **kwargs
-        Keyword arguments forwarded to :func:`resample`.
-
-    Returns
-    -------
-    ndarray
-        Estimate with some bias removed.
-
-    Examples
-    --------
-    Compute bias-corrected estimate of numpy.var.
-
-    >>> from resample.bootstrap import bias_corrected
-    >>> import numpy as np
-    >>> x = np.arange(10)
-    >>> round(np.var(x), 1)
-    8.2
-    >>> round(bias_corrected(np.var, x, size=10000, random_state=1), 1)
-    9.1
-    """
-    return fn(sample, *args) - bias(fn, sample, *args, **kwargs)
 
 
 def variance(
@@ -676,3 +566,15 @@ def _confidence_interval_bca(
 
     quant = quantile_function_gen(thetas)
     return quant(p_low), quant(p_high)
+
+
+def __getattr__(key: str) -> Any:
+    for match in ("bias", "bias_corrected"):
+        if key == match:
+            msg = (
+                f"resample.bootstrap.{match} has been removed. The implementation was "
+                "discovered to be faulty, and a generic fix is not in sight. "
+                "Please use resample.jackknife.bias instead."
+            )
+            raise NotImplementedError(msg)
+    raise AttributeError
