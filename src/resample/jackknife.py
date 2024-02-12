@@ -75,6 +75,7 @@ def resample(
     ...     r2.append(x) # x is now a view into the same array in memory
     >>> print(r2)
     [array([1, 2]), array([1, 2]), array([1, 2])]
+
     """
     sample_np = np.atleast_1d(sample)
     n_sample = len(sample_np)
@@ -174,6 +175,7 @@ def jackknife(
     >>> fb = jackknife(np.mean, x)
     >>> print(f"f(x) = {fx:.1f} +/- {np.std(fb):.1f}")
     f(x) = 4.5 +/- 0.3
+
     """
     gen = resample(sample, *args, copy=False)
     if args:
@@ -219,6 +221,7 @@ def bias(
     -0.9
     >>> round(bias(lambda x: np.var(x, ddof=1), x), 1)
     0.0
+
     """
     sample = np.atleast_1d(sample)
     n = len(sample)
@@ -266,6 +269,7 @@ def bias_corrected(
     8.2
     >>> round(bias_corrected(np.var, x), 1)
     9.2
+
     """
     sample = np.atleast_1d(sample)
     n = len(sample)
@@ -307,6 +311,7 @@ def variance(
     >>> x = np.arange(10)
     >>> round(variance(np.mean, x), 1)
     0.9
+
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
     #   = np.var(fj, ddof=0) * (n - 1)

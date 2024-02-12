@@ -143,6 +143,7 @@ def resample(
     replicated sample. This is a stricter constraint than that offered by the
     balanced bootstrap, which only guarantees that classes have the original
     proportions over all replicates, but not within each one replicate.
+
     """
     sample_np = np.atleast_1d(sample)
     n_sample = len(sample_np)
@@ -278,6 +279,7 @@ def bootstrap(
     >>> fb = bootstrap(np.mean, x, size=10000, random_state=1)
     >>> print(f"f(x) = {fx:.1f} +/- {np.std(fb):.1f}")
     f(x) = 4.5 +/- 0.9
+
     """
     gen = resample(sample, *args, **kwargs)
     if args:
@@ -331,6 +333,7 @@ def bias(
     This function has special space requirements, it needs to hold `size` replicates of
     the original sample in memory at once. The balanced bootstrap is recommended over
     the ordinary bootstrap for bias estimation, it tends to converge faster.
+
     """
     thetas = []
     if args:
@@ -390,6 +393,7 @@ def bias_corrected(
     8.2
     >>> round(bias_corrected(np.var, x, size=10000, random_state=1), 1)
     9.1
+
     """
     return fn(sample, *args) - bias(fn, sample, *args, **kwargs)
 
@@ -429,6 +433,7 @@ def variance(
     >>> x = np.arange(10)
     >>> round(variance(np.mean, x, size=10000, random_state=1), 1)
     0.8
+
     """
     thetas = bootstrap(fn, sample, *args, **kwargs)
     return np.var(thetas, ddof=1, axis=0)
@@ -488,6 +493,7 @@ def confidence_interval(
     increases the number of function evaluations in a direct comparison to
     'percentile'. However the increase in accuracy should compensate for this, with the
     result that less bootstrap replicas are needed overall to achieve the same accuracy.
+
     """
     if args and not isinstance(args[0], Collection):
         import warnings
