@@ -2,8 +2,9 @@ name: Docs
 
 on:
   pull_request:
-  release:
-    types: [published]
+  push:
+    tags:
+    - '**'
   workflow_dispatch:
 
 concurrency:
@@ -15,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     # must come after checkout
     - uses: actions/setup-python@v5
       with:
@@ -27,7 +30,7 @@ jobs:
         path: 'doc/_build/html'
 
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.ref, '/tags/')
     needs: build
     # Set permissions to allow deployment to GitHub Pages
     permissions:
