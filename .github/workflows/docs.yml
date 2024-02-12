@@ -21,7 +21,7 @@ jobs:
     - run: cd doc; make html
     - uses: actions/upload-pages-artifact@v3
       with:
-        path: './_build/html'
+        path: 'doc/_build/html'
 
   deploy:
     if: github.event_name == 'workflow_dispatch' || github.ref_name == 'main'
