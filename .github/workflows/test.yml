@@ -33,7 +33,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - run: python -m pip install --upgrade pip
     - run: python -m pip install -e .[test]
-    - run: python -m pytest
+
+    - if: ${{ matrix.os != 'ubuntu-latest' }}
+      run: python -m pytest
 
     # toml is needed only by coveralls
     - if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -42,4 +44,3 @@ jobs:
         JUPYTER_PLATFORM_DIRS=1 coverage run -m pytest
     - if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: AndreMiras/coveralls-python-action@develop
-  
