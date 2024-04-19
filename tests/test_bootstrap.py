@@ -297,7 +297,7 @@ def test_variance(method, rng):
 
 
 @pytest.mark.parametrize("method", NON_PARAMETRIC)
-def test_covariance_1(method, rng):
+def test_covariance(method, rng):
     cov = np.array([[1.0, 0.1], [0.1, 2.0]])
     data = rng.multivariate_normal([0.1, 0.2], cov, size=1000)
 
