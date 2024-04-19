@@ -10,6 +10,7 @@ from resample.bootstrap import (
     confidence_interval,
     resample,
     variance,
+    covariance,
 )
 
 PARAMETRIC_CONTINUOUS = {
@@ -293,6 +294,17 @@ def test_variance(method, rng):
 
     r = variance(np.mean, data, size=1000, method=method, random_state=rng)
     assert r == pytest.approx(v, rel=0.05)
+
+
+@pytest.mark.parametrize("method", NON_PARAMETRIC)
+def test_covariance(method, rng):
+    cov = np.array([[1.0, 0.1], [0.1, 2.0]])
+    data = rng.multivariate_normal([0.1, 0.2], cov, size=1000)
+
+    r = covariance(
+        lambda x: np.mean(x, axis=0), data, size=1000, method=method, random_state=rng
+    )
+    assert_allclose(r, cov / len(data), atol=1e-3)
 
 
 def test_resample_deprecation(rng):
