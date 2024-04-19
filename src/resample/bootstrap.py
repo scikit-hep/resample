@@ -295,6 +295,8 @@ def variance(
     """
     Calculate bootstrap estimate of variance.
 
+    If the function returns a vector, the variance is computed elementwise.
+
     Parameters
     ----------
     fn : callable
@@ -325,6 +327,51 @@ def variance(
     """
     thetas = bootstrap(fn, sample, *args, **kwargs)
     return np.var(thetas, ddof=1, axis=0)
+
+
+def covariance(
+    fn: Callable[..., np.ndarray],
+    sample: "ArrayLike",
+    *args: "ArrayLike",
+    **kwargs: Any,
+) -> np.ndarray:
+    """
+    Calculate bootstrap estimate of covariance.
+
+    Parameters
+    ----------
+    fn : callable
+        Estimator. Can be any mapping ℝⁿ → ℝᵏ, where n is the sample size
+        and k is the length of the output array.
+    sample : array-like
+        Original sample.
+    *args : array-like
+        Optional additional arrays of the same length to resample.
+    **kwargs
+        Keyword arguments forwarded to :func:`resample`.
+
+    Returns
+    -------
+    ndarray
+        Bootstrap estimate of covariance. In general, this is a matrix, but if the
+        function maps to a scalar, it is scalar as well.
+
+    Examples
+    --------
+    Compute variance of arithmetic mean.
+
+    >>> from resample.bootstrap import variance
+    >>> import numpy as np
+    >>> x = np.arange(10)
+    >>> def fn(x):
+    ...     return np.mean(x), np.var(x)
+    >>> np.round(covariance(fn, x, size=10000, random_state=1), 1)
+    array([[0.8, 0. ],
+           [0. , 5.5]])
+
+    """
+    thetas = bootstrap(fn, sample, *args, **kwargs)
+    return np.cov(thetas, rowvar=False, ddof=1)
 
 
 def confidence_interval(
