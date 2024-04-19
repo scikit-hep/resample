@@ -1,20 +1,14 @@
 [build-system]
-requires = [
-    "setuptools >= 61",
-    "setuptools_scm[toml] >= 6.2",
-]
+requires = ["setuptools >= 60", "setuptools_scm[toml] >= 8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "resample"
 requires-python = ">=3.8"
-dependencies = [
-    "numpy >= 1.21",
-    "scipy >= 1.10"
-]
+dependencies = ["numpy >= 1.21", "scipy >= 1.10"]
 authors = [
-    { name = "Daniel Saxton", email= "dsaxton@pm.me" },
-    { name = "Hans Dembinski", email = "hans.dembinski@gmail.com" }
+    { name = "Daniel Saxton", email = "dsaxton@pm.me" },
+    { name = "Hans Dembinski", email = "hans.dembinski@gmail.com" },
 ]
 readme = "README.rst"
 description = "Resampling-based inference in Python"
@@ -42,15 +36,8 @@ repository = "http://github.com/resample-project/resample"
 documentation = "https://resample.readthedocs.io/en/stable/"
 
 [project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-cov",
-    "coverage[toml]"
-]
-doc = [
-    "ipython",
-    "nbsphinx"
-]
+test = ["pytest", "pytest-cov", "coverage[toml]"]
+doc = ["ipython", "nbsphinx"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
