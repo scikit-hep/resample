@@ -16,6 +16,7 @@ __all__ = [
     "resample",
     "bootstrap",
     "variance",
+    "covariance",
     "confidence_interval",
 ]
 
@@ -358,7 +359,7 @@ def covariance(
 
     Examples
     --------
-    Compute variance of arithmetic mean.
+    Compute covariance of sample mean and sample variance.
 
     >>> from resample.bootstrap import variance
     >>> import numpy as np
