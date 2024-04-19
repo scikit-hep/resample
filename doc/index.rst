@@ -12,4 +12,5 @@
 
    reference
    tutorials
+   examples
    changelog

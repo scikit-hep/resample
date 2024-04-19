@@ -1,10 +1,7 @@
 Changelog
 =========
 
-1.5.2 (October 15, 2022)
-------------------------------------------------
-- Update ci skripts and fix types (`#154 <https://github.com/scikit-hep/iminuit/pull/154>`_)
-- Fix extended (`#153 <https://github.com/scikit-hep/iminuit/pull/153>`_)
+For more recent versions, please look into `the release notes on Github <https://github.com/scikit-hep/resample/releases>`_.
 
 1.5.1 (March 1, 2022)
 ---------------------

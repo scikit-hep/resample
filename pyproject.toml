@@ -37,7 +37,7 @@ documentation = "https://resample.readthedocs.io/en/stable/"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov", "coverage[toml]"]
-doc = ["ipython", "nbsphinx"]
+doc = ["ipython", "nbsphinx", "sphinx_rtd_theme"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
