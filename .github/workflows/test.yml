@@ -43,4 +43,4 @@ jobs:
         python -m pip install toml
         JUPYTER_PLATFORM_DIRS=1 coverage run -m pytest
     - if: ${{ matrix.os == 'ubuntu-latest' }}
-      uses: AndreMiras/coveralls-python-action@develop
+      uses: coverallsapp/github-action@v2
