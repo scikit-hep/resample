@@ -13,7 +13,14 @@ advantage of the jackknife can be the deterministic outcome, since no random sam
 is involved.
 """
 
-__all__ = ["resample", "jackknife", "bias", "bias_corrected", "variance"]
+__all__ = [
+    "resample",
+    "jackknife",
+    "bias",
+    "bias_corrected",
+    "variance",
+    "cross_validation",
+]
 
 from typing import Any, Callable, Collection, Generator, List
 
