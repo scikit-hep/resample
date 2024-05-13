@@ -51,10 +51,10 @@ multi_line_output = 3
 
 [tool.ruff]
 extend-select = ["E", "F", "W", "D"]
-lint.ignore = ["D212", "D203"]
-lint.unfixable = ["ERA"]
+ignore = ["D212", "D203"]
+unfixable = ["ERA"]
 
-[tool.ruff.lint.per-file-ignores]
+[tool.ruff.per-file-ignores]
 "test_*.py" = ["D"]
 
 [tool.mypy]
