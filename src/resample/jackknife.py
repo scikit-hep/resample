@@ -18,7 +18,7 @@ __all__ = ["resample", "jackknife", "bias", "bias_corrected", "variance"]
 from typing import Any, Callable, Collection, Generator, List
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, floating
 
 
 def resample(
@@ -319,3 +319,40 @@ def variance(
     thetas = jackknife(fn, sample, *args)
     n = len(sample)
     return (n - 1) * np.var(thetas, ddof=0, axis=0)
+
+
+def cross_validation(
+    predict: Callable[..., float], x: "ArrayLike", y: "ArrayLike", *args: "ArrayLike"
+) -> floating[Any]:
+    """
+    Calculate mean-squared error of model with leave-one-out-cross-validation.
+
+    Wikipedia:
+    https://en.wikipedia.org/wiki/Cross-validation_(statistics)
+
+    Parameters
+    ----------
+    predict : callable
+        Function with the signature (x_in, y_in, x_out, *args). It takes x_in, y_in,
+        which are arrays with the same length. x_out should be one element of the x
+        array. *args are further optional arguments for the function. The function
+        should return the prediction y(x_out).
+    x : array-like
+        Explanatory variable. Must be an array of shape (N, ...), where N is the number
+        of samples.
+    y : array-like
+        Observations. Must be an array of shape (N, ...).
+    *args:
+        Optional arguments which are passed unmodified to predict.
+
+    Returns
+    -------
+    float
+        Variance of the difference (y[i] - predict(..., x[i], *args)).
+
+    """
+    deltas = []
+    for i, (x_in, y_in) in enumerate(resample(x, y, copy=False)):
+        yip = predict(x_in, y_in, x[i], *args)
+        deltas.append((y[i] - yip))
+    return np.var(deltas)
