@@ -117,14 +117,13 @@ def test_resample_several_args_incompatible_keywords():
 
 def test_resample_deprecation():
     data = [1, 2, 3]
-    from numpy import VisibleDeprecationWarning
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         r = list(resample(data, False))
 
     assert_equal(r, list(resample(data, copy=False)))
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         with pytest.raises(ValueError):  # too many arguments
             resample(data, True, 1)
 

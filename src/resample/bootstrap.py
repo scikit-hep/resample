@@ -153,12 +153,10 @@ def resample(
         if not isinstance(args[0], Collection):
             import warnings
 
-            from numpy import VisibleDeprecationWarning
-
             warnings.warn(
                 "Calling resample with positional instead of keyword parameters is "
                 "deprecated",
-                VisibleDeprecationWarning,
+                FutureWarning,
             )
             kwargs: Dict[str, Any] = {
                 "size": size,
@@ -434,12 +432,10 @@ def confidence_interval(
     if args and not isinstance(args[0], Collection):
         import warnings
 
-        from numpy import VisibleDeprecationWarning
-
         warnings.warn(
             "Calling confidence_interval with positional instead of keyword "
             "arguments is deprecated",
-            VisibleDeprecationWarning,
+            FutureWarning,
         )
 
         if len(args) == 1:

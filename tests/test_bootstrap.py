@@ -309,57 +309,57 @@ def test_covariance(method, rng):
 
 def test_resample_deprecation(rng):
     data = [1, 2, 3]
-    from numpy import VisibleDeprecationWarning
+    from numpy import FutureWarning
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         r = list(resample(data, 10))
         assert np.shape(r) == (10, 3)
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         resample(data, 10, "balanced")
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         with pytest.raises(ValueError):
             resample(data, 10, "foo")
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         resample(data, 10, "balanced", [1, 1, 2])
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         with pytest.raises(ValueError):
             resample(data, 10, "balanced", [1, 1])
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         resample(data, 10, "balanced", [1, 1, 2], rng)
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         resample(data, 10, "balanced", [1, 1, 2], 1)
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         with pytest.raises(TypeError):
             resample(data, 10, "balanced", [1, 1, 2], 1.3)
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         with pytest.raises(ValueError):  # too many arguments
             resample(data, 10, "balanced", [1, 1, 2], 1, 2)
 
 
 def test_confidence_interval_deprecation(rng):
-    from numpy import VisibleDeprecationWarning
+    from numpy import FutureWarning
 
     d = [1, 2, 3]
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         r = confidence_interval(np.mean, d, 0.6, random_state=1)
     assert_equal(r, confidence_interval(np.mean, d, cl=0.6, random_state=1))
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         r = confidence_interval(np.mean, d, 0.6, "percentile", random_state=1)
     assert_equal(
         r,
         confidence_interval(np.mean, d, cl=0.6, ci_method="percentile", random_state=1),
     )
 
-    with pytest.warns(VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         with pytest.raises(ValueError):
             confidence_interval(np.mean, d, 0.6, "percentile", 1)
 

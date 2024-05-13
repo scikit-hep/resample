@@ -239,7 +239,7 @@ def test_usp_bad_input():
 def test_usp_deprecrated():
     w = [[1, 2, 3], [4, 5, 6]]
     r1 = perm.usp(w, method="boyett", size=100, random_state=1)
-    with pytest.warns(np.VisibleDeprecationWarning):
+    with pytest.warns(FutureWarning):
         r2 = perm.usp(w, method="shuffle", size=100, random_state=1)
     assert r1.statistic == r2.statistic
 
