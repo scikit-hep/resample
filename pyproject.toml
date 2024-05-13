@@ -50,9 +50,12 @@ profile = "black"
 multi_line_output = 3
 
 [tool.ruff]
-select = ["E", "F", "W", "D"]
+extend-select = ["E", "F", "W", "D"]
 ignore = ["D212", "D203"]
 unfixable = ["ERA"]
+
+[tool.ruff.per-file-ignores]
+"test_*.py" = ["D"]
 
 [tool.mypy]
 strict = true

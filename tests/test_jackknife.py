@@ -1,8 +1,15 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal, assert_equal
-
-from resample.jackknife import bias, bias_corrected, jackknife, resample, variance
+from scipy.optimize import curve_fit
+from resample.jackknife import (
+    bias,
+    bias_corrected,
+    jackknife,
+    resample,
+    variance,
+    cross_validation,
+)
 
 
 def test_resample_1d():
@@ -120,3 +127,22 @@ def test_resample_deprecation():
     with pytest.warns(VisibleDeprecationWarning):
         with pytest.raises(ValueError):  # too many arguments
             resample(data, True, 1)
+
+
+@pytest.mark.filterwarnings("ignore:Covariance")
+def test_cross_validation():
+    x = [1, 2, 3]
+    y = [3, 4, 5]
+
+    def predict(xi, yi, xo, npar):
+        def model(x, *par):
+            return np.polyval(par, x)
+
+        popt = curve_fit(model, xi, yi, p0=np.zeros(npar))[0]
+        return model(xo, *popt)
+
+    v = cross_validation(predict, x, y, 2)
+    assert v == pytest.approx(0)
+
+    v2 = cross_validation(predict, x, y, 1)
+    assert v2 == pytest.approx(1.5)
