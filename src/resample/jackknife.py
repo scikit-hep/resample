@@ -18,7 +18,7 @@ __all__ = ["resample", "jackknife", "bias", "bias_corrected", "variance"]
 from typing import Any, Callable, Collection, Generator, List
 
 import numpy as np
-from numpy.typing import ArrayLike, floating
+from numpy.typing import ArrayLike
 
 
 def resample(
@@ -323,7 +323,7 @@ def variance(
 
 def cross_validation(
     predict: Callable[..., float], x: "ArrayLike", y: "ArrayLike", *args: "ArrayLike"
-) -> floating[Any]:
+) -> float:
     """
     Calculate mean-squared error of model with leave-one-out-cross-validation.
 
@@ -355,4 +355,4 @@ def cross_validation(
     for i, (x_in, y_in) in enumerate(resample(x, y, copy=False)):
         yip = predict(x_in, y_in, x[i], *args)
         deltas.append((y[i] - yip))
-    return np.var(deltas)
+    return np.var(deltas)  # type:ignore
