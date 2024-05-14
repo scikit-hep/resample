@@ -150,8 +150,7 @@ def usp(
 
     if method == "shuffle":
         warnings.warn(
-            "method 'shuffle' is deprecated, please use 'boyett'",
-            np.VisibleDeprecationWarning,
+            "method 'shuffle' is deprecated, please use 'boyett'", FutureWarning
         )
         method = "boyett"
 

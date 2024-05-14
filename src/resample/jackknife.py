@@ -92,12 +92,10 @@ def resample(
         if not isinstance(args[0], Collection):
             import warnings
 
-            from numpy import VisibleDeprecationWarning
-
             warnings.warn(
                 "Calling resample with positional instead of keyword arguments is "
                 "deprecated",
-                VisibleDeprecationWarning,
+                FutureWarning,
             )
             if len(args) == 1:
                 (copy,) = args
