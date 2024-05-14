@@ -309,7 +309,6 @@ def test_covariance(method, rng):
 
 def test_resample_deprecation(rng):
     data = [1, 2, 3]
-    from numpy import FutureWarning
 
     with pytest.warns(FutureWarning):
         r = list(resample(data, 10))
@@ -345,8 +344,6 @@ def test_resample_deprecation(rng):
 
 
 def test_confidence_interval_deprecation(rng):
-    from numpy import FutureWarning
-
     d = [1, 2, 3]
     with pytest.warns(FutureWarning):
         r = confidence_interval(np.mean, d, 0.6, random_state=1)
