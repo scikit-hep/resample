@@ -317,8 +317,9 @@ def variance(
     >>> from resample.jackknife import variance
     >>> import numpy as np
     >>> x = np.arange(10)
-    >>> round(variance(np.mean, x), 1)
-    0.9
+    >>> v = variance(np.mean, x)
+    >>> f"{v:.1f}"
+    '0.9'
 
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)
