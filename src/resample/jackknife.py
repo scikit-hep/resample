@@ -10,7 +10,10 @@ The jackknife is an approximation to the bootstrap, so in general bootstrapping 
 preferred, especially when the sample is small. The computational cost of the jackknife
 increases quadratically with the sample size, but only linearly for the bootstrap. An
 advantage of the jackknife can be the deterministic outcome, since no random sampling
-is involved.
+is involved, but this can be overcome by fixing the seed for the bootstrap.
+
+The jackknife should be used to estimate the bias, since the bootstrap cannot (easily)
+estimate bias. The bootstrap should be preferred when computing the variance.
 """
 
 __all__ = [
@@ -222,10 +225,10 @@ def bias(
     >>> from resample.jackknife import bias
     >>> import numpy as np
     >>> x = np.arange(10)
-    >>> round(bias(np.var, x), 1)
-    -0.9
-    >>> round(bias(lambda x: np.var(x, ddof=1), x), 1)
-    0.0
+    >>> b1 = bias(np.var, x)
+    >>> b2 = bias(lambda x: np.var(x, ddof=1), x)
+    >>> f"bias of naive sample variance {b1:.1f}, bias of corrected variance {b2:.1f}"
+    'bias of naive sample variance -0.9, bias of corrected variance 0.0'
 
     """
     sample = np.atleast_1d(sample)
@@ -270,10 +273,10 @@ def bias_corrected(
     >>> from resample.jackknife import bias_corrected
     >>> import numpy as np
     >>> x = np.arange(10)
-    >>> round(np.var(x), 1)
-    8.2
-    >>> round(bias_corrected(np.var, x), 1)
-    9.2
+    >>> v1 = np.var(x)
+    >>> v2 = bias_corrected(np.var, x)
+    >>> f"naive variance {v1:.1f}, bias-corrected variance {v2:.1f}"
+    'naive variance 8.2, bias-corrected variance 9.2'
 
     """
     sample = np.atleast_1d(sample)
@@ -314,8 +317,9 @@ def variance(
     >>> from resample.jackknife import variance
     >>> import numpy as np
     >>> x = np.arange(10)
-    >>> round(variance(np.mean, x), 1)
-    0.9
+    >>> v = variance(np.mean, x)
+    >>> f"{v:.1f}"
+    '0.9'
 
     """
     # formula is (n - 1) / n * sum((fj - mean(fj)) ** 2)

@@ -320,8 +320,9 @@ def variance(
     >>> from resample.bootstrap import variance
     >>> import numpy as np
     >>> x = np.arange(10)
-    >>> round(variance(np.mean, x, size=10000, random_state=1), 1)
-    0.8
+    >>> v = variance(np.mean, x, size=10000, random_state=1)
+    >>> f"{v:.1f}"
+    '0.8'
 
     """
     thetas = bootstrap(fn, sample, *args, **kwargs)
@@ -413,8 +414,8 @@ def confidence_interval(
     >>> import numpy as np
     >>> x = np.arange(10)
     >>> a, b = confidence_interval(np.mean, x, size=10000, random_state=1)
-    >>> round(a, 1), round(b, 1)
-    (2.6, 6.2)
+    >>> f"{a:.1f} to {b:.1f}"
+    '2.6 to 6.2'
 
     Notes
     -----
