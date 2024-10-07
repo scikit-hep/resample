@@ -7,7 +7,7 @@ __all__ = ["normalize_rng", "wilson_score_interval"]
 
 
 def normalize_rng(
-    random_state: Optional[Union[int, np.random.Generator]]
+    random_state: Optional[Union[int, np.random.Generator]],
 ) -> np.random.Generator:
     """Return normalized RNG object."""
     if random_state is None:
