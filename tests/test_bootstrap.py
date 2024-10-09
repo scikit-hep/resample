@@ -182,7 +182,7 @@ def test_resample_3d_parametric_normal_raises():
 
 
 def test_resample_equal_along_axis():
-    data = np.reshape(np.tile([0, 1, 2], 3), newshape=(3, 3))
+    data = np.reshape(np.tile([0, 1, 2], 3), (3, 3))
     for b in resample(data, size=2):
         assert_equal(data, b)
 
