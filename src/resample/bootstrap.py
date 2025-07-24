@@ -360,7 +360,7 @@ def covariance(
     --------
     Compute covariance of sample mean and sample variance.
 
-    >>> from resample.bootstrap import variance
+    >>> from resample.bootstrap import covariance
     >>> import numpy as np
     >>> x = np.arange(10)
     >>> def fn(x):
