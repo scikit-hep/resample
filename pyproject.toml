@@ -63,6 +63,6 @@ files = "src/resample/*.py"
 [tool.pytest.ini_options]
 addopts = "--doctest-modules --strict-config --strict-markers -q -ra --ff"
 testpaths = ["src/resample", "tests"]
-log_cli_level = "INFO"
+log_level = "INFO"
 xfail_strict = true
 filterwarnings = ["error::DeprecationWarning", "error::FutureWarning"]
