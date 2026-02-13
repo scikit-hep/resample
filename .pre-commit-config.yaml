@@ -18,7 +18,7 @@ repos:
 
 # Ruff linter, replacement for flake8, isort, pydocstyle
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: 'v0.15.0'
+  rev: 'v0.15.1'
   hooks:
     - id: ruff
       args: [--fix, --show-fixes, --exit-non-zero-on-fix]
