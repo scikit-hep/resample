@@ -25,7 +25,7 @@ jobs:
     - run: sudo apt-get install pandoc
     - run: pip install .[doc]
     - run: cd doc; make html
-    - uses: actions/upload-pages-artifact@v4
+    - uses: actions/upload-pages-artifact@v5
       with:
         path: 'doc/_build/html'
 
