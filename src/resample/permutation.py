@@ -23,19 +23,20 @@ Further reading:
 
 __all__ = [
     "TestResult",
-    "usp",
-    "same_population",
     "anova",
     "kruskal",
     "pearsonr",
+    "same_population",
     "spearmanr",
     "ttest",
+    "usp",
 ]
 
 import sys
 import warnings
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -89,7 +90,7 @@ class TestResult:
         """Return length of tuple."""
         return 3
 
-    def __getitem__(self, idx: int) -> Union[float, NDArray]:
+    def __getitem__(self, idx: int) -> float | NDArray:
         """Return fields by index."""
         if idx == 0:
             return self.statistic
@@ -105,7 +106,7 @@ def usp(
     *,
     size: int = 9999,
     method: str = "auto",
-    random_state: Optional[Union[np.random.Generator, int]] = None,
+    random_state: np.random.Generator | int | None = None,
 ) -> TestResult:
     """
     Test independence of two discrete data sets with the U-statistic.
@@ -198,9 +199,9 @@ def same_population(
     x: "ArrayLike",
     y: "ArrayLike",
     *args: "ArrayLike",
-    transform: Optional[Callable[[NDArray], NDArray]] = None,
+    transform: Callable[[NDArray], NDArray] | None = None,
     size: int = 9999,
-    random_state: Optional[Union[np.random.Generator, int]] = None,
+    random_state: np.random.Generator | int | None = None,
 ) -> TestResult:
     """
     Compute p-value for hypothesis that samples originate from same population.
@@ -511,7 +512,7 @@ class _ANOVA:
         )
         return between_group_variability / within_group_variability
 
-    def _init(self, args: Tuple[NDArray, ...]) -> None:
+    def _init(self, args: tuple[NDArray, ...]) -> None:
         n = sum(len(a) for a in args)
         k = len(args)
         self.km1 = k - 1
