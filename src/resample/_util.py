@@ -1,5 +1,3 @@
-from typing import Optional, Tuple, Union
-
 import numpy as np
 from numpy.typing import ArrayLike
 
@@ -7,7 +5,7 @@ __all__ = ["normalize_rng", "wilson_score_interval"]
 
 
 def normalize_rng(
-    random_state: Optional[Union[int, np.random.Generator]],
+    random_state: int | np.random.Generator | None,
 ) -> np.random.Generator:
     """Return normalized RNG object."""
     if random_state is None:
@@ -19,7 +17,7 @@ def normalize_rng(
 
 def wilson_score_interval(
     n1: "ArrayLike", n: "ArrayLike", z: float
-) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+) -> tuple[np.ndarray, tuple[np.ndarray, np.ndarray]]:
     """Return binomial fraction and Wilson score interval."""
     p = n1 / n
     norm = 1 / (1 + z**2 / n)
