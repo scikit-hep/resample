@@ -19,9 +19,9 @@ from resample import bootstrap, empirical, jackknife, permutation
 __version__ = version("resample")
 
 __all__ = [
-    "jackknife",
-    "bootstrap",
-    "permutation",
-    "empirical",
     "__version__",
+    "bootstrap",
+    "empirical",
+    "jackknife",
+    "permutation",
 ]
