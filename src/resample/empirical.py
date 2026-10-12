@@ -5,9 +5,10 @@ Empirical functions based on a data sample instead of a parameteric density func
 like the empirical CDF. Implemented here are mostly tools used internally.
 """
 
-__all__ = ["cdf_gen", "quantile_function_gen", "influence"]
+__all__ = ["cdf_gen", "influence", "quantile_function_gen"]
 
-from typing import Callable, Union
+from collections.abc import Callable
+from typing import Union
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -37,7 +38,7 @@ def cdf_gen(sample: "ArrayLike") -> Callable[[np.ndarray], np.ndarray]:
 
 def quantile_function_gen(
     sample: "ArrayLike",
-) -> Callable[[Union[float, "ArrayLike"]], Union[float, np.ndarray]]:
+) -> Callable[[Union[float, "ArrayLike"]], float | np.ndarray]:
     """
     Return the empirical quantile function for the given sample.
 
@@ -57,7 +58,7 @@ def quantile_function_gen(
         def __init__(self, sample: "ArrayLike"):
             self._sorted = np.sort(sample, axis=0)
 
-        def __call__(self, p: Union[float, "ArrayLike"]) -> Union[float, np.ndarray]:
+        def __call__(self, p: Union[float, "ArrayLike"]) -> float | np.ndarray:
             ndim = np.ndim(p)  # must come before atleast_1d
             p = np.atleast_1d(p)
             result = np.empty(len(p))
