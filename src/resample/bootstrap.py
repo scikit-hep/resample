@@ -13,23 +13,17 @@ more efficient BCa method, see :func:`confidence_interval` for details.
 """
 
 __all__ = [
-    "resample",
     "bootstrap",
-    "variance",
-    "covariance",
     "confidence_interval",
+    "covariance",
+    "resample",
+    "variance",
 ]
 
+from collections.abc import Callable, Collection, Generator
 from typing import (
     Any,
-    Callable,
-    Collection,
-    Dict,
-    Generator,
-    List,
     Optional,
-    Tuple,
-    Union,
 )
 
 import numpy as np
@@ -47,7 +41,7 @@ def resample(
     size: int = 100,
     method: str = "balanced",
     strata: Optional["ArrayLike"] = None,
-    random_state: Optional[Union[np.random.Generator, int]] = None,
+    random_state: np.random.Generator | int | None = None,
 ) -> Generator[np.ndarray, None, None]:
     """
     Return generator of bootstrap samples.
@@ -147,7 +141,7 @@ def resample(
     """
     sample_np = np.atleast_1d(sample)
     n_sample = len(sample_np)
-    args_np: List[np.ndarray] = []
+    args_np: list[np.ndarray] = []
 
     if args:
         if not isinstance(args[0], Collection):
@@ -158,7 +152,7 @@ def resample(
                 "deprecated",
                 FutureWarning,
             )
-            kwargs: Dict[str, Any] = {
+            kwargs: dict[str, Any] = {
                 "size": size,
                 "method": method,
                 "strata": strata,
@@ -381,7 +375,7 @@ def confidence_interval(
     cl: float = 0.95,
     ci_method: str = "bca",
     **kwargs: Any,
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """
     Calculate bootstrap confidence intervals.
 
@@ -491,7 +485,7 @@ def _resample_ordinary_1(
 
 
 def _resample_ordinary_n(
-    samples: List[np.ndarray], size: int, rng: np.random.Generator
+    samples: list[np.ndarray], size: int, rng: np.random.Generator
 ) -> Generator[np.ndarray, None, None]:
     n = len(samples[0])
     indices = np.arange(n)
@@ -513,7 +507,7 @@ def _resample_balanced_1(
 
 
 def _resample_balanced_n(
-    samples: List[np.ndarray], size: int, rng: np.random.Generator
+    samples: list[np.ndarray], size: int, rng: np.random.Generator
 ) -> Generator[np.ndarray, None, None]:
     n = len(samples[0])
     indices = rng.permutation(n * size)
@@ -533,7 +527,7 @@ def _resample_extended_1(
 
 
 def _resample_extended_n(
-    samples: List[np.ndarray], size: int, rng: np.random.Generator
+    samples: list[np.ndarray], size: int, rng: np.random.Generator
 ) -> Generator[np.ndarray, None, None]:
     n = len(samples[0])
     for i in range(size):
@@ -543,7 +537,7 @@ def _resample_extended_n(
 
 def _fit_parametric_family(
     dist: stats.rv_continuous, sample: np.ndarray
-) -> Tuple[float, ...]:
+) -> tuple[float, ...]:
     if dist == stats.multivariate_normal:
         # has no fit method...
         return np.mean(sample, axis=0), np.cov(sample.T, ddof=1)
@@ -579,14 +573,14 @@ def _resample_parametric(
 
 def _confidence_interval_percentile(
     thetas: np.ndarray, alpha_half: float
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     quant = quantile_function_gen(thetas)
     return quant(alpha_half), quant(1 - alpha_half)
 
 
 def _confidence_interval_bca(
     theta: float, thetas: np.ndarray, j_thetas: np.ndarray, alpha_half: float
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     norm = stats.norm
 
     # bias correction; implementation notes:
