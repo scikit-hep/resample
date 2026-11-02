@@ -17,15 +17,16 @@ estimate bias. The bootstrap should be preferred when computing the variance.
 """
 
 __all__ = [
-    "resample",
-    "jackknife",
     "bias",
     "bias_corrected",
-    "variance",
     "cross_validation",
+    "jackknife",
+    "resample",
+    "variance",
 ]
 
-from typing import Any, Callable, Collection, Generator, List
+from collections.abc import Callable, Collection, Generator
+from typing import Any
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -136,7 +137,7 @@ def _resample_1(sample: np.ndarray, copy: bool) -> Generator[np.ndarray, None, N
         yield x.copy() if copy else x
 
 
-def _resample_n(samples: List[np.ndarray], copy: bool) -> Generator[Any, None, None]:
+def _resample_n(samples: list[np.ndarray], copy: bool) -> Generator[Any, None, None]:
     x = [a[1:].copy() for a in samples]
     yield (xi.copy() for xi in x)
     for i in range(len(samples[0]) - 1):
@@ -363,5 +364,5 @@ def cross_validation(
     deltas = []
     for i, (x_in, y_in) in enumerate(resample(x, y, copy=False)):
         yip = predict(x_in, y_in, x[i], *args)
-        deltas.append((y[i] - yip))
+        deltas.append(y[i] - yip)
     return np.var(deltas)  # type:ignore
